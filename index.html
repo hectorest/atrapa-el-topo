@@ -11503,7 +11503,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.19.12", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.20.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -11569,14 +11569,15 @@ const CONFIG = {
   errorOnMiss: true,
   pups: {                               // crías (nacen cuando el topo come mucho)
     maxPups: 3,                         // crías vivas a la vez (0 = sin crías)
-    feedToBirth: 200,                   // % de cultivo que debe comer el topo para tener una cría
+    feedToBirth: 260,                   // % de cultivo que debe comer el topo para tener una cría
     wary: 60,                           // % máx. de veces que una cría adulta esquiva una trampa (las pequeñas caen siempre)
-    growEat: 60,                        // % de cultivo que debe comer una cría para crecer del todo
+    growEat: 90,                        // % de cultivo que debe comer una cría para crecer del todo
     points: 2,                          // puntos por cazar una cría con una trampa
-    freezeSec: 6,                       // segundos que se detiene el crecimiento de una cría al tocarla
-    visibleMs: { start: 2400, end: 900 },   // tiempo fuera: pequeña (lenta) → adulta (hábil)
-    gapMs:     { start: 3500, end: 1200 },  // pausa entre apariciones
-    drainPerSec: { start: 3, end: 10 }      // % de cultivo que come por segundo mientras está fuera
+    freezeSec: 9,                       // segundos que se detiene el crecimiento de una cría al tocarla
+    birthGapSec: 20,                    // segundos mínimos entre dos nacimientos
+    visibleMs: { start: 2400, end: 1000 },   // tiempo fuera: pequeña (lenta) → adulta (hábil)
+    gapMs:     { start: 5000, end: 1800 },  // pausa entre apariciones
+    drainPerSec: { start: 2, end: 7 }       // % de cultivo que come por segundo mientras está fuera
   },
   difficulty: {
     hitsToMax: 15,          // aciertos para llegar a la dificultad máxima
@@ -12049,21 +12050,21 @@ const MODES = {
              hitsToMax: 25, cropGrowSec: 18, cropEatBite: 15, escapeBite: 5, moleEatPerSec: 7, cropShieldSec: 5, trapAvoid: 95, wary: 40, blightPerSec: 0.6,
              waveEvery: 6, bossHp: 8, bossSec: 40, bossMoveMs: 3200, eventGapSec: 60,
              angerRelief: 0.8, touchMargin: 25, graceMs: 200,
-             maxPups: 2, feedToBirth: 260, growEat: 85, trapCost: 2, freezeSec: 9,
+             maxPups: 2, feedToBirth: 340, growEat: 110, trapCost: 2, freezeSec: 12,
              goalHarvest: 18, razePct: 100, startSeeds: 3,
              streakToPower: 4, powerSec: 10 } },
   normal:  { label: "Normal",  values: { visStart: 1450, visEnd: 550, gapStart: 700, gapEnd: 250,
              hitsToMax: 15, cropGrowSec: 24, cropEatBite: 22, escapeBite: 8, moleEatPerSec: 10, cropShieldSec: 3, trapAvoid: 85, wary: 60, blightPerSec: 1,
              waveEvery: 5, bossHp: 12, bossSec: 35, bossMoveMs: 2600, eventGapSec: 50,
              angerRelief: 0.5, touchMargin: 15, graceMs: 120,
-             maxPups: 3, feedToBirth: 200, growEat: 60, trapCost: 3, freezeSec: 6,
+             maxPups: 3, feedToBirth: 260, growEat: 90, trapCost: 3, freezeSec: 9,
              goalHarvest: 25, razePct: 100, startSeeds: 2,
              streakToPower: 5, powerSec: 8 } },
   dificil: { label: "Difícil", values: { visStart: 1100, visEnd: 400, gapStart: 500, gapEnd: 200,
              hitsToMax: 10, cropGrowSec: 32, cropEatBite: 30, escapeBite: 12, moleEatPerSec: 15, cropShieldSec: 2, trapAvoid: 70, wary: 80, blightPerSec: 1.5,
              waveEvery: 4, bossHp: 16, bossSec: 30, bossMoveMs: 2000, eventGapSec: 40,
              angerRelief: 0.3, touchMargin: 8, graceMs: 60,
-             maxPups: 4, feedToBirth: 140, growEat: 40, trapCost: 4, freezeSec: 4,
+             maxPups: 3, feedToBirth: 200, growEat: 70, trapCost: 4, freezeSec: 6,
              goalHarvest: 32, razePct: 100, startSeeds: 1,
              streakToPower: 7, powerSec: 6 } }
 };
@@ -12542,7 +12543,8 @@ const PupsPlugin = {
     const { bus, board } = game;
     const lerp = (a, b, t) => a + (b - a) * t;
     const P = () => CONFIG.pups;
-    let pups = [], fed = 0, nextId = 1, born = 0, killed = 0, drainClock = null;
+    let pups = [], fed = 0, nextId = 1, born = 0, killed = 0, drainClock = null, lastBirth = -1e9;
+    const maxOut = () => Math.max(1, Math.ceil(P().maxPups / 2));      // crías fuera a la vez (no se juntan todas)
     const countEl = document.querySelector("#pups b");
     const updateCount = () => { if (countEl) countEl.textContent = pups.length; render(); };
     const level = p => p.size < 0.34 ? 0 : p.size < 0.67 ? 1 : 2;
@@ -12593,6 +12595,7 @@ const PupsPlugin = {
 
     const show = p => {
       if (!game.state.running) return;
+      if (pups.filter(q => q.hole !== null).length >= maxOut()) return schedule(p);
       const free = board.holes.map((_, i) => i).filter(i =>
         !game.active.has(i) && !game.targets.has(i) && !board.holes[i].classList.contains("taunt"));
       if (!free.length) return schedule(p);
@@ -12662,7 +12665,7 @@ const PupsPlugin = {
       if (P().maxPups <= 0) return;
       fed += amount;
       if (fed >= P().feedToBirth) {
-        if (pups.length < P().maxPups) { fed -= P().feedToBirth; birth(); }
+        if (pups.length < P().maxPups && performance.now() - lastBirth > (P().birthGapSec || 0) * 1000) { fed -= P().feedToBirth; lastBirth = performance.now(); birth(); }
         else fed = P().feedToBirth;          // nido lleno: espera a que elimines alguna
       }
       render();
@@ -12694,7 +12697,7 @@ const PupsPlugin = {
 
     bus.on("game:start", () => {
       Timers.clear(drainClock);
-      fed = 0; born = 0; killed = 0;
+      fed = 0; born = 0; killed = 0; lastBirth = -1e9;
       clearPups();
       drainClock = Timers.interval(() => {
         if (!game.state.running) return;
