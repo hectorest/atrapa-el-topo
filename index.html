@@ -872,6 +872,13 @@ body:not(.no-fs):not(.intro):not(.vs-frame) #hud{margin-right:calc(max(5.4vmin,3
 body:not(.intro) #fs-btn{top:calc(env(safe-area-inset-top,0px) + 8px)}
 body.no-fs #fs-btn,body.no-fs #vs-split-fs{display:none!important}
 @media (max-width:700px){body:not(.intro) #fs-btn{top:calc(env(safe-area-inset-top,0px) + 8px);width:38px;height:38px;right:calc(env(safe-area-inset-right,0px) + 14px)}}
+/* ventana de la PWA más corta que la pantalla: estira html y lo fijo hasta el borde real */
+:root{--vpx:0px}
+html.vp-short{height:calc(100% + var(--vpx))}
+html.vp-short :is(#intro,#countdown,#gate,#tv-screen,#pwa-card,#vs-split-host,#vs-overlay,#link-overlay,#mode-overlay,#rk-overlay,#settings-overlay){bottom:calc(-1 * var(--vpx))}
+html.vp-short #tuto[data-pos=bottom]{bottom:calc(8px - var(--vpx))}
+html.vp-short #ver{bottom:calc(env(safe-area-inset-bottom,0px) + 6px - var(--vpx))}
+html.vp-short #fs-hint{bottom:calc(env(safe-area-inset-bottom,0px) + 14px - var(--vpx))}
 #set-tabs{width:min(960px,100%);display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.8vmin;flex:none}
 #set-tabs button{display:flex;flex-direction:column;align-items:center;gap:.2vmin;font-size:max(2vmin,10px);padding:.8vmin .3vmin;border-radius:1.6vmin;white-space:nowrap;min-width:0}
 #set-tabs .ti{font-size:max(3.6vmin,18px);line-height:1}
@@ -1240,13 +1247,28 @@ body.vs-frame #app{padding:1.2vmin;gap:1vmin}
 
 <script>
 "use strict";
+/* PWA de iOS (barra de estado translúcida): a veces la ventana mide menos que la pantalla (falta el alto de la barra superior)
+   y queda una franja vacía abajo. Se detecta y se estira todo lo «fijo» esa diferencia (--vpx). */
+let VPX = 0;
+const fullH = () => innerHeight + VPX;
+(() => {
+  const de = document.documentElement;
+  const calc = () => {
+    const standalone = navigator.standalone === true || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+    let d = 0;
+    if (standalone && innerHeight > innerWidth) { const sh = Math.max(screen.width, screen.height) - innerHeight; if (sh > 0 && sh <= 80) d = sh; }
+    if (d !== VPX) { VPX = d; de.style.setProperty("--vpx", d + "px"); de.classList.toggle("vp-short", d > 0); window.dispatchEvent(new Event("resize")); }
+  };
+  calc(); addEventListener("resize", calc); addEventListener("orientationchange", () => setTimeout(calc, 300));
+  document.addEventListener("visibilitychange", () => setTimeout(calc, 200)); setTimeout(calc, 600);
+})();
 const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   // el propio juego, para abrir las dos mitades de la pantalla dividida
 /* ============================================================
    PUBLICACIÓN ONLINE — rellena estas 3 líneas al publicar el juego en tu servidor (ver LEEME.md).
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.12.2", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.12.3", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -3385,7 +3407,7 @@ const ThreeViewPlugin = {
     // (el modo AR está definido justo debajo de layout; se usa solo cuando CONFIG.view === "ar")
     const layout = () => {
       if (!active) return;
-      if (introMode) { W = innerWidth; H = innerHeight; } else { W = board.el.clientWidth; H = board.el.clientHeight; }
+      if (introMode) { W = innerWidth; H = fullH(); } else { W = board.el.clientWidth; H = board.el.clientHeight; }
       if (!W || !H) return;
       renderer.setSize(W, H, false);
       cam.aspect = W / H;
@@ -4878,7 +4900,7 @@ const PwaPlugin = {
     document.body.appendChild(probe);
     const upd = () => { const cs = getComputedStyle(probe), vv = window.visualViewport, el = document.getElementById("set-diag"); if (!el) return;
       const sa = !!(navigator.standalone || (window.matchMedia && matchMedia("(display-mode: standalone)").matches));
-      el.textContent = `Pantalla ${screen.width}×${screen.height} · ventana ${innerWidth}×${innerHeight} · visual ${vv ? Math.round(vv.width) + "×" + Math.round(vv.height) : "-"} · html ${document.documentElement.clientHeight} · margen sup ${cs.paddingTop} inf ${cs.paddingBottom} · ${sa ? "instalada" : "navegador"}`; };
+      el.textContent = `Pantalla ${screen.width}×${screen.height} · ventana ${innerWidth}×${innerHeight} · visual ${vv ? Math.round(vv.width) + "×" + Math.round(vv.height) : "-"} · html ${document.documentElement.clientHeight} · margen sup ${cs.paddingTop} inf ${cs.paddingBottom} · ajuste ${VPX}px · ${sa ? "instalada" : "navegador"}`; };
     upd(); window.addEventListener("resize", upd); document.getElementById("btn-settings").addEventListener("click", () => setTimeout(upd, 50));
   })();
 })();

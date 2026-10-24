@@ -1,1 +1,1 @@
-{ "v": "1.12.2", "date": "24 oct 2026", "notes": "Ajustes muestra un diagnóstico de pantalla (zonas seguras)." }
+{ "v": "1.12.3", "date": "24 oct 2026", "notes": "Corrige la franja vacía inferior en la PWA de iPhone/iPad (la ventana medía menos que la pantalla)." }
