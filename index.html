@@ -836,6 +836,17 @@ body.gate #gate{display:flex;animation:gatein .5s ease-out}
 #ver{position:fixed;z-index:55;left:calc(env(safe-area-inset-left,0px) + 10px);top:calc(env(safe-area-inset-top,0px) + 8px);font-size:max(1.8vmin,10px);font-weight:700;color:rgba(30,30,30,.6);text-shadow:0 1px 0 rgba(255,255,255,.5);pointer-events:none;display:none}
 body.intro #ver{display:block}
 #set-ver,#tv-ver{opacity:.65;font-size:max(1.9vmin,11px);font-weight:600;flex:none}
+/* Aviso de nueva versión */
+#upd-card{position:fixed;z-index:700;left:50%;top:calc(env(safe-area-inset-top,0px) + 8px);transform:translateX(-50%);width:min(620px,calc(100vw - 16px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px)));box-sizing:border-box;display:flex;align-items:center;gap:2vmin;padding:2vmin 2.4vmin;border-radius:3vmin;
+  background:linear-gradient(#fff7d6,#ffe9a0);color:#3a2a08;border:.5vmin solid #d9a21b;box-shadow:0 1vmin 0 rgba(0,0,0,.25),0 2vmin 5vmin rgba(0,0,0,.4);animation:updin .5s cubic-bezier(.3,1.4,.5,1)}
+#upd-card[hidden]{display:none}
+@keyframes updin{from{transform:translate(-50%,-140%)}}
+.upd-ico{font-size:max(6vmin,30px);line-height:1;flex:none;animation:pwabob 1.8s ease-in-out infinite}
+.upd-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:.4vmin;font-size:max(2.4vmin,13px);line-height:1.25}
+.upd-txt b{font-size:max(3vmin,16px)}.upd-txt span{font-weight:700;opacity:.85}.upd-txt small{opacity:.75;font-weight:600;font-size:.9em}
+.upd-btns{display:flex;flex-direction:column;gap:.8vmin;flex:none}
+.upd-btns button{font-size:max(2.5vmin,13px);padding:1.1vmin 2vmin;border-radius:1.8vmin;white-space:nowrap}
+@media (max-width:480px){#upd-card{flex-wrap:wrap}.upd-txt{flex-basis:calc(100% - 12vmin)}.upd-btns{flex-direction:row;width:100%}.upd-btns button{flex:1}}
 /* Ajustes por pestañas */
 #set-tabs{width:min(960px,100%);display:flex;flex-wrap:wrap;gap:.8vmin;justify-content:center;align-items:center;flex:none}
 #set-tabs button{font-size:max(2.3vmin,12px);padding:.9vmin 1.6vmin;border-radius:1.6vmin;white-space:nowrap}
@@ -919,6 +930,11 @@ body.intro #ver{display:block}
 <button id="fs-btn" type="button" aria-label="Pantalla completa" title="Pantalla completa">⛶</button>
 <div id="fs-hint" hidden></div>
 <div id="ver" aria-label="Versión del juego"></div>
+<div id="upd-card" hidden role="alertdialog" aria-label="Nueva versión disponible">
+  <div class="upd-ico">🆕</div>
+  <div class="upd-txt"><b id="upd-title">Hay una versión nueva</b><span id="upd-sub"></span><small id="upd-notes"></small></div>
+  <div class="upd-btns"><button id="upd-yes">🔄 Actualizar ahora</button><button id="upd-no" class="secondary">Luego</button></div>
+</div>
 <div id="pwa-card" hidden role="dialog" aria-label="Instalar el juego">
   <div class="pwa-sheet">
     <div class="pwa-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><radialGradient id="bg" cx="50%" cy="28%" r="80%"><stop offset="0" stop-color="#a5e872"/><stop offset=".55" stop-color="#47932f"/><stop offset="1" stop-color="#244f1e"/></radialGradient><radialGradient id="fur" cx="45%" cy="25%" r="85%"><stop offset="0" stop-color="#7a6560"/><stop offset=".6" stop-color="#4c3b37"/><stop offset="1" stop-color="#2e2321"/></radialGradient><linearGradient id="dirt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9744a"/><stop offset="1" stop-color="#6b4423"/></linearGradient><radialGradient id="snout" cx="50%" cy="35%" r="70%"><stop offset="0" stop-color="#ffc4c4"/><stop offset="1" stop-color="#ee8f9b"/></radialGradient></defs><rect width="512" height="512" fill="url(#bg)"/><g fill="#fff" opacity=".18"><ellipse cx="96" cy="92" rx="60" ry="18"/><ellipse cx="420" cy="132" rx="46" ry="14"/></g><!-- montículo y agujero --><ellipse cx="256" cy="372" rx="196" ry="66" fill="url(#dirt)"/><ellipse cx="256" cy="362" rx="150" ry="46" fill="#1d1109"/><!-- topo --><g><path d="M142 372 C128 250 170 150 256 150 C342 150 384 250 370 372 Z" fill="url(#fur)"/><ellipse cx="226" cy="190" rx="52" ry="26" fill="#fff" opacity=".13" transform="rotate(-20 226 190)"/><!-- ojos --><circle cx="210" cy="238" r="12" fill="#0d0908"/><circle cx="302" cy="238" r="12" fill="#0d0908"/><circle cx="214" cy="233" r="4" fill="#fff"/><circle cx="306" cy="233" r="4" fill="#fff"/><!-- hocico rosado --><path d="M256 258 C222 262 206 292 214 318 C226 336 286 336 298 318 C306 292 290 262 256 258 Z" fill="url(#snout)"/><ellipse cx="256" cy="270" rx="17" ry="13" fill="#e0707f"/><circle cx="249" cy="270" r="3.2" fill="#8a2f3d"/><circle cx="263" cy="270" r="3.2" fill="#8a2f3d"/><path d="M256 283 L256 304 M256 304 C246 314 238 312 232 306 M256 304 C266 314 274 312 280 306" stroke="#b9565f" stroke-width="5" fill="none" stroke-linecap="round"/><rect x="248" y="304" width="9" height="15" rx="3" fill="#fff"/><rect x="259" y="304" width="9" height="15" rx="3" fill="#fff"/></g><!-- borde delantero de tierra --><path d="M60 372 C60 430 150 450 256 450 C362 450 452 430 452 372 C452 392 360 412 256 412 C152 412 60 392 60 372 Z" fill="url(#dirt)"/><path d="M142 372 C160 392 352 392 370 372 C352 360 160 360 142 372 Z" fill="#1d1109" opacity="0"/><!-- manos con garras --><g><g transform="rotate(-22 128 352)"><ellipse cx="128" cy="352" rx="52" ry="34" fill="#f4a9ac"/><g fill="#fff6ec" stroke="#d9a58f" stroke-width="2"><ellipse cx="86" cy="338" rx="9" ry="14"/><ellipse cx="82" cy="355" rx="9" ry="14"/><ellipse cx="88" cy="372" rx="9" ry="14"/></g></g><g transform="rotate(22 384 352)"><ellipse cx="384" cy="352" rx="52" ry="34" fill="#f4a9ac"/><g fill="#fff6ec" stroke="#d9a58f" stroke-width="2"><ellipse cx="426" cy="338" rx="9" ry="14"/><ellipse cx="430" cy="355" rx="9" ry="14"/><ellipse cx="424" cy="372" rx="9" ry="14"/></g></g></g><!-- tierra suelta --><g fill="#8b5e3c"><circle cx="70" cy="330" r="10"/><circle cx="446" cy="320" r="12"/><circle cx="98" cy="300" r="7"/><circle cx="418" cy="296" r="8"/><circle cx="170" cy="438" r="9"/><circle cx="352" cy="440" r="10"/></g><!-- hierba --><g stroke="#7fd04a" stroke-width="10" stroke-linecap="round" fill="none"><path d="M54 452 q4 -34 18 -48 M74 458 q2 -26 -6 -44"/><path d="M458 452 q-4 -34 -18 -48 M438 458 q-2 -26 6 -44"/></g></svg></div>
@@ -1059,7 +1075,7 @@ body.intro #ver{display:block}
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.6.0", date: "24 oct 2026" };
+const GAME_VERSION = { v: "1.7.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -4540,7 +4556,48 @@ const PwaPlugin = {
   ["ver", "set-ver", "tv-ver"].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = t; });
   document.title = `Atrapa el topo v${GAME_VERSION.v}`;
 })();
-game.use(UIPlugin).use(DifficultyPlugin).use(TauntPlugin).use(CropsPlugin).use(PupsPlugin).use(TrapsPlugin).use(PowerUpsPlugin).use(WavesPlugin).use(WeatherPlugin).use(ThreeViewPlugin).use(PausePlugin).use(HapticsPlugin).use(TutorialPlugin).use(IntroPlugin).use(CountdownPlugin).use(MusicPlugin).use(GatePlugin).use(LinkPlugin).use(RankingPlugin).use(PwaPlugin).use(SettingsPlugin);
+/* Aviso de actualización: consulta version.json (sin caché) y, si hay una versión más nueva, sugiere forzar la recarga
+   borrando la copia guardada (por si está instalado como app o hay caché). Nunca interrumpe una partida. */
+const UpdatePlugin = {
+  init(game) {
+    const $ = id => document.getElementById(id), card = $("upd-card");
+    const web = /^https?:$/.test(location.protocol) && window.top === window && !/claude\.(ai|com)|claudeusercontent/.test(location.host);
+    if (!web) return;
+    try { const u = new URL(location.href); if (u.searchParams.has("v")) { u.searchParams.delete("v"); history.replaceState(null, "", u.toString()); } } catch (e) {}
+    const num = v => String(v || "0").split(".").map(n => parseInt(n, 10) || 0);
+    const newer = (a, b) => { const x = num(a), y = num(b); for (let i = 0; i < 3; i++) { if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); } return false; };
+    let latest = null, snoozeUntil = 0, checking = false;
+    const busy = () => game.state.running || document.body.classList.contains("tuto-on") || document.body.classList.contains("gate");
+    const show = () => {
+      if (!latest || card.hidden === false || Date.now() < snoozeUntil) return;
+      if (busy()) { setTimeout(show, 10000); return; }
+      $("upd-title").textContent = "Hay una versión nueva: " + latest.v;
+      $("upd-sub").textContent = `Tienes la ${GAME_VERSION.v}. Actualiza para tener las últimas mejoras.`;
+      $("upd-notes").textContent = latest.notes || ""; card.hidden = false;
+    };
+    const check = async () => {
+      if (checking || navigator.onLine === false) return; checking = true;
+      try {
+        const r = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
+        if (r.ok) { const j = await r.json(); if (j && newer(j.v, GAME_VERSION.v)) { latest = j; show(); } }
+        if (navigator.serviceWorker) navigator.serviceWorker.getRegistration().then(g => g && g.update()).catch(() => {});
+      } catch (e) {} finally { checking = false; }
+    };
+    const force = async () => {
+      $("upd-yes").disabled = true; $("upd-yes").textContent = "Actualizando…";
+      try { const regs = await navigator.serviceWorker.getRegistrations(); await Promise.all(regs.map(g => g.unregister())); } catch (e) {}
+      try { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); } catch (e) {}
+      const u = new URL(location.href); u.searchParams.set("v", (latest && latest.v) || Date.now()); location.replace(u.toString());
+    };
+    $("upd-yes").addEventListener("click", force);
+    $("upd-no").addEventListener("click", () => { card.hidden = true; snoozeUntil = Date.now() + 30 * 60 * 1000; });
+    setTimeout(check, 3000);
+    setInterval(check, 10 * 60 * 1000);
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) check(); });
+    game.bus.on("game:end", () => setTimeout(show, 1500));
+  }
+};
+game.use(UIPlugin).use(DifficultyPlugin).use(TauntPlugin).use(CropsPlugin).use(PupsPlugin).use(TrapsPlugin).use(PowerUpsPlugin).use(WavesPlugin).use(WeatherPlugin).use(ThreeViewPlugin).use(PausePlugin).use(HapticsPlugin).use(TutorialPlugin).use(IntroPlugin).use(CountdownPlugin).use(MusicPlugin).use(GatePlugin).use(LinkPlugin).use(RankingPlugin).use(PwaPlugin).use(UpdatePlugin).use(SettingsPlugin);
 
 /* Ideas para ampliar (ver la guía en la respuesta):
    - Récord de tiempo aguantado con localStorage -> plugin que escuche "game:end" (state.elapsed)
