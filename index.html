@@ -890,7 +890,7 @@ body.vs-split-on #fs-btn{display:none}
 #vs-next .nx{font-size:max(4vmin,18px);line-height:1}
 #vs-en{display:flex;align-items:center;gap:1.2vmin;font-weight:800;font-size:max(2.4vmin,12px);color:var(--text)}
 #vs-en .e-track{position:relative;flex:1;height:max(2.8vmin,15px);border-radius:99px;background:rgba(0,0,0,.28);border:.3vmin solid var(--wood-3);overflow:hidden}
-#vs-en .e-track i{display:block;height:100%;width:50%;background:linear-gradient(#c9a0ff,#7b3fe4);transition:width .12s linear}
+#vs-en .e-track i{display:block;height:100%;width:var(--e,50%);background:linear-gradient(#c9a0ff,#7b3fe4);transition:width .12s linear}
 #vs-en .e-track::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),rgba(0,0,0,.35) calc(10% - 1px) 10%);pointer-events:none}
 #vs-en.x2 .e-track i{background:linear-gradient(#ffe27a,#ff9800)}
 #vs-en b{min-width:2ch;text-align:right;font-variant-numeric:tabular-nums}
@@ -908,6 +908,25 @@ body.vs-split-on #fs-btn{display:none}
 @keyframes vsrain{to{transform:translateY(14%)}}
 #board.vs-storm #vs-storm{display:block;animation:vsflash 3.2s infinite}
 @keyframes vsflash{0%,92%,100%{filter:none}94%{filter:brightness(2.4)}96%{filter:brightness(1.1)}98%{filter:brightness(2)}}
+/* Pantallas apaisadas (tablet, móvil de lado, cada mitad de la pantalla dividida): las cartas van a un lado y el campo queda más cuadrado */
+body.vs #brood{display:none!important}
+body.vs-frame #app{padding:1.2vmin;gap:1vmin}
+@media (min-aspect-ratio:5/4){
+  body.vs #app{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto minmax(0,1fr);grid-template-areas:"hud hud" "rival rival" "stage bar"}
+  body.vs #app:has(#stage[data-side="left"]){grid-template-columns:auto minmax(0,1fr);grid-template-areas:"hud hud" "rival rival" "bar stage"}
+  body.vs #hud{grid-area:hud}
+  body.vs #vs-rival{grid-area:rival}
+  body.vs #stage{grid-area:stage;min-height:0;min-width:0}
+  body.vs #vs-bar{grid-area:bar;flex-direction:row;gap:1vmin;width:max(27vmin,132px);min-height:0}
+  body.vs #vs-cards{flex:1;min-width:0;flex-direction:column;gap:1vmin}
+  body.vs .vs-card{height:auto;flex:1;min-height:0}
+  body.vs #vs-next{width:auto;height:max(6.5vmin,32px);flex:none;flex-direction:row;gap:1vmin}
+  body.vs #vs-en{order:-1;flex-direction:column;width:max(8vmin,42px);flex:none;align-items:center;justify-content:space-between;gap:.8vmin;text-align:center}
+  body.vs #vs-en>span:first-child{order:-2} body.vs #vs-en b{order:-1;min-width:0} body.vs #vs-dead{order:1;font-size:max(1.9vmin,10px)}
+  body.vs #vs-en .e-track{flex:1;width:max(3vmin,16px);height:auto;min-height:0}
+  body.vs #vs-en .e-track i{position:absolute;left:0;right:0;bottom:0;width:auto;height:var(--e,50%);transition:height .12s linear}
+  body.vs #vs-en .e-track::after{background:repeating-linear-gradient(0deg,transparent 0 calc(10% - 1px),rgba(0,0,0,.35) calc(10% - 1px) 10%)}
+}
 #board.v3d .hole.tunnel::after,#board.v3d .hole.crow::after,#board.v3d .hole.giant::after{display:none}
 #board.v3d #vs-storm{display:none!important}
 #vs-3d-row{display:flex;align-items:center;gap:1vmin;font-size:max(2.3vmin,13px);font-weight:700;text-align:left}
@@ -934,12 +953,12 @@ body.vs-split-on #fs-btn{display:none}
 #vs-qr svg{width:min(32vmin,220px);height:auto;background:#fff;padding:1.2vmin;border-radius:1.4vmin}
 #vs-url{word-break:break-all;opacity:.6;font-size:max(1.8vmin,10px)}
 /* pantalla dividida: dos copias del juego, la de arriba girada para jugar frente a frente */
-#vs-split-host{position:fixed;inset:0;z-index:450;background:#0b140b;display:none;flex-direction:column}
+#vs-split-host{position:fixed;inset:0;z-index:450;background:#0b140b;display:none;flex-direction:column;box-sizing:border-box;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) calc(env(safe-area-inset-bottom,0px) * .35) env(safe-area-inset-left,0px)}
 #vs-split-host.on{display:flex}
 #vs-split-host iframe{flex:1;min-height:0;width:100%;border:0;display:block;background:#1a2b1a}
 #vs-split-host iframe.B{transform:rotate(180deg)}
-#vs-mid{flex:none;height:max(6vmin,36px);display:flex;align-items:center;justify-content:center;gap:2vmin;background:linear-gradient(#4a3320,#2b1d0f);color:#fff4d6;font-weight:800;font-size:max(2.4vmin,13px)}
-#vs-mid button{padding:.4vmin 2vmin;font-size:max(2.4vmin,13px);border-radius:99px;box-shadow:none}
+#vs-mid{flex:none;height:max(4.4vmin,28px);display:flex;align-items:center;justify-content:center;gap:2vmin;background:linear-gradient(#4a3320,#2b1d0f);color:#fff4d6;font-weight:800;font-size:max(2.4vmin,13px)}
+#vs-mid button{padding:.2vmin 1.6vmin;font-size:max(2.1vmin,12px);border-radius:99px;box-shadow:none}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1205,7 +1224,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.10.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.10.1", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -4917,7 +4936,7 @@ const VersusPlugin = {
     };
     const renderEnergy = () => {
       const e = $("vs-en");
-      e.querySelector(".e-track i").style.width = (energy / VS.maxEnergy * 100) + "%";
+      e.querySelector(".e-track").style.setProperty("--e", (energy / VS.maxEnergy * 100) + "%");
       e.querySelector("b").textContent = Math.floor(energy); e.classList.toggle("x2", dbl);
       const f = Math.floor(energy); if (f !== lastF) { lastF = f; renderCards(); }
     };
@@ -5304,6 +5323,7 @@ const VersusPlugin = {
     /* ---- Copia dentro de la pantalla dividida ---- */
     if (FRAME) {
       body.classList.add("vs", "vs-frame"); body.classList.remove("intro", "gate");
+      const de = document.documentElement; de.style.padding = "0"; ["--sat", "--sab", "--sal", "--sar"].forEach(v => de.style.setProperty(v, "0px"));   // el margen del iPhone/iPad lo respeta la página madre, no cada mitad
       CONFIG.music = false; CONFIG.view = window.VS_3D ? (CONFIG.view === "voxel" ? "voxel" : "3d") : "2d"; bus.emit("settings:change"); bus.emit("vs:frame");
       S.host = FRAME === "A"; S.myName = FRAME === "A" ? "Jugador 1" : "Jugador 2";
       S.net = { send: d => { try { parent.postMessage({ vsMsg: d }, "*"); } catch (e) {} }, close() {} };
