@@ -903,6 +903,9 @@ body:has(:is(#mode-overlay,#pre-overlay,#link-overlay,#vs-overlay,#settings-over
 body.intro:not(.no-fs) #mus-btn{right:calc(env(safe-area-inset-right,0px) + 6px + max(5.4vmin,38px) + 8px)}
 #mus-btn.off{opacity:.8}
 #mus-btn:active{transform:translateY(.3vmin)}
+.mode-chips{display:flex;gap:1vmin;align-items:center;width:100%}
+.mode-chips .mc-lb{font-weight:800;font-size:max(2.3vmin,13px);flex:none;margin-right:.6vmin}
+#vs-box .mode-chips button,#link-box .mode-chips button{flex:1;width:auto;font-size:max(2.6vmin,14px);padding:1vmin .4vmin}
 #set-tabs{width:min(960px,100%);display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.8vmin;flex:none}
 #set-tabs button{display:flex;flex-direction:column;align-items:center;gap:.2vmin;font-size:max(2vmin,10px);padding:.8vmin .3vmin;border-radius:1.6vmin;white-space:nowrap;min-width:0}
 #set-tabs .ti{font-size:max(3.6vmin,18px);line-height:1}
@@ -1045,6 +1048,7 @@ body.vs-frame #app{padding:1.2vmin;gap:1vmin}
   <div id="vs-box">
     <div id="vs-choose">
       <p><b>Granjero contra granjero.</b> Cada uno defiende su campo y lanza cartas al del rival. Gana quien lo arrase o, a los 3 minutos, quien tenga más puntos.</p>
+      <div class="mode-chips"></div>
       <label for="vs-name">Tu nombre <input id="vs-name" maxlength="12" autocomplete="off" placeholder="Granjero"></label>
       <button id="vs-split">📱 Una tablet, frente a frente<small>Pantalla dividida: cada uno juega en su mitad</small></button>
       <label id="vs-3d-row" for="vs-3d"><input type="checkbox" id="vs-3d"> Gráficos 3D en la pantalla dividida (más pesado)</label>
@@ -1107,6 +1111,7 @@ body.vs-frame #app{padding:1.2vmin;gap:1vmin}
   <div id="link-box">
     <div id="link-choose">
       <p><b>Carrera:</b> cada jugador juega su propio tablero y se compara el progreso en vivo. La TV es opcional: sin ella, quien crea la sala también juega y el puesto se ve en cada móvil. El tipo de conexión se elige en ⚙️ Ajustes.</p>
+      <div class="mode-chips"></div>
       <label id="link-hname-in" for="link-hname">Tu nombre (si juegas tú también) <input id="link-hname" maxlength="12" autocomplete="off" placeholder="Granjero"></label>
       <button id="link-host">📱 Crear carrera (yo también juego)</button>
       <button id="link-tv" class="secondary">📺 Crear carrera con TV: esta pantalla es la TV</button>
@@ -1323,7 +1328,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.15.3", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.16.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -1869,6 +1874,13 @@ const MODES = {
              streakToPower: 7, powerSec: 6 } }
 };
 const byKey = k => SETTINGS_SCHEMA.find(s => s.key === k);
+/* Botones de dificultad reutilizables (al crear una sala de carrera o un duelo): la que elijas la aplican todos los jugadores */
+const renderModeChips = () => document.querySelectorAll(".mode-chips").forEach(box => {
+  const m = byKey("mode"); box.innerHTML = "";
+  const lb = document.createElement("span"); lb.className = "mc-lb"; lb.textContent = "Dificultad"; box.appendChild(lb);
+  m.options.forEach(o => { const b = document.createElement("button"); b.type = "button"; b.className = "secondary" + (m.get() === o.value ? " on" : ""); b.textContent = o.label;
+    b.addEventListener("click", () => { m.set(o.value); if (typeof game !== "undefined" && game.saveSettings) game.saveSettings(); renderModeChips(); }); box.appendChild(b); });
+});
 const applySide = () => {            // coloca el panel de trampas a la izquierda o a la derecha
   const st = document.getElementById("stage");
   if (st) st.dataset.side = CONFIG.trapSide;
@@ -4539,10 +4551,10 @@ const LinkPlugin = {
       if (ch && mode === "tv") { $("tv-screen").hidden = false; return; }
       ov.hidden = false;
       if (ch) { view("link-padview"); return; }      // ya conectado: vuelve a la sala
-      reset(); view("link-choose");
+      reset(); view("link-choose"); renderModeChips();
     };
     const close = () => { ov.hidden = true; if (!ch) reset(); };                      // «Volver» no desconecta
-    const disconnect = () => { reset(); view("link-choose"); ov.hidden = false; };   // al salir de una sala vuelves a elegir en Carrera, no a la portada
+    const disconnect = () => { reset(); view("link-choose"); ov.hidden = false; renderModeChips(); };   // al salir de una sala vuelves a elegir en Carrera, no a la portada
     const errMsg = (e, T) => {
       const t = e && (e.type || e.code), name = T ? T.label : "la conexión";
       if (t === "noroom") return "Las salas de Claude no están disponibles aquí (hay que abrir el juego desde Claude con la sesión iniciada).";
@@ -5472,7 +5484,7 @@ const VersusPlugin = {
     const cancelOnline = () => { if (S.phase === "lobby" || S.phase === "idle") { if (S.net) send({ t: "bye" }); teardown(); } };
     $("m-vs").addEventListener("click", () => { $("mode-overlay").hidden = true; openMenu(); });
     function openMenu() {
-      $("vs-overlay").hidden = false; view("vs-choose");
+      $("vs-overlay").hidden = false; view("vs-choose"); renderModeChips();
       try { $("vs-name").value = localStorage.getItem("topo-nombre") || ""; } catch (e) {}
     }
     $("vs-back").addEventListener("click", () => {
