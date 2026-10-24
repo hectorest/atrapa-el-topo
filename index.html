@@ -1295,7 +1295,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.14.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.14.1", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -4736,7 +4736,11 @@ const LinkPlugin = {
     window.addEventListener("resize", () => { if (mode === "tv" && ch) renderDevs(); });
     const hm = /mando=([A-Z]{5})/i.exec(location.hash || "");
     if (hm) setTimeout(() => { open(); $("link-pad").click(); $("link-input").value = hm[1].toUpperCase(); }, 600);
-    $("link-back").addEventListener("click", close);
+    $("link-back").addEventListener("click", () => {
+      if (!$("link-choose").hidden) { close(); $("mode-overlay").hidden = false; }          // desde la elección de carrera: vuelve a elegir modo de juego
+      else if (ch) close();                                                                   // ya conectado: «Volver» no desconecta
+      else { reset(); view("link-choose"); }                                                  // en pasos intermedios: un paso atrás
+    });
     $("link-disc").addEventListener("click", disconnect);
     try { $("link-name").value = $("link-hname").value = localStorage.getItem("topo-nombre") || ""; } catch (e) {}
     $("link-tv").addEventListener("click", () => startTV(true));
