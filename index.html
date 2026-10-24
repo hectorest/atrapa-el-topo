@@ -908,6 +908,10 @@ body.vs-split-on #fs-btn{display:none}
 @keyframes vsrain{to{transform:translateY(14%)}}
 #board.vs-storm #vs-storm{display:block;animation:vsflash 3.2s infinite}
 @keyframes vsflash{0%,92%,100%{filter:none}94%{filter:brightness(2.4)}96%{filter:brightness(1.1)}98%{filter:brightness(2)}}
+#board.v3d .hole.tunnel::after,#board.v3d .hole.crow::after,#board.v3d .hole.giant::after{display:none}
+#board.v3d #vs-storm{display:none!important}
+#vs-3d-row{display:flex;align-items:center;gap:1vmin;font-size:max(2.3vmin,13px);font-weight:700;text-align:left}
+#vs-3d-row input{width:max(3vmin,18px);height:max(3vmin,18px)}
 /* resultado */
 #vs-end{display:flex;gap:2vmin;flex-wrap:wrap;justify-content:center}
 #vs-end[hidden]{display:none}
@@ -959,6 +963,7 @@ body.vs-split-on #fs-btn{display:none}
       <p><b>Granjero contra granjero.</b> Cada uno defiende su campo y lanza cartas al del rival. Gana quien lo arrase o, a los 3 minutos, quien tenga más puntos.</p>
       <label for="vs-name">Tu nombre <input id="vs-name" maxlength="12" autocomplete="off" placeholder="Granjero"></label>
       <button id="vs-split">📱 Una tablet, frente a frente<small>Pantalla dividida: cada uno juega en su mitad</small></button>
+      <label id="vs-3d-row" for="vs-3d"><input type="checkbox" id="vs-3d"> Gráficos 3D en la pantalla dividida (más pesado)</label>
       <button id="vs-create" class="secondary">🌐 Online: crear un duelo<small>Te da un código para tu rival</small></button>
       <button id="vs-join" class="secondary">🔑 Online: unirme con un código</button>
     </div>
@@ -1200,7 +1205,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.9.1", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.10.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -3295,6 +3300,7 @@ const ThreeViewPlugin = {
         cell.pup = bd.pup(); cell.pup.g.position.x = hp.x; cell.pup.g.position.z = hp.z; cell.g.add(cell.pup.g);
         cell.crop = bd.crop(); cell.crop.g.position.set(cp.x, 0, cp.z); cell.g.add(cell.crop.g);
         cell.trap = bd.trap(); cell.trap.position.set(hp.x, 0, hp.z); cell.g.add(cell.trap);
+        cell.fx = buildVsFx(hp, cp); cell.g.add(cell.fx.g); cell.crown = addCrown(cell.mole.g);
         stage.add(cell.g); cells.push(cell);
       }
       applyVis();
@@ -3597,7 +3603,8 @@ const ThreeViewPlugin = {
       m.g.position.y += bob;
       m.g.rotation.z = taunt ? Math.sin(time * 30) * 0.14 : approach(m.g.rotation.z, 0, Math.min(1, dt * 10));
       const squash = 1 + cell.hit * 0.18;
-      m.g.scale.set(squash, 1 - cell.hit * 0.22, squash);
+      const gs = h.classList.contains("giant") ? 1.5 : 1;                     // el topo gigante del versus
+      m.g.scale.set(squash * gs, (1 - cell.hit * 0.22) * gs, squash * gs);
       // Cara
       const key = taunt ? "laugh" : ["smile", "small", "flat", "frown", "angry"][clamp(mood, 0, 4)];
       if (key !== cell.mouth) {
@@ -3671,6 +3678,44 @@ const ThreeViewPlugin = {
       }
     };
 
+    /* Efectos del versus: se dibujan según las clases del hueco (tunnel · crow · giant) y del tablero (vs-storm) */
+    const buildVsFx = (hp, cp) => {
+      const g = new THREE.Group(), dirt = mat(0x7a4f2c), dark = mat(0x5a3a1e);
+      const mound = new THREE.Group();
+      mound.add(mesh(G.sphere, dirt, 0, 0.05, 0, 0.55, 0.3, 0.45), mesh(G.sphere, dark, 0.35, 0.03, 0.1, 0.18, 0.1, 0.16), mesh(G.sphere, dark, -0.3, 0.03, -0.12, 0.15, 0.09, 0.14));
+      mound.position.set(hp.x, 0, hp.z); mound.visible = false; g.add(mound);
+      const blk = mat(0x1b1b24), beak = mat(0xffa726), bird = new THREE.Group();
+      const wingL = mesh(G.box, blk, -0.34, 0.05, 0, 0.4, 0.05, 0.3), wingR = mesh(G.box, blk, 0.34, 0.05, 0, 0.4, 0.05, 0.3);
+      bird.add(mesh(G.sphere, blk, 0, 0, 0, 0.3, 0.24, 0.4), mesh(G.sphere, blk, 0, 0.18, 0.28, 0.17, 0.17, 0.17), mesh(G.box, beak, 0, 0.16, 0.5, 0.07, 0.06, 0.2), wingL, wingR);
+      bird.position.set(cp.x, 1.3, cp.z); bird.visible = false; g.add(bird);
+      return { g, mound, bird, wingL, wingR };
+    };
+    const addCrown = moleG => {
+      const gold = mat(0xffd54a, { emissive: 0x553300 }), crown = new THREE.Group();
+      crown.add(mesh(G.box, gold, 0, 1.12, 0, 0.55, 0.1, 0.42));
+      [-0.2, 0, 0.2].forEach(x => crown.add(mesh(G.box, gold, x, 1.27, 0, 0.1, 0.2, 0.1)));
+      crown.visible = false; moleG.add(crown); return crown;
+    };
+    const updateVsFx = (cell, h, dt) => {
+      const fx = cell.fx; if (!fx) return;
+      const tun = h.classList.contains("tunnel"); fx.mound.visible = tun;
+      if (tun) { fx.mound.position.x = cell.holePos.x + Math.sin(time * 60) * 0.03; fx.mound.position.z = cell.holePos.z + Math.cos(time * 55) * 0.03; fx.mound.scale.y = 1 + Math.sin(time * 20) * 0.15; }
+      const cr = h.classList.contains("crow"); fx.bird.visible = cr;
+      if (cr) { fx.bird.position.y = 1.25 + Math.sin(time * 8) * 0.12; fx.wingL.rotation.z = Math.sin(time * 25) * 0.6; fx.wingR.rotation.z = -Math.sin(time * 25) * 0.6; }
+      if (cell.crown) cell.crown.visible = h.classList.contains("giant");
+    };
+    const rain = new THREE.Group(), rainDrops = [], rainM = mat(0x9fc4ff, { transparent: true, opacity: 0.7 });
+    for (let k = 0; k < 80; k++) { const d = mesh(G.box, rainM, 0, -1, 0, 0.025, 0.4, 0.025); d.userData.v = 9 + Math.random() * 5; rain.add(d); rainDrops.push(d); }
+    rain.visible = false; scene.add(rain);
+    const stepRain = (on, dt) => {
+      rain.visible = on;
+      if (!on) return;
+      rainDrops.forEach(d => {
+        if (d.position.y <= 0) d.position.set((Math.random() - 0.5) * (cols * S + 2), 3.5 + Math.random() * 2.5, (Math.random() - 0.5) * (rows * S + 2));
+        d.position.y -= d.userData.v * dt;
+      });
+    };
+
     let raf = 0;
     /* Jefe: un topo gigante con corona, colocado en el centro de los huecos que ocupa */
     let bossRig = null;
@@ -3719,6 +3764,7 @@ const ThreeViewPlugin = {
         updatePup(cells[i], h, dt);
         updateCrop(cells[i], h, dt);
         updateTrap(cells[i], h, dt);
+        updateVsFx(cells[i], h, dt);
       }
       updateBoss(dt);
       if (AR.on) stepAR(dt);
@@ -3728,7 +3774,10 @@ const ThreeViewPlugin = {
       if (st.frost) tint.want.lerp(new THREE.Color(0x7fc8ff), 0.55);
       if (st.slow > 1) tint.want.lerp(new THREE.Color(0xc9a6ff), 0.45);
       if (st.fert > 1) tint.want.lerp(new THREE.Color(0xb6ff9e), 0.4);
-      const wk = st.weather === "night" ? 0.4 : st.weather === "rain" ? 0.8 : st.weather === "drought" ? 1.1 : 1;
+      const stormy = board.el.classList.contains("vs-storm");
+      if (stormy) tint.want.lerp(new THREE.Color(0x5a6a8a), 0.55);
+      stepRain(stormy, dt);
+      const wk = stormy ? 0.6 : st.weather === "night" ? 0.4 : st.weather === "rain" ? 0.8 : st.weather === "drought" ? 1.1 : 1;
       if (st.weather === "rain") tint.want.lerp(new THREE.Color(0x9fb4c8), 0.45);
       if (st.weather === "drought") tint.want.lerp(new THREE.Color(0xffd28a), 0.4);
       lightK += (wk - lightK) * Math.min(1, dt * 2);
@@ -5140,7 +5189,7 @@ const VersusPlugin = {
       const host = $("vs-split-host"); host.querySelectorAll("iframe").forEach(f => f.remove());
       const mk = side => {
         const f = document.createElement("iframe"); f.className = side; f.title = "Jugador " + (side === "A" ? 1 : 2); f.setAttribute("allow", "autoplay; fullscreen");
-        f.srcdoc = SELF_HTML.replace("<head>", '<head><script>window.VS_SIDE="' + side + '";<\/script>'); return f;
+        f.srcdoc = SELF_HTML.replace("<head>", '<head><script>window.VS_SIDE="' + side + '";window.VS_3D=' + ($("vs-3d").checked ? "true" : "false") + ';<\/script>'); return f;
       };
       const fb = mk("B"), fa = mk("A");
       host.insertBefore(fb, $("vs-mid")); host.appendChild(fa); frames = { A: fa, B: fb };
@@ -5154,6 +5203,8 @@ const VersusPlugin = {
         if (d.vsExit) return closeSplit();
         if (d.vsMsg) { const o = frames[src === "A" ? "B" : "A"]; if (o && o.contentWindow) o.contentWindow.postMessage({ vsMsg: d.vsMsg }, "*"); }
       });
+      try { $("vs-3d").checked = localStorage.getItem("topo-vs3d") === "1"; } catch (e) {}
+      $("vs-3d").addEventListener("change", () => { try { localStorage.setItem("topo-vs3d", $("vs-3d").checked ? "1" : "0"); } catch (e) {} });
       $("vs-split").addEventListener("click", openSplit);
       $("vs-split-exit").addEventListener("click", closeSplit);
       $("vs-split-fs").addEventListener("click", () => $("fs-btn").click());
@@ -5253,7 +5304,7 @@ const VersusPlugin = {
     /* ---- Copia dentro de la pantalla dividida ---- */
     if (FRAME) {
       body.classList.add("vs", "vs-frame"); body.classList.remove("intro", "gate");
-      CONFIG.music = false; CONFIG.view = "2d"; bus.emit("settings:change"); bus.emit("vs:frame");
+      CONFIG.music = false; CONFIG.view = window.VS_3D ? (CONFIG.view === "voxel" ? "voxel" : "3d") : "2d"; bus.emit("settings:change"); bus.emit("vs:frame");
       S.host = FRAME === "A"; S.myName = FRAME === "A" ? "Jugador 1" : "Jugador 2";
       S.net = { send: d => { try { parent.postMessage({ vsMsg: d }, "*"); } catch (e) {} }, close() {} };
       S.snap = snapshot(); S.phase = "lobby"; S.readyMe = true;

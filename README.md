@@ -16,3 +16,5 @@ Granjero contra granjero, con las reglas de siempre: cada jugador defiende su ca
 - Gana quien **arrase el campo del rival** (60 % de cultivos muertos) o, a los 3 minutos, quien tenga más puntos. El último minuto da energía doble.
 - **Pantalla dividida** (una tablet, frente a frente): dos copias del juego en iframes, la de arriba girada 180°, que hablan por `postMessage`.
 - **Online:** crea un duelo y comparte el código (o el QR); usa WebRTC, MQTT o la sala de Claude como el resto de modos de conexión.
+
+- **3D:** los efectos del versus (túnel que tiembla, topo gigante con corona, cuervo, lluvia de la tormenta) se dibujan también en la vista 3D. En la pantalla dividida el 3D es opcional (casilla en el menú del Versus, desactivada por defecto porque son dos escenas a la vez).
