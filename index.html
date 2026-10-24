@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Atrapa el topo</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#3f8a35">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Atrapa el topo">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <style>
 :root{
   --bg:#d9f0c8; --panel:#ffffff; --text:#233; --accent:#3f8f3f;
@@ -790,6 +798,17 @@ body.gate #gate{display:flex;animation:gatein .5s ease-out}
 #rk-name{font-size:max(3vmin,16px);width:8em;text-align:center;border-radius:1.4vmin;border:.4vmin solid var(--wood-2);padding:.7vmin}
 #rk-send{font-size:max(2.8vmin,15px)!important;padding:1vmin 2.4vmin!important}
 #rk-msg{flex-basis:100%;text-align:center;font-weight:700;font-size:max(2.3vmin,13px)}
+/* Sugerir instalar como app (PWA) */
+#pwa-card{position:fixed;z-index:600;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);transform:translateX(-50%);width:min(560px,94vw);box-sizing:border-box;display:flex;align-items:center;gap:1.6vmin;padding:1.6vmin 2vmin;border-radius:2.6vmin;
+  background:linear-gradient(var(--cream),var(--cream-2));color:var(--ink);border:.45vmin solid var(--wood-2);box-shadow:0 1vmin 0 rgba(0,0,0,.3),0 2vmin 5vmin rgba(0,0,0,.45);animation:pwaup .5s cubic-bezier(.3,1.4,.5,1)}
+#pwa-card[hidden]{display:none}
+@keyframes pwaup{from{transform:translate(-50%,140%)}}
+.pwa-ico{font-size:max(7vmin,34px);line-height:1;flex:none}
+.pwa-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:.4vmin;font-size:max(2.4vmin,13px);line-height:1.3}
+.pwa-txt b{font-size:max(2.9vmin,15px)}.pwa-txt span{font-weight:600;opacity:.85}
+.pwa-btns{display:flex;flex-direction:column;gap:.8vmin;flex:none}
+.pwa-btns button{font-size:max(2.4vmin,13px);padding:1vmin 2vmin;border-radius:1.6vmin;white-space:nowrap}
+@media (max-width:430px){#pwa-card{flex-wrap:wrap}.pwa-btns{flex-direction:row;width:100%}.pwa-btns button{flex:1}}
 /* Ajustes por pestañas */
 #set-tabs{width:min(960px,100%);display:flex;flex-wrap:wrap;gap:.8vmin;justify-content:center;align-items:center;flex:none}
 #set-tabs button{font-size:max(2.3vmin,12px);padding:.9vmin 1.6vmin;border-radius:1.6vmin;white-space:nowrap}
@@ -871,6 +890,11 @@ body.gate #gate{display:flex;animation:gatein .5s ease-out}
 <div id="link-rank" hidden></div>
 <button id="fs-btn" type="button" aria-label="Pantalla completa" title="Pantalla completa">⛶</button>
 <div id="fs-hint" hidden></div>
+<div id="pwa-card" hidden role="dialog" aria-label="Instalar el juego">
+  <div class="pwa-ico">🐭</div>
+  <div class="pwa-txt"><b>Instala el juego</b><span id="pwa-sub">Ábrelo como una app, a pantalla completa y sin conexión.</span></div>
+  <div class="pwa-btns"><button id="pwa-yes">📲 Instalar</button><button id="pwa-no" class="secondary">Ahora no</button></div>
+</div>
 <div class="overlay" id="rk-overlay" hidden>
   <h1>🏆 Ranking</h1>
   <div id="rk-box">
@@ -4439,7 +4463,42 @@ const RankingPlugin = {
     });
   }
 };
-game.use(UIPlugin).use(DifficultyPlugin).use(TauntPlugin).use(CropsPlugin).use(PupsPlugin).use(TrapsPlugin).use(PowerUpsPlugin).use(WavesPlugin).use(WeatherPlugin).use(ThreeViewPlugin).use(PausePlugin).use(HapticsPlugin).use(TutorialPlugin).use(IntroPlugin).use(CountdownPlugin).use(MusicPlugin).use(GatePlugin).use(LinkPlugin).use(RankingPlugin).use(SettingsPlugin);
+/* PWA: registra el service worker y, al entrar, sugiere instalar el juego como app. */
+const PwaPlugin = {
+  init(game) {
+    const $ = id => document.getElementById(id), card = $("pwa-card"), KEY = "topo-pwa";
+    const web = /^https?:$/.test(location.protocol) && window.top === window && !/claude\.(ai|com)|claudeusercontent/.test(location.host);
+    if (!web) return;                                                   // dentro de Claude, en un iframe o abierto como archivo: no aplica
+    if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+    const standalone = () => matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches || navigator.standalone === true;
+    const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    const read = () => { try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } };
+    const write = o => { try { localStorage.setItem(KEY, JSON.stringify({ ...read(), ...o })); } catch (e) {} };
+    let dp = null, shown = false;
+    window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); dp = e; maybe(); });
+    window.addEventListener("appinstalled", () => { write({ installed: true }); card.hidden = true; });
+    const eligible = () => { const r = read(); return !standalone() && !r.installed && !(r.dismissed && Date.now() - r.dismissed < 14 * 864e5); };
+    const waitGate = () => document.body.classList.contains("gate") || document.body.classList.contains("tuto-on");
+    function maybe() {
+      if (shown || !eligible() || !(dp || ios)) return;
+      if (waitGate()) { setTimeout(maybe, 800); return; }                // espera a que el jugador haya entrado al juego
+      shown = true;
+      setTimeout(() => {
+        if (!eligible() || waitGate()) { shown = false; return; }
+        if (!dp && ios) { $("pwa-sub").textContent = "En el iPhone/iPad: pulsa Compartir ⬆️ y luego «Añadir a pantalla de inicio»."; $("pwa-yes").textContent = "Entendido"; }
+        card.hidden = false;
+      }, 2500);
+    }
+    $("pwa-yes").addEventListener("click", async () => {
+      card.hidden = true;
+      if (dp) { try { dp.prompt(); const c = await dp.userChoice; if (c.outcome !== "accepted") write({ dismissed: Date.now() }); } catch (e) {} dp = null; }
+      else write({ dismissed: Date.now() });
+    });
+    $("pwa-no").addEventListener("click", () => { card.hidden = true; write({ dismissed: Date.now() }); });
+    setTimeout(maybe, 1500);
+  }
+};
+game.use(UIPlugin).use(DifficultyPlugin).use(TauntPlugin).use(CropsPlugin).use(PupsPlugin).use(TrapsPlugin).use(PowerUpsPlugin).use(WavesPlugin).use(WeatherPlugin).use(ThreeViewPlugin).use(PausePlugin).use(HapticsPlugin).use(TutorialPlugin).use(IntroPlugin).use(CountdownPlugin).use(MusicPlugin).use(GatePlugin).use(LinkPlugin).use(RankingPlugin).use(PwaPlugin).use(SettingsPlugin);
 
 /* Ideas para ampliar (ver la guía en la respuesta):
    - Récord de tiempo aguantado con localStorage -> plugin que escuche "game:end" (state.elapsed)
