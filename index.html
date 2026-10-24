@@ -857,6 +857,19 @@ body.intro #ver{display:block}
 /* Ajustes por pestañas */
 #btn-upd{flex:none;font-size:max(2.3vmin,12px);padding:.9vmin 2.4vmin;border-radius:1.6vmin}
 #btn-upd[hidden]{display:none}
+/* ===== Marcador compacto: una sola píldora con icono + valor, y la pausa como botón redondo al final ===== */
+#hud{display:flex!important;align-items:center;justify-content:space-between;gap:1vmin;padding:.6vmin 1.8vmin .6vmin 1.4vmin;border-radius:99px;box-sizing:border-box;background:linear-gradient(var(--cream),var(--cream-2));color:var(--ink);border:.45vmin solid var(--wood-2);box-shadow:var(--lift)}
+#hud .stat{flex:0 1 auto;min-width:0;display:flex;align-items:center;justify-content:center;gap:.7vmin;padding:0;border:0;border-radius:0;background:none;box-shadow:none}
+#hud .stat small{display:block;margin:0;opacity:1;font-size:max(3.3vmin,15px);line-height:1;white-space:nowrap;overflow:visible}
+#hud .stat small .lb{display:none}
+#hud .stat b{font-size:max(4.2vmin,18px);line-height:1.1;font-variant-numeric:tabular-nums;white-space:nowrap}
+body.vox #hud .stat b{font-size:max(2.8vmin,12px)}
+@media (max-width:700px){#hud{padding:.5vmin 1.6vmin .5vmin 1.6vmin;gap:.6vmin}#hud .stat{gap:.3vmin}#hud .stat small{font-size:13px}#hud .stat b{font-size:15px}#hud #btn-pause{width:32px;height:32px;font-size:14px}body:not(.no-fs):not(.intro):not(.vs-frame) #hud{margin-right:calc(38px + 8px)}}
+#hud #btn-pause{flex:none;align-self:center;width:max(6vmin,34px);height:max(6vmin,34px);min-height:0;aspect-ratio:1;border-radius:50%;font-size:max(3vmin,16px);margin-left:.4vmin}
+body:not(.no-fs):not(.intro):not(.vs-frame) #hud{margin-right:calc(max(5.4vmin,38px) + 10px)}
+body:not(.intro) #fs-btn{top:calc(env(safe-area-inset-top,0px) + 8px)}
+body.no-fs #fs-btn,body.no-fs #vs-split-fs{display:none!important}
+@media (max-width:700px){body:not(.intro) #fs-btn{top:calc(env(safe-area-inset-top,0px) + 8px);width:38px;height:38px;right:calc(env(safe-area-inset-right,0px) + 14px)}}
 #set-tabs{width:min(960px,100%);display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.8vmin;flex:none}
 #set-tabs button{display:flex;flex-direction:column;align-items:center;gap:.2vmin;font-size:max(2vmin,10px);padding:.8vmin .3vmin;border-radius:1.6vmin;white-space:nowrap;min-width:0}
 #set-tabs .ti{font-size:max(3.6vmin,18px);line-height:1}
@@ -1126,14 +1139,14 @@ body.vs-frame #app{padding:1.2vmin;gap:1vmin}
 </div>
 <div id="app">
   <div id="hud">
-    <div class="stat" id="score"><small>⭐ Puntos</small><b>0</b></div>
-    <div class="stat" id="harvest"><small>🥕 Cosecha</small><b>0</b></div>
-    <div class="stat" id="seeds"><small>🌰 Semillas</small><b>0</b></div>
-    <div class="stat" id="goal"><small>🏆 Meta</small><b>0</b></div>
-    <div class="stat" id="errors"><small>💥 Errores</small><b>0</b></div>
-    <div class="stat" id="time"><small>⏱️ Tiempo</small><b>0</b></div>
-    <div class="stat" id="wave"><small>🌊 Oleada</small><b>1</b></div>
-    <div class="stat" id="pups"><small>🐭 Crías</small><b>0</b></div>
+    <div class="stat" id="score"><small title="Puntos"><span class="ic">⭐</span><span class="lb"> Puntos</span></small><b>0</b></div>
+    <div class="stat" id="harvest"><small title="Cosecha"><span class="ic">🥕</span><span class="lb"> Cosecha</span></small><b>0</b></div>
+    <div class="stat" id="seeds"><small title="Semillas"><span class="ic">🌰</span><span class="lb"> Semillas</span></small><b>0</b></div>
+    <div class="stat" id="goal"><small title="Meta"><span class="ic">🏆</span><span class="lb"> Meta</span></small><b>0</b></div>
+    <div class="stat" id="errors"><small title="Errores"><span class="ic">💥</span><span class="lb"> Errores</span></small><b>0</b></div>
+    <div class="stat" id="time"><small title="Tiempo"><span class="ic">⏱️</span><span class="lb"> Tiempo</span></small><b>0</b></div>
+    <div class="stat" id="wave"><small title="Oleada"><span class="ic">🌊</span><span class="lb"> Oleada</span></small><b>1</b></div>
+    <div class="stat" id="pups"><small title="Crías"><span class="ic">🐭</span><span class="lb"> Crías</span></small><b>0</b></div>
     <button id="btn-pause" aria-label="Pausa" hidden>⏸</button>
   </div>
   <div id="vs-rival"><span class="vr-name">⚔️ Rival</span><span class="vr-cells"></span><span class="vr-sc">⭐ 0</span><span class="vr-en">⚡ 0</span><button id="vs-quit" class="secondary" type="button" title="Rendirse">🏳️</button></div>
@@ -1229,7 +1242,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.10.5", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.11.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -4703,6 +4716,9 @@ const game = new Game({ boardEl: document.getElementById("board") });
 (() => {   /* pantalla completa: API estándar o webkit; si el navegador no la permite, avisa cómo hacerlo */
   const btn = document.getElementById("fs-btn"), hint = document.getElementById("fs-hint"), de = document.documentElement;
   const cur = () => document.fullscreenElement || document.webkitFullscreenElement;
+  const standalone = (window.matchMedia && matchMedia("(display-mode: standalone), (display-mode: fullscreen)").matches) || navigator.standalone === true;
+  const canFs = !!(de.requestFullscreen || de.webkitRequestFullscreen) && (document.fullscreenEnabled !== false) && (document.webkitFullscreenEnabled !== false);
+  document.body.classList.toggle("no-fs", standalone || !canFs);   // instalada (PWA) o sin API (iPhone): el botón sobra
   const say = t => { hint.textContent = t; hint.hidden = false; clearTimeout(say.t); say.t = setTimeout(() => hint.hidden = true, 5000); };
   const sync = () => { btn.textContent = cur() ? "✕" : "⛶"; btn.title = btn.ariaLabel = cur() ? "Salir de pantalla completa" : "Pantalla completa"; };
   btn.addEventListener("click", async () => {
