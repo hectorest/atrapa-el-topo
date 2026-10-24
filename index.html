@@ -1323,7 +1323,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.15.1", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.15.2", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -4542,7 +4542,7 @@ const LinkPlugin = {
       reset(); view("link-choose");
     };
     const close = () => { ov.hidden = true; if (!ch) reset(); };                      // «Volver» no desconecta
-    const disconnect = () => { reset(); view("link-choose"); ov.hidden = true; };
+    const disconnect = () => { reset(); view("link-choose"); ov.hidden = false; };   // al salir de una sala vuelves a elegir en Carrera, no a la portada
     const errMsg = (e, T) => {
       const t = e && (e.type || e.code), name = T ? T.label : "la conexión";
       if (t === "noroom") return "Las salas de Claude no están disponibles aquí (hay que abrir el juego desde Claude con la sesión iniciada).";
@@ -5376,7 +5376,7 @@ const VersusPlugin = {
       if (wasRunning) game.end("quit");
       teardown();
       $("overlay").hidden = true; $("vs-end").hidden = true;
-      $("btn-menu").click();
+      $("btn-menu").click(); openMenu();                                  // y se queda en el menú del Versus
     }
     bus.on("vs:off", () => { if (S.phase !== "idle" || S.snap) teardown(); });
 
