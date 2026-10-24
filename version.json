@@ -1,1 +1,1 @@
-{ "v": "1.12.3", "date": "24 oct 2026", "notes": "Corrige la franja vacía inferior en la PWA de iPhone/iPad (la ventana medía menos que la pantalla)." }
+{ "v": "1.12.4", "date": "24 oct 2026", "notes": "Sin zoom por doble toque ni pellizco durante la partida." }
