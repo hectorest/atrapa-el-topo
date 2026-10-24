@@ -840,7 +840,7 @@ body.gate #gate{display:flex;animation:gatein .5s ease-out}
   padding-left:calc(2.5vmin + var(--sal))!important;padding-right:calc(2.5vmin + var(--sar))!important}
 #countdown{padding:var(--sat) var(--sar) var(--sab) var(--sal)}
 /* Versión */
-#ver{position:fixed;z-index:55;left:calc(env(safe-area-inset-left,0px) + 10px);top:calc(env(safe-area-inset-top,0px) + 8px);font-size:max(1.8vmin,10px);font-weight:700;color:rgba(30,30,30,.6);text-shadow:0 1px 0 rgba(255,255,255,.5);pointer-events:none;display:none}
+#ver{position:fixed;z-index:55;right:calc(env(safe-area-inset-right,0px) + 10px);bottom:calc(env(safe-area-inset-bottom,0px) + 6px);font-size:max(1.8vmin,10px);font-weight:700;color:rgba(255,255,255,.92);text-shadow:0 1px 3px rgba(0,0,0,.7);pointer-events:none;display:none}
 body.intro #ver{display:block}
 #set-ver,#tv-ver{opacity:.65;font-size:max(1.9vmin,11px);font-weight:600;flex:none}
 /* Aviso de nueva versión */
@@ -1229,7 +1229,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.10.4", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.10.5", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
