@@ -855,6 +855,8 @@ body.intro #ver{display:block}
 .upd-btns button{font-size:max(2.5vmin,13px);padding:1.1vmin 2vmin;border-radius:1.8vmin;white-space:nowrap}
 @media (max-width:480px){#upd-card{flex-wrap:wrap}.upd-txt{flex-basis:calc(100% - 12vmin)}.upd-btns{flex-direction:row;width:100%}.upd-btns button{flex:1}}
 /* Ajustes por pestañas */
+#btn-upd{flex:none;font-size:max(2.3vmin,12px);padding:.9vmin 2.4vmin;border-radius:1.6vmin}
+#btn-upd[hidden]{display:none}
 #set-tabs{width:min(960px,100%);display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.8vmin;flex:none}
 #set-tabs button{display:flex;flex-direction:column;align-items:center;gap:.2vmin;font-size:max(2vmin,10px);padding:.8vmin .3vmin;border-radius:1.6vmin;white-space:nowrap;min-width:0}
 #set-tabs .ti{font-size:max(3.6vmin,18px);line-height:1}
@@ -1180,6 +1182,7 @@ body.vs-frame #app{padding:1.2vmin;gap:1vmin}
       <div id="set-tabs"></div>
       <div id="settings"></div>
       <small id="set-ver"></small>
+      <button id="btn-upd" class="secondary" type="button" hidden>🔄 Buscar actualización</button>
       <button id="btn-settings-back">← Volver</button>
     </div>
     <div id="tuto" hidden data-pos="top">
@@ -1226,7 +1229,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.10.3", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.10.4", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -4837,6 +4840,7 @@ const UpdatePlugin = {
     const $ = id => document.getElementById(id), card = $("upd-card");
     const web = /^https?:$/.test(location.protocol) && window.top === window && !/claude\.(ai|com)|claudeusercontent/.test(location.host);
     if (!web) return;
+    $("btn-upd").hidden = false;
     try { const u = new URL(location.href); if (u.searchParams.has("v")) { u.searchParams.delete("v"); history.replaceState(null, "", u.toString()); } } catch (e) {}
     const num = v => String(v || "0").split(".").map(n => parseInt(n, 10) || 0);
     const newer = (a, b) => { const x = num(a), y = num(b); for (let i = 0; i < 3; i++) { if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); } return false; };
@@ -4864,6 +4868,16 @@ const UpdatePlugin = {
       const u = new URL(location.href); u.searchParams.set("v", (latest && latest.v) || Date.now()); location.replace(u.toString());
     };
     $("upd-yes").addEventListener("click", force);
+    $("btn-upd").addEventListener("click", async () => {      // botón de Ajustes: busca y, si hay versión nueva, actualiza
+      const b = $("btn-upd"), txt = "🔄 Buscar actualización"; b.disabled = true; b.textContent = "Buscando…";
+      try {
+        const r = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
+        const j = r.ok ? await r.json() : null;
+        if (j && newer(j.v, GAME_VERSION.v)) { latest = j; b.textContent = "Actualizando a " + j.v + "…"; force(); return; }
+        b.textContent = j ? "✔ Ya tienes la última versión (" + GAME_VERSION.v + ")" : "No se pudo comprobar";
+      } catch (e) { b.textContent = "Sin conexión: no se pudo comprobar"; }
+      setTimeout(() => { b.disabled = false; b.textContent = txt; }, 2500);
+    });
     $("upd-no").addEventListener("click", () => { card.hidden = true; snoozeUntil = Date.now() + 30 * 60 * 1000; });
     setTimeout(check, 3000);
     setInterval(check, 10 * 60 * 1000);
