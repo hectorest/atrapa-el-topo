@@ -1354,7 +1354,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.19.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.19.1", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -4891,7 +4891,9 @@ const LinkPlugin = {
     $("tv-exit").addEventListener("click", () => { disconnect(); });
     window.addEventListener("resize", () => { if (mode === "tv" && ch) renderDevs(); });
     const hm = /mando=([A-Z]{5})/i.exec(location.hash || "");
-    if (hm) setTimeout(() => { open(); $("link-pad").click(); $("link-input").value = hm[1].toUpperCase(); }, 600);
+    const hashJoin = () => { const m = /mando=([A-Z]{5})/i.exec(location.hash || ""); if (!m) return; const c = m[1].toUpperCase(); history.replaceState(null, "", location.pathname + location.search); document.body.classList.remove("gate"); open(); $("link-pad").click(); $("link-input").value = c; startPad(c); };
+    if (hm) setTimeout(hashJoin, 600);
+    window.addEventListener("hashchange", hashJoin);
     $("link-back").addEventListener("click", () => {
       if (!$("link-choose").hidden) { close(); $("mode-overlay").hidden = false; }          // desde la elección de carrera: vuelve a elegir modo de juego
       else if (ch) close();                                                                   // ya conectado: «Volver» no desconecta
@@ -5631,7 +5633,9 @@ const VersusPlugin = {
     $("vs-input").addEventListener("keydown", e => { if (e.key === "Enter") joinCode(e.target.value); });
     if (!FRAME) {
       const hm = /duelo=([A-Z]{5})/i.exec(location.hash || "");
-      if (hm) setTimeout(() => { openMenu(); $("vs-join").click(); $("vs-input").value = hm[1].toUpperCase(); }, 800);
+      const hashJoin = () => { const m = /duelo=([A-Z]{5})/i.exec(location.hash || ""); if (!m) return; const c = m[1].toUpperCase(); history.replaceState(null, "", location.pathname + location.search); document.body.classList.remove("gate"); openMenu(); $("vs-join").click(); $("vs-input").value = c; joinCode(c); };
+      if (hm) setTimeout(hashJoin, 800);
+      window.addEventListener("hashchange", hashJoin);
     }
 
     /* ---- Copia dentro de la pantalla dividida ---- */

@@ -1,1 +1,1 @@
-{ "v": "1.19.0", "date": "24 oct 2026", "notes": "Escáner de QR dentro de la app para unirse a una sala de carrera o a un duelo." }
+{ "v": "1.19.1", "date": "24 oct 2026", "notes": "Al abrir un enlace o QR de sala se une solo; el escáner rellena el código y conecta." }
