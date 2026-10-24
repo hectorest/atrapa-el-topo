@@ -1,6 +1,6 @@
 # Atrapa el topo 🐭
 
-Juego de granja (whack-a-mole) en un único `index.html`: individual y multijugador con TV, ranking online (Supabase) y ranking local.
+Juego de granja (whack-a-mole) en un único `index.html`: individual, carrera (con TV opcional) y versus, ranking online (Supabase) y ranking local.
 
 - Web: https://hectorest.github.io/atrapa-el-topo/
 - `supabase.sql`: tabla del ranking (ya aplicada en el proyecto).
