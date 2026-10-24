@@ -275,6 +275,11 @@ button.secondary.on{background:linear-gradient(var(--sun-1),var(--sun-2));border
 #overlay.ended h1{font-size:max(6.5vmin,26px)}
 #overlay.ended #btn-start{font-size:max(3vmin,16px);padding:1.1vmin 4vmin}
 #overlay.ended:not([hidden]){animation:ovfade .6s ease-out}
+#end-banner{position:fixed;inset:0;z-index:95;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4vmin;pointer-events:none;background:rgba(10,20,10,.5);animation:endpop .5s cubic-bezier(.2,1.4,.4,1)}
+#end-banner[hidden]{display:none}
+#end-banner b{font-size:max(15vmin,56px);line-height:1;color:#ffd54a;text-shadow:0 .8vmin 0 #8a5a00,0 1.8vmin 0 rgba(0,0,0,.45);letter-spacing:.04em}
+#end-banner span{font-size:max(4.4vmin,20px);font-weight:800;color:#fff4d6;text-shadow:0 .3vmin 0 rgba(0,0,0,.6)}
+@keyframes endpop{0%{opacity:0;transform:scale(.4)}100%{opacity:1;transform:scale(1)}}
 @keyframes ovfade{from{opacity:0}to{opacity:1}}
 #btn-pause{flex:0 0 auto;align-self:center;width:max(7.5vmin,46px);aspect-ratio:1;padding:0;display:grid;place-items:center;border-radius:50%;
   background:linear-gradient(var(--wood-1),var(--wood-2));border-color:var(--wood-3);
@@ -1328,7 +1333,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.16.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.17.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -1706,17 +1711,18 @@ class Game {
     if (!this.state.running || this.state.paused) return;
     const x = e.clientX, y = e.clientY, M = CONFIG.touchMargin;
     for (const fn of this.tapFirst) if (fn(x, y)) return;
-    // 1) Topo visible: zona de toque ampliada (incluye los huecos entre agujeros)
-    for (const i of this.active.keys()) {
-      if (this.inZone(i, x, y, M)) return this.hit(i);
-    }
-    // 1b) Crías visibles
-    for (const [i, t] of this.targets) {
-      if (this.inZone(i, x, y, M)) return t.hit();
-    }
-    // 2) Topo que acaba de esconderse: tolerancia por retraso del dedo
-    const l = this.lastEscape;
-    if (l && performance.now() - l.time <= CONFIG.graceMs && this.inZone(l.index, x, y, M)) {
+    // 1) Topo / cría visibles dentro del agujero (zona exacta)
+    for (const i of this.active.keys()) if (this.inZone(i, x, y, 0)) return this.hit(i);
+    for (const [i, t] of this.targets) if (this.inZone(i, x, y, 0)) return t.hit();
+    // 2) Cultivo (maduro o muerto): tiene su PROPIA zona, centrada en el cultivo y no en el agujero
+    if (this.cropTap && this.cropTap(x, y)) return;
+    // 3) Topo / cría visibles: margen de tolerancia alrededor del agujero
+    for (const i of this.active.keys()) if (this.inZone(i, x, y, M)) return this.hit(i);
+    for (const [i, t] of this.targets) if (this.inZone(i, x, y, M)) return t.hit();
+    // 4) Topo que acaba de esconderse: solo una tolerancia breve (la mitad) y medida con el instante real del toque,
+    //    para que no se pueda «cazar» a un topo que ya se ve bajando
+    const l = this.lastEscape, tt = e.timeStamp > 0 ? e.timeStamp : performance.now();
+    if (l && tt - l.time >= 0 && tt - l.time <= Math.min(100, CONFIG.graceMs * 0.5) && this.inZone(l.index, x, y, M * 0.5)) {
       this.lastEscape = null;
       return this.hit(l.index);
     }
@@ -1763,7 +1769,9 @@ const UIPlugin = {
     game.bus.on("game:tick", v => set("time", Math.max(v, 0)));
     const startBtn = $("btn-start");
     let guard = null;     // cuenta atrás que impide tocar «Jugar otra vez» sin querer cuando la partida acaba sola
-    game.bus.on("game:start", () => { overlay.hidden = true; clearInterval(guard); startBtn.disabled = false; startBtn.textContent = "Jugar"; });
+    const banner = document.createElement("div"); banner.id = "end-banner"; banner.hidden = true; banner.innerHTML = "<b></b><span></span>"; document.body.appendChild(banner);
+    let endT = 0;
+    game.bus.on("game:start", () => { clearTimeout(endT); banner.hidden = true; overlay.style.pointerEvents = ""; overlay.hidden = true; clearInterval(guard); startBtn.disabled = false; startBtn.textContent = "Jugar"; });
     game.bus.on("miss", () => game.board.shake());
     game.bus.on("game:end", s => {
       $("ov-title").textContent = {
@@ -1772,17 +1780,24 @@ const UIPlugin = {
       }[s.endReason] || "¡Fin de la partida!";
       $("ov-text").textContent = `Puntos: ${s.score} · Errores: ${s.errors}`;
       overlay.classList.add("ended");
-      overlay.hidden = false;
-      clearInterval(guard);
+      clearInterval(guard); clearTimeout(endT);
       startBtn.textContent = "Jugar otra vez";
-      if (s.endReason !== "quit") {                      // fin automático (victoria / campo arrasado): margen de 3 s
-        let left = 3;
+      const auto = s.endReason !== "quit" && s.endReason !== "tutorial" && !game.vs;
+      if (auto) {                                        // primero un cartel de Fin; el menú llega después y sin tocar durante un momento
+        const R = { win: ["🏆 ¡META!", "¡Cosecha lograda!"], razed: ["🔥 ¡FIN!", "Campo arrasado"] }[s.endReason] || ["🏁 ¡FIN!", "Partida terminada"];
+        banner.firstChild.textContent = R[0]; banner.lastChild.textContent = R[1]; banner.hidden = false;
+        banner.style.animation = "none"; void banner.offsetWidth; banner.style.animation = "";
+        overlay.hidden = true;
+        endT = setTimeout(() => { banner.hidden = true; overlay.hidden = false; overlay.style.pointerEvents = "none"; setTimeout(() => { overlay.style.pointerEvents = ""; }, 900); }, 2300);
+      } else overlay.hidden = false;
+      if (auto) {                                        // fin automático (victoria / campo arrasado): margen de 2 s tras aparecer el menú
+        let left = 2;
         startBtn.disabled = true; startBtn.textContent = `Jugar otra vez (${left})`;
-        guard = setInterval(() => {
+        guard = setTimeout(() => { guard = setInterval(() => {
           left--;
           if (left <= 0) { clearInterval(guard); startBtn.disabled = false; startBtn.textContent = "Jugar otra vez"; }
           else startBtn.textContent = `Jugar otra vez (${left})`;
-        }, 1000);
+        }, 1000); }, 2300);
       } else startBtn.disabled = false;
     });
     $("btn-start").addEventListener("click", () => game.start());
@@ -2248,15 +2263,26 @@ const CropsPlugin = {
       popText(board, "🌰 Replantado", i);
     };
 
-    // Tocar un hueco (sin topo ni cría tocados antes): recolecta un cultivo listo o replanta uno muerto
-    game.tapHandlers.push((x, y) => {
+    // Zona de toque del cultivo: círculo centrado en el propio cultivo (la vista 3D la publica en game.cropZone; en 2D se mide el DOM)
+    const cropZone = i => {
+      const z3 = game.cropZone && game.cropZone(i); if (z3) return z3;
+      const h = board.holes[i], em = h && h.querySelector(".crop em"); if (!em) return null;
+      const r = em.getBoundingClientRect(); if (!r.width && !r.height) return null;
+      return { x: r.left + r.width / 2, y: r.top + r.height / 2, r: Math.max(30, Math.max(r.width, r.height) * 0.75) };
+    };
+    // Tocar un cultivo listo lo cosecha; uno muerto se replanta
+    game.cropTap = (x, y) => {
+      let best = -1, bd = 1e9;
       for (let i = 0; i < board.size; i++) {
-        if (!game.inZone(i, x, y, 0)) continue;
-        if (ripe(i)) { harvest(i); return true; }
-        if (dead[i]) { replant(i); return true; }
+        if (!(ripe(i) || dead[i])) continue;
+        const z = cropZone(i); if (!z) continue;
+        const d = Math.hypot(x - z.x, y - z.y);
+        if (d <= z.r && d < bd) { bd = d; best = i; }
       }
-      return false;
-    });
+      if (best < 0) return false;
+      if (ripe(best)) harvest(best); else replant(best);
+      return true;
+    };
 
     bus.on("game:start", () => {
       growth = board.holes.map(() => 0);
@@ -3495,9 +3521,16 @@ const ThreeViewPlugin = {
         const w = px * 0.98, top = p.y - 0.7 * up, bottom = p.y + 0.3 * dn;
         h.style.left = (p.x - w / 2) + "px"; h.style.top = top + "px";
         h.style.width = w + "px"; h.style.height = (bottom - top) + "px";
+        const cell = cells[i];
+        if (cell && cell.cropPos) { const q = toPx(new THREE.Vector3(cell.cropPos.x, 0.15, cell.cropPos.z)); cell.cropScr = { x: q.x, y: q.y, r: Math.max(28, 0.34 * Math.min(px, (up + dn) * 0.9)) }; }
       });
     };
-    const clearLayout = () => board.holes.forEach(h => { h.style.left = h.style.top = h.style.width = h.style.height = ""; });
+    const clearLayout = () => { board.holes.forEach(h => { h.style.left = h.style.top = h.style.width = h.style.height = ""; }); cells.forEach(c => { c.cropScr = null; }); };
+    game.cropZone = i => {                                                // en coordenadas de pantalla (clientX/Y)
+      const c = cells[i]; if (!c || !c.cropScr || introMode) return null;
+      const br = board.el.getBoundingClientRect();
+      return { x: br.left + board.el.clientLeft + c.cropScr.x, y: br.top + board.el.clientTop + c.cropScr.y, r: c.cropScr.r };
+    };
     /* ---------- Modo AR: cámara de fondo + el tablero «flota» y se mira desde distintos lados con el giroscopio ----------
        - La cámara trasera se muestra detrás (si el navegador deja abrirla) y el escenario se dibuja encima, sin césped.
        - Girar/inclinar el dispositivo hace orbitar la vista alrededor del tablero (se ve desde otros lados);
@@ -3650,6 +3683,7 @@ const ThreeViewPlugin = {
           l = Math.min(l, p.x); r = Math.max(r, p.x); t = Math.min(t, p.y); b = Math.max(b, p.y);
         }
         h.style.left = l + "px"; h.style.top = t + "px"; h.style.width = (r - l) + "px"; h.style.height = (b - t) + "px";
+        { const q = px(cell.cropPos.x, 0.15, cell.cropPos.z), q2 = px(cell.cropPos.x + 0.45, 0.15, cell.cropPos.z); cell.cropScr = { x: q.x, y: q.y, r: Math.max(26, Math.abs(q2.x - q.x) * 1.1) }; }
         const ce = cell.cropEl;                                           // barra del cultivo bajo el cultivo
         if (ce && ce.isConnected) { const p = px(cell.cropPos.x, 0, cell.cropPos.z); ce.style.left = (p.x - l) + "px"; ce.style.top = (p.y - t + 2) + "px"; }
         const pe = h.querySelector(".pup");                               // barra de la cría sobre su cabeza
