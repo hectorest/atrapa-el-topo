@@ -11515,7 +11515,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.23.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.23.1", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -11605,6 +11605,8 @@ const CONFIG = {
 /* ============================================================
    2. UTILIDADES
    ============================================================ */
+/* El estilo «Criaturas» está terminado pero oculto del selector. Para volver a mostrarlo: SHOW_CREATURES = true */
+const SHOW_CREATURES = false;
 const berry = () => document.body.classList.contains("adv") ? "🫐" : "🥕";   // la «cosecha» en el estilo Criaturas son bayas
 const rand = (min, max) => Math.random() * (max - min) + min;
 const randInt = (min, max) => Math.floor(rand(min, max + 1));
@@ -12193,8 +12195,8 @@ const SETTINGS_SCHEMA = [
   { key: "graceMs", label: "Tolerancia de retraso (ms)", min: 0, max: 400, step: 20,
     get: () => CONFIG.graceMs, set: v => CONFIG.graceMs = v },
   { key: "view", type: "select", label: "Estilo visual", showLabel: true,
-    options: [{ value: "2d", label: "2D" }, { value: "3d", label: "3D" }, { value: "voxel", label: "Bloques" }, { value: "aventura", label: "Criaturas" }, { value: "ar", label: "AR" }],
-    get: () => CONFIG.view, set: v => { if (["2d", "3d", "voxel", "aventura", "ar"].includes(v)) CONFIG.view = v; } },
+    options: [{ value: "2d", label: "2D" }, { value: "3d", label: "3D" }, { value: "voxel", label: "Bloques" }, ...(SHOW_CREATURES ? [{ value: "aventura", label: "Criaturas" }] : []), { value: "ar", label: "AR" }],
+    get: () => CONFIG.view, set: v => { if (["2d", "3d", "voxel", "aventura", "ar"].includes(v)) CONFIG.view = (v === "aventura" && !SHOW_CREATURES) ? "3d" : v; } },
   { key: "countdownSec", label: "Cuenta atrás inicial (s, 0 = sin)", min: 0, max: 10, step: 1,
     get: () => CONFIG.countdownSec, set: v => CONFIG.countdownSec = v },
   { key: "arScale", label: "AR: tamaño del tablero", min: 0.5, max: 1.6, step: 0.1,
