@@ -703,7 +703,7 @@ body.gate #gate{display:flex;animation:gatein .5s ease-out}
 #link-devs li{display:flex;justify-content:space-between;gap:1vmin;padding:1vmin 1.6vmin;border-radius:1.4vmin;background:rgba(138,90,43,.14);font-weight:700;font-size:max(2.6vmin,14px)}
 #link-devs li.pulse{animation:devpulse .4s ease-out}
 @keyframes devpulse{from{background:#ffd54a}}
-#link-input{font-size:max(5vmin,24px);width:4em;text-align:center;text-transform:uppercase;letter-spacing:.2em;margin-left:1vmin;border-radius:1.4vmin;border:.4vmin solid var(--wood-2);padding:.6vmin}
+#link-input{font-size:max(5vmin,24px);width:5.6em;box-sizing:border-box;text-align:center;text-transform:uppercase;letter-spacing:.2em;margin-left:1vmin;border-radius:1.4vmin;border:.4vmin solid var(--wood-2);padding:.6vmin}
 #link-tap{font-size:max(3vmin,16px)!important}
 #link-start{font-size:max(4.4vmin,20px)!important;padding:2.4vmin 2vmin!important}
 #link-mytv{display:flex;flex-direction:column;align-items:center;gap:.3vmin}#link-mytv[hidden]{display:none}#link-mytv small{font-size:max(2vmin,11px);opacity:.85;font-weight:600}
@@ -1354,7 +1354,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.19.1", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.19.2", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -4468,9 +4468,9 @@ const ARTIFACT_URL = ONLINE.publicUrl || "https://claude.ai/artifact/5qvUXbJfr7Z
 const scanQR = () => new Promise(resolve => {
   const ov = document.getElementById("qr-scan"), vid = document.getElementById("qr-video"), msg = document.getElementById("qr-msg"), cancel = document.getElementById("qr-cancel");
   let stream = null, raf = 0, done = false, last = 0;
-  const finish = v => { if (done) return; done = true; cancelAnimationFrame(raf); try { stream && stream.getTracks().forEach(t => t.stop()); } catch (e) {} vid.srcObject = null; ov.hidden = true; cancel.onclick = null; resolve(v); };
+  const finish = v => { if (done) return; done = true; scanQR.last = v; cancelAnimationFrame(raf); try { stream && stream.getTracks().forEach(t => t.stop()); } catch (e) {} vid.srcObject = null; ov.hidden = true; cancel.onclick = null; resolve(v); };
   cancel.onclick = () => finish(null);
-  ov.hidden = false; msg.textContent = "Abriendo la cámara…";
+  scanQR.err = ""; ov.hidden = false; msg.textContent = "Abriendo la cámara…";
   const loadJsQR = () => window.jsQR ? Promise.resolve() : new Promise((ok, no) => { const sc = document.createElement("script"); sc.src = "https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"; sc.onload = ok; sc.onerror = () => no(new Error("jsqr")); document.head.appendChild(sc); });
   (async () => {
     try {
@@ -4493,7 +4493,7 @@ const scanQR = () => new Promise(resolve => {
       raf = requestAnimationFrame(tick);
     } catch (e) {
       msg.textContent = e && e.name === "NotAllowedError" ? "Sin permiso de cámara. Actívalo en los ajustes del navegador o escribe el código." : e && e.message === "jsqr" ? "No se pudo cargar el lector de QR (¿sin conexión?). Escribe el código a mano." : "No se pudo abrir la cámara. Escribe el código a mano.";
-      setTimeout(() => finish(null), 2600);
+      scanQR.err = msg.textContent + (e && e.name ? " (" + e.name + ")" : ""); setTimeout(() => finish(null), 2600);
     }
   })();
 });
@@ -4908,7 +4908,7 @@ const LinkPlugin = {
     const showMyTv = () => { const c = myTv(), b = $("link-mytv"); b.hidden = !c; if (c) b.querySelector("small").textContent = "Sala " + c + " · un toque y entras de jugador"; };
     const scanJoin = async () => {
       const txt = await scanQR(), c = codeFromQR(txt, "mando");
-      if (!c) { if (txt) status($("link-pad-status"), "Ese QR no es de una sala de Atrapa el topo.", "err"); return; }
+      if (!c) { status($("link-pad-status"), txt ? "Ese QR no es de una sala de Atrapa el topo. Leí: " + String(txt).slice(0, 80) : scanQR.err || "Escaneo cancelado. Escribe el código a mano.", "err"); return; }
       mode = "pad"; view("link-padview"); $("link-input").value = c; startPad(c);
     };
     $("link-scan").addEventListener("click", () => { mode = "pad"; view("link-padview"); scanJoin(); });
@@ -5627,7 +5627,7 @@ const VersusPlugin = {
     $("vs-go-join").addEventListener("click", () => joinCode($("vs-input").value));
     $("vs-scan").addEventListener("click", async () => {
       const txt = await scanQR(), c = codeFromQR(txt, "duelo");
-      if (!c) { if (txt) say($("vs-join-status"), "Ese QR no es de un duelo de Atrapa el topo.", "err"); return; }
+      if (!c) { say($("vs-join-status"), txt ? "Ese QR no es de un duelo de Atrapa el topo. Leí: " + String(txt).slice(0, 80) : scanQR.err || "Escaneo cancelado. Escribe el código a mano.", "err"); return; }
       $("vs-input").value = c; joinCode(c);
     });
     $("vs-input").addEventListener("keydown", e => { if (e.key === "Enter") joinCode(e.target.value); });
