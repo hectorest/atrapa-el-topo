@@ -362,6 +362,8 @@ button.secondary.on{background:linear-gradient(var(--sun-1),var(--sun-2));border
 #trap-box,#power-box{gap:1vmin}
 #tools small{font-size:max(1.8vmin,11px)}
 #powers button{padding:1vmin .2vmin;font-size:max(2.8vmin,15px)}
+#powers{grid-template-columns:repeat(3,1fr)!important;gap:.8vmin!important}
+#powers button{font-size:max(2.4vmin,13px)!important;padding:1vmin .1vmin!important;border-radius:1.6vmin!important}
 
 /* Indicador de crías */
 #brood{background:linear-gradient(var(--cream),var(--cream-2));color:var(--ink);border:.45vmin solid var(--wood-2);border-radius:99px;box-shadow:var(--lift);font-weight:600;padding:.8vmin 2.2vmin}
@@ -1357,6 +1359,8 @@ body.vs-frame #app{padding:1.2vmin;gap:1vmin}
         <button data-power="fert" disabled></button>
         <button data-power="scare" disabled></button>
         <button data-power="frost" disabled></button>
+        <button data-power="fungi" disabled></button>
+        <button data-power="combine" disabled></button>
       </div>
     </div>
   </div>
@@ -11503,7 +11507,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.20.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.21.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -11669,7 +11673,7 @@ class GameState {
     this.trapStock = 0;    // trampas compradas y sin colocar
     this.seeds = CONFIG.startSeeds;   // semillas para replantar cultivos muertos
     // Potenciadores (ver PowerUpsPlugin): inventario, racha y efectos activos
-    this.powerStock = { slow: 0, fert: 0, scare: 0, frost: 0 };
+    this.powerStock = { slow: 0, fert: 0, scare: 0, frost: 0, fungi: 0, combine: 0 };
     this.streak = 0;       // aciertos seguidos
     this.slow = 1;         // multiplicador de lentitud del topo y las crías (1 = normal)
     this.fert = 1;         // multiplicador de crecimiento de los cultivos (1 = normal)
@@ -12443,6 +12447,28 @@ const CropsPlugin = {
       popText(board, "🌰 Replantado", i);
     };
 
+    /* Poderes de granja (instantáneos) */
+    game.cropFx = {
+      counts: () => ({ dead: dead.filter(Boolean).length, ripe: board.holes.filter((_, i) => !dead[i] && ripe(i)).length }),
+      /* Honguicida: sana TODOS los cultivos marchitos (gratis, sin gastar semillas) */
+      fungicide: () => {
+        let n = 0;
+        board.holes.forEach((_, i) => { if (!dead[i]) return; dead[i] = false; growth[i] = 30; shield[i] = CONFIG.cropShieldSec; paint(i); bus.emit("crop:replant", { index: i }); n++; });
+        if (n) bus.emit("stock:change", game.state.stock);
+        return n;
+      },
+      /* Cosechadora: recoge TODOS los cultivos maduros y vuelve a plantar los marchitos (con las semillas que haya) */
+      combine: () => {
+        let h = 0, r = 0;
+        for (let i = 0; i < board.size && game.state.running; i++) if (!dead[i] && ripe(i)) { harvest(i); h++; }
+        for (let i = 0; i < board.size && game.state.running; i++) if (dead[i] && game.state.seeds > 0) {
+          game.state.seeds--; dead[i] = false; growth[i] = 0; shield[i] = CONFIG.cropShieldSec; paint(i); bus.emit("crop:replant", { index: i }); r++;
+        }
+        bus.emit("stock:change", game.state.stock);
+        return { h, r };
+      }
+    };
+
     // Zona de toque del cultivo: círculo centrado en el propio cultivo (la vista 3D la publica en game.cropZone; en 2D se mide el DOM)
     const cropZone = i => {
       const z3 = game.cropZone && game.cropZone(i); if (z3) return z3;
@@ -12808,7 +12834,9 @@ const POWERS = {
   slow:  { icon: "⏳", name: "Cámara lenta" },
   fert:  { icon: "🌱", name: "Fertilizante" },
   scare: { icon: "🛡️", name: "Espantapájaros" },
-  frost: { icon: "❄️", name: "Helada" }
+  frost: { icon: "❄️", name: "Helada" },
+  fungi: { icon: "🧪", name: "Honguicida", instant: true },
+  combine: { icon: "🚜", name: "Cosechadora", instant: true }
 };
 const PowerUpsPlugin = {
   init(game) {
@@ -12859,6 +12887,17 @@ const PowerUpsPlugin = {
     const activate = t => {
       const s = game.state;
       if (!s.running || s.paused || !(s.powerStock[t] > 0)) return;
+      if (POWERS[t].instant) {                                      // honguicida / cosechadora: efecto inmediato
+        const fx = game.cropFx; if (!fx) return;
+        const c = fx.counts();
+        if (t === "fungi" && !c.dead) { popText(board, "🧪 No hay cultivos marchitos", null); return; }
+        if (t === "combine" && !c.dead && !c.ripe) { popText(board, "🚜 Nada que plantar ni recoger", null); return; }
+        s.powerStock[t]--;
+        if (t === "fungi") { const n = fx.fungicide(); popText(board, `🧪 ¡${n} cultivo${n === 1 ? "" : "s"} curado${n === 1 ? "" : "s"}!`, null); }
+        else { const r = fx.combine(); popText(board, `🚜 ¡${r.h} cosechado${r.h === 1 ? "" : "s"} y ${r.r} replantado${r.r === 1 ? "" : "s"}!`, null); }
+        render(); bus.emit("power:used", { type: t });
+        return;
+      }
       s.powerStock[t]--;
       remain[t] = total[t] = Math.max(1, CONFIG.powerSec);          // si ya estaba activo, se renueva
       applyEffects(); render();
@@ -12868,7 +12907,10 @@ const PowerUpsPlugin = {
     btns.forEach(b => b.addEventListener("click", () => activate(b.dataset.power)));
 
     const award = () => {
-      const keys = Object.keys(POWERS);
+      let keys = Object.keys(POWERS);
+      const c = game.cropFx ? game.cropFx.counts() : { dead: 0, ripe: 0 };   // los poderes de granja solo caen si sirven
+      const useful = keys.filter(k => k === "fungi" ? c.dead > 0 : k === "combine" ? c.dead + c.ripe > 0 : true);
+      if (useful.length) keys = useful;
       const t = keys[randInt(0, keys.length - 1)];
       game.state.powerStock[t]++;
       popText(board, `⚡ ¡Potenciador! ${POWERS[t].icon}`, null);
