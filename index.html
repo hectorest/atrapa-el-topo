@@ -528,6 +528,13 @@ body.vox .chip{border-radius:0;background:#3b3b3b}
 #board.ar #ar-bar{display:flex}
 #ar-bar button{padding:.8vmin 1.4vmin;font-size:max(3vmin,16px);border-radius:1.6vmin;line-height:1.1;box-shadow:0 .5vmin 0 var(--wood-3),0 .9vmin 1.2vmin rgba(0,0,0,.3)}
 
+#ar-status{position:absolute;top:1.6vmin;left:1.6vmin;z-index:4;padding:.5vmin 1.4vmin;border-radius:3vmin;background:rgba(20,12,4,.72);color:#fff;font-weight:800;font-size:max(2.4vmin,13px);display:none;cursor:pointer;white-space:pre-line;max-width:70%}
+#board.ar #ar-status{display:block}
+#ar-status[hidden]{display:none!important}
+#ar-ask{position:absolute;z-index:6;left:50%;top:50%;transform:translate(-50%,-50%);width:min(420px,88%);box-sizing:border-box;display:flex;flex-direction:column;gap:1.2vmin;align-items:center;text-align:center;padding:2.6vmin;border-radius:3vmin;background:linear-gradient(var(--cream),var(--cream-2));color:var(--ink);border:.5vmin solid var(--wood-2);box-shadow:0 2vmin 5vmin rgba(0,0,0,.5)}
+#ar-ask[hidden]{display:none}
+#ar-ask b{font-size:max(3.2vmin,17px)}#ar-ask small{font-size:max(2.3vmin,13px);font-weight:600;line-height:1.3;opacity:.85}
+#ar-ask button{width:100%;font-size:max(2.9vmin,15px);padding:1.3vmin}
 /* ===== Tutorial interactivo ===== */
 #btn-tutorial.pulse{animation:tutopulse 1.4s ease-in-out infinite}
 @keyframes tutopulse{0%,100%{box-shadow:0 0 0 0 rgba(255,213,74,.7)}50%{box-shadow:0 0 0 1.4vmin rgba(255,213,74,0)}}
@@ -1002,6 +1009,13 @@ body.intro #ver{display:block}
   <div id="stage" data-side="left">
   <div id="board">
     <video id="cam" playsinline muted autoplay></video>
+    <div id="ar-status" hidden></div>
+    <div id="ar-ask" hidden>
+      <b>🧭📷 Activa la realidad aumentada</b>
+      <small id="ar-ask-note"></small>
+      <button id="ar-ask-go">Activar cámara y giroscopio</button>
+      <button id="ar-ask-skip" class="secondary">Seguir sin ello</button>
+    </div>
     <div id="ar-bar"><button class="secondary" data-ar="center" title="Centrar">🎯</button><button class="secondary" data-ar="up" title="Más alto">▲</button><button class="secondary" data-ar="left" title="Girar a la izquierda">◀</button><button class="secondary" data-ar="right" title="Girar a la derecha">▶</button><button class="secondary" data-ar="down" title="Más bajo">▼</button><button class="secondary" data-ar="cam" title="Cámara">📷</button></div>
     <div id="fx"><i class="fx slow"></i><i class="fx fert"></i><i class="fx scare"></i><i class="fx frost"></i></div>
     <div id="active-powers"></div>
@@ -1075,7 +1089,7 @@ body.intro #ver{display:block}
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.7.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.8.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -3226,7 +3240,7 @@ const ThreeViewPlugin = {
 
     const onOrient = e => {
       if (e.alpha == null && e.beta == null && e.webkitCompassHeading == null) return;
-      AR.sensor = true;
+      if (!AR.sensor) { AR.sensor = true; AR.gyro = "ok"; paintAR(); }
       const heading = e.webkitCompassHeading != null ? -e.webkitCompassHeading : (e.alpha || 0);   // iOS entrega brújula (horaria)
       if (AR.alpha0 === null) AR.alpha0 = heading;
       const sign = CONFIG.arInvert ? 1 : -1;
@@ -3238,33 +3252,73 @@ const ThreeViewPlugin = {
       if (AR.sensor) return;
       AR.tAz = AR.azManual; AR.tEl = clamp(40 + AR.elManual, 14, 82);
     };
-    const noCam = () => { board.el.classList.remove("cam"); popBanner(board, "📷 Sin cámara: fondo normal", "warn"); };
+    const arStatus = document.getElementById("ar-status"), arAsk = document.getElementById("ar-ask");
+    AR.cam = "wait"; AR.gyro = "wait"; AR.note = "";
+    const paintAR = () => {
+      const ic = v => v === "ok" ? "✅" : v === "wait" ? "⏳" : v === "none" ? "➖" : "❌";
+      arStatus.hidden = false; arStatus.textContent = `📷 ${ic(AR.cam)}   🧭 ${ic(AR.gyro)}` + (AR.noteOpen && AR.note ? "\n" + AR.note : "");
+      document.getElementById("ar-ask-note").textContent = AR.note;
+    };
+    const showAsk = () => { paintAR(); arAsk.hidden = false; };
+    arStatus.addEventListener("click", () => { AR.noteOpen = !AR.noteOpen; paintAR(); });
+    arStatus.addEventListener("pointerdown", e => e.stopPropagation());
+    arAsk.addEventListener("pointerdown", e => e.stopPropagation());
+    const needsMotion = () => typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function";
+    const askMotion = async () => {                                       // iOS: solo funciona dentro de un toque del usuario
+      if (!needsMotion()) return "granted";
+      try { return await DeviceOrientationEvent.requestPermission(); } catch (e) { return "error"; }
+    };
+    const camMsg = e => {
+      const n = (e && e.name) || "";
+      if (!window.isSecureContext) return "La cámara solo funciona en páginas seguras (https).";
+      if (n === "NotAllowedError" || n === "SecurityError") return "Permiso de cámara denegado. Actívalo en los ajustes del navegador para este sitio y pulsa «Activar».";
+      if (n === "NotFoundError" || n === "OverconstrainedError") return "No se encontró ninguna cámara.";
+      if (n === "NotReadableError" || n === "AbortError") return "La cámara está siendo usada por otra aplicación.";
+      return "No se pudo abrir la cámara" + (n ? " (" + n + ")" : "") + ".";
+    };
+    const noCam = msg => { board.el.classList.remove("cam"); AR.cam = "err"; AR.note = msg || "Este navegador no permite abrir la cámara."; paintAR(); popBanner(board, "📷 Sin cámara: fondo normal", "warn"); };
     const startCam = async () => {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return noCam();
+      AR.cam = "wait"; paintAR();
+      if (!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return noCam(camMsg());
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
         if (!AR.on) { stream.getTracks().forEach(t => t.stop()); return; }
         AR.stream = stream; videoEl.srcObject = stream;
-        try { await videoEl.play(); } catch (e) {}
-        board.el.classList.add("cam");
-      } catch (e) { if (AR.on) noCam(); }
+        const pl = videoEl.play(); if (pl && pl.catch) pl.catch(() => {});      // no esperar: en algunos navegadores tarda en resolver
+        board.el.classList.add("cam"); AR.cam = "ok"; paintAR();
+      } catch (e) { if (AR.on) { noCam(camMsg(e)); showAsk(); } }
     };
     const startAR = () => {
       if (AR.on) return;
-      AR.on = true; AR.sensor = false; AR.alpha0 = null;
+      AR.on = true; AR.sensor = false; AR.alpha0 = null; AR.cam = "wait"; AR.gyro = "wait"; AR.note = ""; AR.noteOpen = false;
       board.el.classList.add("ar");
       applyVis(); scene.background = null; scene.fog = null;
-      try {                                                             // iOS pide permiso (hay que estar dentro de un toque)
-        if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
-          DeviceOrientationEvent.requestPermission().catch(() => {});
-        }
-      } catch (e) {}
       window.addEventListener("deviceorientation", onOrient, true);
-      startCam();
+      paintAR(); arAsk.hidden = true;
+      if (needsMotion()) {                                              // iPhone/iPad: primero el movimiento, luego la cámara (un permiso cada vez)
+        askMotion().then(st => {
+          if (!AR.on) return;
+          if (st === "granted") startCam();
+          else { AR.gyro = "err"; AR.note = "Hace falta tu permiso para usar el giroscopio y la cámara. Toca «Activar»."; showAsk(); }
+        });
+      } else startCam();
       clearTimeout(AR.timer);
-      AR.timer = setTimeout(() => { if (AR.on && !AR.sensor) popBanner(board, "🧭 Sin giroscopio: usa ◀ ▶ ▲ ▼", "warn"); }, 2500);
+      AR.timer = setTimeout(() => {
+        if (AR.on && !AR.sensor) {
+          AR.gyro = "none"; if (!AR.note) AR.note = "Este dispositivo no envía datos del giroscopio: usa los botones ◀ ▶ ▲ ▼.";
+          paintAR(); popBanner(board, "🧭 Sin giroscopio: usa ◀ ▶ ▲ ▼", "warn");
+        }
+      }, 3000);
       applyManual(); layout();
     };
+    document.getElementById("ar-ask-go").addEventListener("click", async () => {
+      const st = await askMotion();
+      if (st !== "granted") {
+        AR.gyro = "err"; AR.note = "Movimiento denegado. En iPhone: Ajustes → Safari → «Movimiento y orientación» (actívalo), cierra y vuelve a abrir el juego."; paintAR(); return;
+      }
+      AR.gyro = AR.sensor ? "ok" : "wait"; AR.alpha0 = null; arAsk.hidden = true; AR.note = ""; startCam();
+    });
+    document.getElementById("ar-ask-skip").addEventListener("click", () => { arAsk.hidden = true; });
     const stopAR = () => {
       if (!AR.on) return;
       AR.on = false;
@@ -3272,6 +3326,7 @@ const ThreeViewPlugin = {
       clearTimeout(AR.timer);
       if (AR.stream) { AR.stream.getTracks().forEach(t => t.stop()); AR.stream = null; }
       videoEl.srcObject = null;
+      arAsk.hidden = true; arStatus.hidden = true;
       board.el.classList.remove("ar", "cam");
       board.holes.forEach(h => h.querySelectorAll(".crop,.pup").forEach(e => { e.style.left = e.style.top = ""; }));
       applyVis(); applyTheme();
@@ -3287,7 +3342,7 @@ const ThreeViewPlugin = {
       if (a === "left") AR.azManual -= 25; else if (a === "right") AR.azManual += 25;
       else if (a === "up") AR.elManual += 10; else if (a === "down") AR.elManual -= 10;
       else if (a === "center") { AR.azManual = 0; AR.elManual = 0; AR.alpha0 = null; }
-      else if (a === "cam") { if (AR.stream) { AR.stream.getTracks().forEach(t => t.stop()); AR.stream = null; videoEl.srcObject = null; board.el.classList.remove("cam"); } else startCam(); }
+      else if (a === "cam") { if (AR.stream) { AR.stream.getTracks().forEach(t => t.stop()); AR.stream = null; videoEl.srcObject = null; board.el.classList.remove("cam"); AR.cam = "none"; paintAR(); } else startCam(); }
       applyManual();
       if (AR.sensor) { AR.tAz = AR.azManual + (AR.tAz - AR.azManual); }
     });
