@@ -1323,7 +1323,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.15.2", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.15.3", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -5406,7 +5406,12 @@ const VersusPlugin = {
       try { $("vs-3d").checked = localStorage.getItem("topo-vs3d") === "1"; } catch (e) {}
       $("vs-3d").addEventListener("change", () => { try { localStorage.setItem("topo-vs3d", $("vs-3d").checked ? "1" : "0"); } catch (e) {} });
       $("vs-split").addEventListener("click", openSplit);
-      $("vs-split-exit").addEventListener("click", closeSplit);
+      let exitArm = 0, exitT = 0;                               // pide confirmación antes de cerrar la pantalla dividida
+      const exitBtn = $("vs-split-exit"), exitTxt = exitBtn.textContent;
+      exitBtn.addEventListener("click", () => {
+        if (!exitArm) { exitArm = 1; exitBtn.textContent = "¿Salir? Pulsa otra vez"; clearTimeout(exitT); exitT = setTimeout(() => { exitArm = 0; exitBtn.textContent = exitTxt; }, 3000); return; }
+        clearTimeout(exitT); exitArm = 0; exitBtn.textContent = exitTxt; closeSplit();
+      });
       $("vs-split-fs").addEventListener("click", () => $("fs-btn").click());
     }
 
