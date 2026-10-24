@@ -11503,7 +11503,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.19.9", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.19.11", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -12009,8 +12009,10 @@ const TauntPlugin = {
   phrases: ["¡Jajaja!", "¡Fallaste!", "¡Ni cerca!", "¡Casi, casi!", "¡Muy lento!"],
   init(game) {
     const board = game.board;
+    let cur = null;                                         // burla en curso: { i, h, b, t }
+    const stop = () => { if (!cur) return; clearTimeout(cur.t); cur.h.classList.remove("taunt"); if (!game.active.has(cur.i)) cur.h.classList.remove("up"); cur.b.remove(); cur = null; };
     game.bus.on("miss", ({ eat: i }) => {
-      if (!CONFIG.taunts || board.el.querySelector(".hole.taunt")) return;
+      if (!CONFIG.taunts || cur) return;
       const h = board.holes[i];
       h.classList.add("taunt", "up");
       const b = document.createElement("div");
@@ -12019,12 +12021,19 @@ const TauntPlugin = {
       b.style.left = h.offsetLeft + h.offsetWidth / 2 + "px";
       b.style.top = h.offsetTop + "px";
       board.el.appendChild(b);
-      setTimeout(() => {
-        h.classList.remove("taunt");
-        if (!game.active.has(i)) h.classList.remove("up");
-        b.remove();
-      }, 750);
+      cur = { i, h, b, t: setTimeout(stop, 750) };
     });
+    // ¡Si le das al topo que se burla, cuenta como golpe! (la revancha)
+    game.tapHandlers.push((x, y) => {
+      if (!cur || !game.inZone(cur.i, x, y, CONFIG.touchMargin)) return false;
+      const i = cur.i; stop();
+      game.state.score += game.state.params.pointsPerHit;
+      board.flash(i, "hit");
+      game.bus.emit("mole:hit", { index: i });
+      game.bus.emit("score:change", game.state.score);
+      return true;
+    });
+    game.bus.on("game:end", stop);
   }
 };
 
@@ -13078,6 +13087,9 @@ const WeatherPlugin = {
       d.style.animationDelay = -Math.random() + "s";
       wx.appendChild(d);
     }
+    /* Carrera: todos los jugadores usan la misma semilla, así el clima llega igual y a la vez para todos */
+    let seeded = false, rs = 1;
+    const rnd = () => { if (!seeded) return Math.random(); rs = (rs + 0x6D2B79F5) | 0; let t = Math.imul(rs ^ (rs >>> 15), 1 | rs); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
     let timer = null, tick = null, spot = null, last = null, sx = 50, sy = 50, tx = 50, ty = 50, raf = 0;
 
     const clearAll = () => {
@@ -13091,15 +13103,15 @@ const WeatherPlugin = {
     const scheduleNext = (mult = 1) => {
       Timers.clear(timer);
       if (!CONFIG.weather) return;
-      timer = Timers.timeout(warn, CONFIG.eventGapSec * 1000 * mult * (0.8 + Math.random() * 0.4));
+      timer = Timers.timeout(warn, CONFIG.eventGapSec * 1000 * mult * (0.8 + rnd() * 0.4));
     };
 
     const warn = () => {
       const s = game.state;
       if (!s.running || !CONFIG.weather) return;
-      if (s.bossActive || s.breather) return scheduleNext(0.15);          // no se pisa con el jefe ni la pausa de oleada
+      if (!seeded && (s.bossActive || s.breather)) return scheduleNext(0.15);          // no se pisa con el jefe ni la pausa de oleada
       const types = Object.keys(WEATHER).filter(t => t !== last);
-      const type = types[randInt(0, types.length - 1)];
+      const type = types[Math.floor(rnd() * types.length)];
       last = type;
       const W = WEATHER[type];
       let left = CONFIG.warnSec;
@@ -13159,7 +13171,7 @@ const WeatherPlugin = {
       cancelAnimationFrame(raf); glide();
     };
 
-    bus.on("game:start", () => { clearAll(); last = null; scheduleNext(0.9); });
+    bus.on("game:start", () => { clearAll(); last = null; seeded = game.multi && game.wxSeed != null; rs = seeded ? (game.wxSeed | 0) : 1; game.wxSeed = null; scheduleNext(0.9); });
     bus.on("game:end", clearAll);
     bus.on("settings:change", () => { if (!CONFIG.weather && game.state.weather) clearAll(); });
   }
@@ -14876,7 +14888,7 @@ const LinkPlugin = {
         if (d.st === "end" && !prevSc["e" + r.peer]) { prevSc["e" + r.peer] = 1; ticker(`${r.av} ${r.name} ha terminado con ${d.score} puntos`); }
         if (d.goal > 0 && d.harvested / d.goal >= .5 && !prevSc["half" + r.peer]) { prevSc["half" + r.peer] = 1; ticker(`${r.av} ${r.name} lleva la mitad de la cosecha`); }
       });
-      const played = rows.filter(r => r.d), allEnd = played.length > 0 && played.every(r => r.d.st === "end");
+      const played = rows.filter(r => r.d), allEnd = played.length > 0 && played.every(r => r.d.st === "end" || (r.peer !== "host" && r.d.t && Date.now() - r.d.t > 9000 && Date.now() - goAt > 15000));   // un móvil que ya no avisa (cerrado/suspendido) cuenta como terminado
       if (allEnd && !endTO) endTO = setTimeout(() => showPodium(rows), 2200);
       if (!allEnd) { clearTimeout(endTO); endTO = 0; }
     };
@@ -14939,7 +14951,7 @@ const LinkPlugin = {
         if (d.t === "ping") ch.emit("down", { t: "pong", to: m.peer, ts: d.ts });
         else if (d.t === "start") { if ((phase === "lobby" || phase === "end") && (ch.peers().some(q => q.presence && q.presence.role === "pad"))) launch(); }
         else if (d.t === "score") {
-          players[m.peer] = { score: d.score | 0, errors: d.errors | 0, harvested: d.harvested | 0, goal: d.goal | 0, wave: d.wave | 0, st: d.st === "end" ? "end" : "play", reason: d.reason };
+          players[m.peer] = { t: Date.now(), score: d.score | 0, errors: d.errors | 0, harvested: d.harvested | 0, goal: d.goal | 0, wave: d.wave | 0, st: d.st === "end" ? "end" : "play", reason: d.reason };
           renderDevs(ch.peers());
           if (d.st === "end") game.bus.emit("intro:bonk");
         }
@@ -14960,7 +14972,7 @@ const LinkPlugin = {
         phase = "live"; goAt = Date.now() + (CONFIG.countdownSec || 0) * 1000; tvShow("tv-live");
         $("tv-chip-time").hidden = false; $("tv-chip-time").textContent = "⏱ 0:00";
         clearInterval(tvTimer); tvTimer = setInterval(() => { $("tv-chip-time").textContent = "⏱ " + fmtT(Date.now() - goAt); }, 500); timers.push(tvTimer);
-        ch.emit("down", { t: "go", mode: CONFIG.mode, id: Date.now() });
+        game.wxSeed = (Math.random() * 2147483647) | 0; ch.emit("down", { t: "go", mode: CONFIG.mode, id: Date.now(), seed: game.wxSeed });
         ticker(hostPlays ? "▶ ¡Allá vamos!" : "▶ ¡Allá vamos! Cuenta atrás en los móviles…"); setTimeout(() => renderDevs(), 50);
         if (hostPlays) {                                              // el anfitrión también corre: oculta la sala y empieza su partida
           $("tv-screen").hidden = true; game.multi = true; lastRank = [];
@@ -14969,7 +14981,7 @@ const LinkPlugin = {
         }
       };
       if (hostPlays) {
-        const hostScore = fin => { const s = game.state; players.host = { score: s.score, errors: s.errors, harvested: s.harvested, goal: +CONFIG.goalHarvest || 0, wave: s.wave, st: fin ? "end" : "play", reason: s.endReason }; };
+        const hostScore = fin => { const s = game.state; players.host = { t: Date.now(), score: s.score, errors: s.errors, harvested: s.harvested, goal: +CONFIG.goalHarvest || 0, wave: s.wave, st: fin ? "end" : "play", reason: s.endReason }; };
         const hostRank = () => {
           const el = $("link-rank"), list = Object.entries(players).sort((x, y) => y[1].score - x[1].score), i = list.findIndex(e => e[0] === "host");
           if (!game.state.running || i < 0 || list.length < 2) { el.hidden = true; return; }
@@ -14977,7 +14989,7 @@ const LinkPlugin = {
         };
         off.push(game.bus.on("game:start", () => { if (phase === "live") hostScore(false); }));
         off.push(game.bus.on("game:end", s => { if (phase === "live" && s.endReason !== "tutorial") { hostScore(true); $("link-rank").hidden = true; $("tv-screen").hidden = false; renderDevs(); } }));
-        every(() => { if (phase === "live" && game.state.running) { hostScore(false); renderDevs(); } hostRank(); }, 1000);
+        every(() => { if (phase === "live" && game.state.running) hostScore(false); if (phase === "live") renderDevs(); hostRank(); }, 1000);
       }
       $("link-go").onclick = launch; $("tv-replay").onclick = launch;
       if (home) { const li = $("tv-steps").querySelectorAll("li"); if (li[2]) li[2].innerHTML = "Escribe el código <b>una sola vez</b>: tu móvil recordará esta TV (botón «📺 Mi TV»)"; }
@@ -15026,6 +15038,7 @@ const LinkPlugin = {
         if (d && d.mode && d.mode !== CONFIG.mode && byKey("mode")) byKey("mode").set(d.mode);   // mismo modo que la TV
         ov.hidden = true; lastRank = []; $("mode-overlay").hidden = true; game.multi = true;
         if (game.state.running) game.end("quit");
+        game.wxSeed = d && d.seed != null ? d.seed : null;
         game.start();
       };
       $("link-play").onclick = () => startMatch();
