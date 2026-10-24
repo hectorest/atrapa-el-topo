@@ -734,6 +734,8 @@ body.gate #gate{display:flex;animation:gatein .5s ease-out}
 #tv-qr svg{width:100%;height:100%;display:block}
 #tv-steps{margin:0;padding-left:3.4vmin;font-size:max(2.5vmin,13px);font-weight:600;line-height:1.5;align-self:flex-start}
 #tv-steps small{display:block;opacity:.6;font-size:.8em;word-break:break-all}
+.wa{background:linear-gradient(#4be07a,#1fa855)!important;border-color:#127a3a!important;color:#fff!important;font-weight:800}
+#tv-wa{align-self:center;font-size:max(2.8vmin,15px);padding:1.2vmin 3vmin;border-radius:99px}
 #tv-code{font-size:max(11vmin,44px);font-weight:900;letter-spacing:.14em;color:#ffd54a;text-shadow:0 .6vmin 0 #8a5a00,0 1.2vmin 0 rgba(0,0,0,.4);line-height:1}
 #tv-who{align-items:stretch}#tv-who h2{text-align:center}
 #tv-count{display:inline-block;min-width:1.6em;padding:0 .4em;border-radius:5vmin;background:#ffd54a;color:#4a2c00;font-size:.8em}
@@ -1019,6 +1021,7 @@ body.vs-frame #app{padding:1.2vmin;gap:1vmin}
       <div id="vs-code"></div>
       <div id="vs-qr"></div>
       <small id="vs-url"></small>
+      <button id="vs-wa" class="wa" type="button">💬 Compartir por WhatsApp</button>
     </div>
     <div id="vs-joinview" hidden>
       <label for="vs-input">Código del duelo <input id="vs-input" maxlength="5" autocapitalize="characters" autocomplete="off" placeholder="WABCD"></label>
@@ -1041,6 +1044,7 @@ body.vs-frame #app{padding:1.2vmin;gap:1vmin}
       <div id="tv-qr"></div>
       <ol id="tv-steps"><li>Abre el juego en tu móvil <small id="tv-url"></small></li><li>Pulsa <b>Jugar → Carrera → Unirme</b></li><li>Escribe el código y tu nombre</li></ol>
       <div id="tv-code"></div>
+      <button id="tv-wa" class="wa" type="button">💬 Compartir por WhatsApp</button>
     </div>
     <div id="tv-who">
       <h2>Jugadores <span id="tv-count">0</span></h2>
@@ -1282,7 +1286,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.12.5", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.13.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -4336,6 +4340,10 @@ const MusicPlugin = {
    La TV elige (Ajustes → Tipo de conexión; «Auto» prueba de más rápido a más lento) y la primera letra del código
    dice al móvil qué transporte usar. */
 const ARTIFACT_URL = ONLINE.publicUrl || "https://claude.ai/artifact/5qvUXbJfr7ZZ5kkCznzsMq";
+const shareWA = text => {                         // abre WhatsApp con el mensaje listo para elegir contacto o grupo
+  const a = document.createElement("a"); a.href = "https://wa.me/?text=" + encodeURIComponent(text); a.target = "_blank"; a.rel = "noopener";
+  document.body.appendChild(a); a.click(); a.remove();
+};
 const LinkTransports = (() => {
   const loadScript = src => new Promise((ok, no) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = () => no(new Error("script")); document.head.appendChild(s); });
   const rnd = () => Math.random().toString(36).slice(2, 10);
@@ -4597,6 +4605,7 @@ const LinkPlugin = {
       ch = got; const full = T.id + code;
       $("tv-code").textContent = full; $("tv-chip-code").textContent = "Sala " + full; $("tv-chip-time").hidden = true; $("tv-chip-lead").hidden = true;
       drawQR(ARTIFACT_URL + "#mando=" + full);
+      $("tv-wa").onclick = () => shareWA(`🐭 ¡Únete a mi carrera en Atrapa el topo! Código de sala: ${full}\n${ARTIFACT_URL}#mando=${full}`);
       phase = "lobby"; lastLead = null; tvShow("tv-lobby"); ov.hidden = true; $("tv-screen").hidden = false; $("tv-wait").hidden = false; $("link-go").hidden = true;
       diag(`Conexión: ${T.label} (${T.lat})` + (tried.length ? " · descartadas: " + tried.join(", ") : ""));
       ch.presence({ role: "tv", name: hostPlays ? myName : undefined });
@@ -5403,6 +5412,7 @@ const VersusPlugin = {
       if (my !== S.tok) { try { got.ch.leave(); } catch (e) {} return; }
       attach(got.ch, true);
       $("vs-code").textContent = got.full; drawQR(ARTIFACT_URL + "#duelo=" + got.full);
+      $("vs-wa").onclick = () => shareWA(`⚔️ ¡Te reto a un duelo en Atrapa el topo! Código: ${got.full}\n${ARTIFACT_URL}#duelo=${got.full}`);
       say(st, `Esperando a tu rival… Que abra el juego, pulse Jugar → Versus → Unirme y escriba el código. (${got.T.label})`);
     });
     $("vs-join").addEventListener("click", () => { cancelOnline(); view("vs-joinview"); $("vs-input").focus(); });
