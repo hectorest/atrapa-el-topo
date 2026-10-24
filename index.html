@@ -375,6 +375,14 @@ button.secondary.on{background:linear-gradient(var(--sun-1),var(--sun-2));border
 .bubble{font-family:var(--font);background:var(--cream);color:#3b2412;border:.35vmin solid var(--wood-2);box-shadow:0 .5vmin 0 var(--wood-3);padding:.5vmin 2vmin}
 
 /* ===== Estilo «Bloques»: interfaz de píxeles, esquinas rectas y marcos de piedra/madera ===== */
+body.adv{
+  --cream:#eefaf2; --cream-2:#cfe9dc; --ink:#1f3347;
+  --wood-1:#5f8fb8; --wood-2:#3d6a93; --wood-3:#25405c;
+  --leaf-1:#6fe0b4; --leaf-2:#2fae8a; --leaf-3:#1c7a62;
+  --sun-1:#ffe27a; --sun-2:#ffb52e; --sun-3:#9a5f00; --berry:#6a5cff; --text:#1f3347;
+  --lift:0 .6vmin 0 var(--wood-3),0 1.4vmin 2vmin rgba(0,0,0,.28),inset 0 .3vmin 0 rgba(255,255,255,.7);
+  background:linear-gradient(#bfe6ff,#8fd6a8);
+}
 body.vox{
   --font:"Pixelify Sans","Courier New",monospace;
   --cream:#c6c6c6; --cream-2:#b2b2b2; --ink:#1d1d1d;
@@ -11507,7 +11515,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.22.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.23.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -11541,7 +11549,7 @@ const CONFIG = {
   bossBite: 30,                         // % que muerde a todos los cultivos si huye
   arInvert: false,                      // AR: invertir el sentido del giro
   arScale: 1,                           // AR: tamaño del tablero (1 = encaja en pantalla)
-  view: "3d",                           // estilo visual: "2d" | "3d" | "voxel" (Bloques). Si Three.js no carga, se usa 2D
+  view: "3d",                           // estilo visual: "2d" | "3d" | "voxel" (Bloques) | "aventura" (Criaturas). Si Three.js no carga, se usa 2D
   blightDelaySec: 8,                    // segundos que tarda un cultivo muerto en empezar a contagiar (tiempo para replantarlo)
   blightPerSec: 1,                      // % de crecimiento por segundo que un cultivo muerto le quita a cada vecino (0 = sin contagio)
   cropShieldSec: 3,                     // segundos de protección de un cultivo recién cosechado/replantado (nadie puede comerlo)
@@ -11597,6 +11605,7 @@ const CONFIG = {
 /* ============================================================
    2. UTILIDADES
    ============================================================ */
+const berry = () => document.body.classList.contains("adv") ? "🫐" : "🥕";   // la «cosecha» en el estilo Criaturas son bayas
 const rand = (min, max) => Math.random() * (max - min) + min;
 const randInt = (min, max) => Math.floor(rand(min, max + 1));
 
@@ -12184,8 +12193,8 @@ const SETTINGS_SCHEMA = [
   { key: "graceMs", label: "Tolerancia de retraso (ms)", min: 0, max: 400, step: 20,
     get: () => CONFIG.graceMs, set: v => CONFIG.graceMs = v },
   { key: "view", type: "select", label: "Estilo visual", showLabel: true,
-    options: [{ value: "2d", label: "2D" }, { value: "3d", label: "3D" }, { value: "voxel", label: "Bloques" }, { value: "ar", label: "AR" }],
-    get: () => CONFIG.view, set: v => { if (["2d", "3d", "voxel", "ar"].includes(v)) CONFIG.view = v; } },
+    options: [{ value: "2d", label: "2D" }, { value: "3d", label: "3D" }, { value: "voxel", label: "Bloques" }, { value: "aventura", label: "Criaturas" }, { value: "ar", label: "AR" }],
+    get: () => CONFIG.view, set: v => { if (["2d", "3d", "voxel", "aventura", "ar"].includes(v)) CONFIG.view = v; } },
   { key: "countdownSec", label: "Cuenta atrás inicial (s, 0 = sin)", min: 0, max: 10, step: 1,
     get: () => CONFIG.countdownSec, set: v => CONFIG.countdownSec = v },
   { key: "arScale", label: "AR: tamaño del tablero", min: 0.5, max: 1.6, step: 0.1,
@@ -12376,7 +12385,7 @@ const CropsPlugin = {
       if (!c) return;
       const g = growth[i];
       c.dataset.stage = dead[i] ? "dead" : g >= 100 ? "ripe" : g >= 40 ? "young" : "seed";
-      c.querySelector("em").textContent = dead[i] ? "🥀" : g >= 100 ? "🥕" : g >= 40 ? "🌿" : "🌱";
+      c.querySelector("em").textContent = dead[i] ? "🥀" : g >= 100 ? berry() : g >= 40 ? "🌿" : "🌱";
       c.querySelector(".bar i").style.width = Math.min(100, g) + "%";
       c.querySelector(".lives").textContent = dead[i] ? "Replantar" : g >= 100 ? "¡Recoge!" : "";
     };
@@ -12431,7 +12440,7 @@ const CropsPlugin = {
       const pts = CONFIG.harvestPoints;
       if (pts > 0) { game.state.score += pts; bus.emit("score:change", game.state.score); }
       bus.emit("crop:harvest", { index: i, total: game.state.harvested });
-      popText(board, pts > 0 ? "🥕 +" + pts : "🥕", i);
+      popText(board, pts > 0 ? berry() + " +" + pts : berry(), i);
       // VICTORIA: meta de cosecha alcanzada
       if (CONFIG.goalHarvest > 0 && game.state.harvested >= CONFIG.goalHarvest) game.end("win");
     };
@@ -12551,7 +12560,7 @@ const CropsPlugin = {
     bus.on("game:end", () => {
       Timers.clear(timer);
       board.holes.forEach(h => { const c = h.querySelector(".crop"); if (c) c.classList.remove("threat", "grow"); });
-      document.getElementById("ov-text").textContent += ` · Cosecha: ${game.state.harvested} 🥕 · Tiempo: ${game.state.elapsed} s`;
+      document.getElementById("ov-text").textContent += ` · Cosecha: ${game.state.harvested} ${berry()} · Tiempo: ${game.state.elapsed} s`;
     });
   }
 };
@@ -12762,7 +12771,7 @@ const TrapsPlugin = {
       trapBox.hidden = CONFIG.pups.maxPups <= 0;        // sin crías no hay trampas
       tools.hidden = trapBox.hidden && CONFIG.streakToPower <= 0;   // sin nada que mostrar, sin panel
       // Un solo botón: compra (si hace falta) y pasa a «colocar»; después basta con tocar el agujero
-      buyBtn.textContent = placing ? "Cancelar" : st.trapStock > 0 ? `🪤 Colocar trampa (×${st.trapStock})` : `🪤 Trampa · ${cost()}🥕`;
+      buyBtn.textContent = placing ? "Cancelar" : st.trapStock > 0 ? `🪤 Colocar trampa (×${st.trapStock})` : `🪤 Trampa · ${cost()}${berry()}`;
       buyBtn.disabled = !st.running || (!placing && st.trapStock <= 0 && st.stock < cost());
       buyBtn.classList.toggle("on", placing);
       placeBtn.hidden = true;
@@ -13062,7 +13071,7 @@ const WavesPlugin = {
       bus.emit("power:grant");
       bus.emit("boss:defeated", { holes });
       popBanner(board, "👑 ¡Jefe derrotado!", "good");
-      popText(board, "🎁 +3🥕 +2🌰 +⚡", null);
+      popText(board, `🎁 +3${berry()} +2🌰 +⚡`, null);
     };
     const escape = () => {
       const holes = boss.holes.slice();
@@ -13241,7 +13250,12 @@ const ThreeViewPlugin = {
   init(game) {
     const { bus, board } = game;
     // El tema «Bloques» de la interfaz (marcos de piedra, letra pixelada) se aplica aunque el 3D no cargue
-    const syncTheme = () => document.body.classList.toggle("vox", CONFIG.view === "voxel");
+    const syncTheme = () => {
+      document.body.classList.toggle("vox", CONFIG.view === "voxel");
+      const adv = CONFIG.view === "aventura"; document.body.classList.toggle("adv", adv);
+      const ic = document.querySelector("#harvest .ic"), lb = document.querySelector("#harvest .lb");
+      if (ic) ic.textContent = adv ? "🫐" : "🥕"; if (lb) lb.textContent = adv ? " Bayas" : " Cosecha";
+    };
     bus.on("settings:change", syncTheme); syncTheme();
     if (typeof THREE === "undefined") { game.view3d = false; return; }
 
@@ -13328,7 +13342,7 @@ const ThreeViewPlugin = {
     const baseLight = { hi: 0.85, si: 0.75 };
     let lightK = 1;
     const applyTheme = () => {
-      const p = isDark() ? palette.night : palette.day;
+      const p = isDark() ? palette.night : CONFIG.view === "aventura" ? { sky: 0xa8dcff, hemi: 0xffffff, ground: 0x4fae7a, hi: 0.9, si: 0.7, sun: 0xfff6dc } : palette.day;
       scene.background = new THREE.Color(p.sky);
       scene.fog = new THREE.Fog(p.sky, 38, 80);
       hemi.groundColor.set(p.ground); hemi.intensity = p.hi; baseLight.hi = p.hi;
@@ -13379,6 +13393,22 @@ const ThreeViewPlugin = {
       if (rng() < 0.6) {               // flores
         const fc = [0xff6f91, 0xffd54a, 0xffffff, 0xb388ff][Math.floor(rng() * 4)];
         for (let k = 0; k < 3; k++) fixed.add(mesh(G.sphereLo, mat(fc), x + (rng() - 0.5) * s, -0.05 + rng() * 0.1, z + (rng() - 0.5) * s, 0.08, 0.08, 0.08));
+      }
+    };
+    const addTreeA = (x, z, s) => {                       // árbol redondo con bayas
+      const t = new THREE.Group();
+      t.add(mesh(G.cyl, mat(0x7a5a3a), 0, 0.5 * s, 0, 0.2 * s, 1 * s, 0.2 * s));
+      t.add(mesh(G.sphere, mat(0x3fae6a), 0, 1.5 * s, 0, 0.95 * s, 0.85 * s, 0.95 * s));
+      for (let k = 0; k < 7; k++) t.add(mesh(G.sphereLo, mat([0x6a5cff, 0xff6f91, 0xffd54a][k % 3]), (rng() - 0.5) * 1.5 * s, (1.3 + rng() * 0.7) * s, (rng() - 0.5) * 1.5 * s, 0.1 * s, 0.1 * s, 0.1 * s));
+      t.position.set(x, -0.4, z); t.rotation.y = rng() * 6;
+      t.traverse(o => { if (o.isMesh) o.receiveShadow = false; });
+      fixed.add(t);
+    };
+    const addBushA = (x, z, s) => {                       // hierba alta de ruta
+      const gm = mat(0x2f9a5a);
+      for (let k = 0; k < 9; k++) {
+        const b = mesh(G.cone, gm, x + (rng() - 0.5) * 0.7 * s, -0.1 + 0.2 * s, z + (rng() - 0.5) * 0.7 * s, 0.07 * s, 0.7 * s, 0.07 * s);
+        b.rotation.z = (rng() - 0.5) * 0.5; b.rotation.x = (rng() - 0.5) * 0.4; fixed.add(b);
       }
     };
     const addRock = (x, z, s) => fixed.add(mesh(new THREE.DodecahedronGeometry(1, 0), mat(0x9a9a9a), x, -0.3, z, 0.35 * s, 0.25 * s, 0.35 * s));
@@ -13469,6 +13499,95 @@ const ThreeViewPlugin = {
       dome.scale.set(0.6, 0.6, 0.6); dome.position.y = 0.25; dome.visible = false;
       g.add(dome);
       return { g, leaves, leafMat, carrot, carrotMat, dome, s: 0.2 };
+    };
+
+    /* Cultivo: tierra, hojas, zanahoria que asoma, cúpula de protección */
+    const buildCropA = () => {
+      const g = new THREE.Group();
+      const patch = mesh(G.cyl, mat(0x5a3b22), 0, 0.03, 0, 0.5, 0.07, 0.5); patch.castShadow = false; patch.receiveShadow = true;
+      g.add(patch);
+      const leafMat = mat(0x3fae6a);
+      const leaves = new THREE.Group();
+      for (let k = 0; k < 6; k++) {
+        const pivot = new THREE.Group(); pivot.rotation.y = k * Math.PI / 3 + 0.3;
+        const leaf = mesh(G.cone, leafMat, 0, 0.32, 0.1, 0.07, 0.64, 0.05); leaf.rotation.x = 0.35 + (k % 2) * 0.18;
+        pivot.add(leaf); leaves.add(pivot);
+      }
+      leaves.position.y = 0.05;
+      g.add(leaves);
+      const carrotMat = mat(0x6a5cff, { emissive: 0x000000 });
+      const carrot = new THREE.Group();                                         // racimo de bayas
+      [[-0.7, 0.1, 0.2], [0.7, 0.05, 0.1], [0, 0.25, -0.6], [0.05, 0, 0.75]].forEach(([x, y, z]) => carrot.add(mesh(G.sphere, carrotMat, x, y, z, 0.6, 0.6, 0.6)));
+      carrot.position.y = 0.08; g.add(carrot);
+      const dome = new THREE.Mesh(G.sphere, new THREE.MeshLambertMaterial({ color: 0x7fd8ff, transparent: true, opacity: 0.28, depthWrite: false }));
+      dome.scale.set(0.6, 0.6, 0.6); dome.position.y = 0.25; dome.visible = false;
+      g.add(dome);
+      return { g, leaves, leafMat, carrot, carrotMat, dome, s: 0.2 };
+    };
+
+    /* Topo adulto: cuerpo, hocico, ojos, cejas, boca (varias), manos con garras */
+    const buildMoleA = () => {
+      const g = new THREE.Group();
+      const body = buried(0x47b3a3), light = buried(0xf3ecd2), pink = buried(0x2f3a5c), dark = mat(0x111111), white = mat(0xffffff);
+      g.add(mesh(G.sphere, body, 0, 0.42, 0, 0.55, 0.63, 0.52));
+      g.add(mesh(G.sphere, light, 0, 0.3, 0.46, 0.22, 0.17, 0.24));            // hocico
+      g.add(mesh(G.sphere, pink, 0, 0.37, 0.66, 0.06, 0.05, 0.05));            // nariz
+      const eyeL = mesh(G.sphere, dark, -0.22, 0.62, 0.43, 0.115, 0.13, 0.08);
+      const eyeR = mesh(G.sphere, dark, 0.22, 0.62, 0.43, 0.115, 0.13, 0.08);
+      g.add(eyeL, eyeR);
+      g.add(mesh(G.sphere, white, -0.2, 0.665, 0.5, 0.04, 0.04, 0.03), mesh(G.sphere, white, 0.24, 0.665, 0.5, 0.04, 0.04, 0.03));
+      const browL = mesh(G.box, dark, -0.2, 0.8, 0.4, 0.22, 0.05, 0.05);
+      const browR = mesh(G.box, dark, 0.2, 0.8, 0.4, 0.22, 0.05, 0.05);
+      g.add(browL, browR);
+      // Boca: cada estado es una malla; solo se ve la del estado actual
+      const mouths = {
+        smile: mesh(smileGeo(0.13), dark, 0, 0.12, 0.47), small: mesh(smileGeo(0.08), dark, 0, 0.1, 0.47),
+        flat: mesh(G.box, dark, 0, 0.08, 0.47, 0.18, 0.025, 0.03),
+        frown: mesh(smileGeo(0.08), dark, 0, 0.06, 0.47), angry: mesh(smileGeo(0.13), dark, 0, 0.04, 0.47)
+      };
+      mouths.smile.rotation.z = Math.PI; mouths.small.rotation.z = Math.PI;   // sonrisa = arco hacia abajo
+      const laugh = new THREE.Group();
+      laugh.add(mesh(new THREE.CircleGeometry(0.16, 16, Math.PI, Math.PI), mat(0x7a1f2e, { side: THREE.DoubleSide }), 0, 0.14, 0.47));
+      laugh.add(mesh(new THREE.CircleGeometry(0.08, 12, Math.PI, Math.PI), mat(0xff6f91, { side: THREE.DoubleSide }), 0, 0.07, 0.475));
+      mouths.laugh = laugh;
+      Object.values(mouths).forEach(m => { m.visible = false; g.add(m); });
+      mouths.smile.visible = true;
+      // Manos con garras
+      [-1, 1].forEach(sx => {
+        const hand = new THREE.Group();
+        hand.add(mesh(G.sphere, light, 0, 0, 0, 0.15, 0.13, 0.14));
+        for (let k = -1; k <= 1; k += 2) {
+          const fin = mesh(G.cone, mat(0x6fe0b4), k * 0.05, 0.02, 0.15, 0.04, 0.1, 0.03);
+          fin.rotation.x = Math.PI / 2; hand.add(fin);
+        }
+        hand.position.set(sx * 0.5, 0.25, 0.3); hand.rotation.y = -sx * 0.4;
+        g.add(hand);
+      });
+      const leafA = mat(0x58d68d);                                               // brote de tres hojas en la cabeza
+      [[-0.18, 0.2, -0.45], [0, 0, 0], [0.18, -0.2, 0.45]].forEach(([x, rz, ry], n) => {
+        const l = mesh(G.cone, leafA, x * 0.7, 1.0 + (n === 1 ? 0.12 : 0), 0, 0.09, 0.34 + (n === 1 ? 0.1 : 0), 0.06); l.rotation.z = -rz; g.add(l);
+      });
+      [-1, 1].forEach(sx => g.add(mesh(G.sphere, buried(0x7a6ae0), sx * 0.52, 0.5, -0.05, 0.07, 0.2, 0.14)));   // aletas moradas
+      g.position.y = DOWN_Y; g.visible = false;
+      return { g, body, mouths, browL, browR, eyes: [eyeL, eyeR] };
+    };
+
+    /* Cría: pequeña, con orejitas; se escala según su tamaño (--s) */
+    const buildPupA = () => {
+      const g = new THREE.Group();
+      const body = buried(0xb9a6f0), pink = buried(0x2f3a5c), dark = mat(0x111111);
+      const inner = new THREE.Group();
+      inner.add(mesh(G.sphere, body, 0, 0.45, 0, 0.5, 0.52, 0.47));
+      inner.add(mesh(G.sphere, pink, 0, 0.38, 0.45, 0.09, 0.08, 0.08));
+      inner.add(mesh(G.sphere, dark, -0.17, 0.55, 0.4, 0.085, 0.095, 0.06), mesh(G.sphere, dark, 0.17, 0.55, 0.4, 0.085, 0.095, 0.06));
+      inner.add(mesh(G.sphere, mat(0xffffff), -0.15, 0.58, 0.44, 0.03, 0.03, 0.02), mesh(G.sphere, mat(0xffffff), 0.19, 0.58, 0.44, 0.03, 0.03, 0.02));
+      inner.add(mesh(G.cone, mat(0x58d68d), 0, 0.98, 0, 0.09, 0.3, 0.06), mesh(G.cone, mat(0x58d68d), 0.1, 0.95, 0, 0.07, 0.22, 0.05));
+      const ice = new THREE.Mesh(G.box, new THREE.MeshLambertMaterial({ color: 0x9be3ff, transparent: true, opacity: 0.45, clippingPlanes: [clipGround] }));
+      ice.scale.set(1.3, 1.25, 1.3); ice.position.y = 0.55; ice.visible = false;
+      inner.add(ice);
+      g.add(inner);
+      g.position.y = DOWN_Y; g.visible = false;
+      return { g, inner, body, ice };
     };
 
     /* Trampa de dientes */
@@ -13630,8 +13749,10 @@ const ThreeViewPlugin = {
       rows = CONFIG.rows; cols = CONFIG.cols; rng = makeRng(1234);
       const V = CONFIG.view === "voxel";
       builtView = CONFIG.view;
-      const bd = V ? { mole: buildMoleV, pup: buildPupV, crop: buildCropV, trap: buildTrapV } : { mole: buildMoleS, pup: buildPupS, crop: buildCropS, trap: buildTrapS };
-      const tree = V ? addTreeV : addTree, bush = V ? addBushV : addBush, rock = V ? addRockV : addRock;
+      const A = CONFIG.view === "aventura";
+      const bd = V ? { mole: buildMoleV, pup: buildPupV, crop: buildCropV, trap: buildTrapV } : A ? { mole: buildMoleA, pup: buildPupA, crop: buildCropA, trap: buildTrapS } : { mole: buildMoleS, pup: buildPupS, crop: buildCropS, trap: buildTrapS };
+      const tree = V ? addTreeV : A ? addTreeA : addTree, bush = V ? addBushV : A ? addBushA : addBush, rock = V ? addRockV : addRock;
+      applyTheme();
       ground.material.map = V ? vtex().grass : grassTex;
       if (V) vtex().grass.repeat.set(47, 47);
       ground.material.needsUpdate = true;
@@ -13644,7 +13765,7 @@ const ThreeViewPlugin = {
       if (V) terrainVoxel(fw, fd); else {
       const soil = new THREE.Mesh(G.box, new THREE.MeshLambertMaterial({ map: soilTex }));
       soil.scale.set(fw, 0.4, fd); soil.position.y = -0.2; soil.receiveShadow = true; stage.add(soil);
-      const wood = mat(0x8a5a2b);
+      const wood = mat(A ? 0xf4f1e6 : 0x8a5a2b);
       [[0, -fd / 2 - 0.12, fw + 0.5, 0.25], [0, fd / 2 + 0.12, fw + 0.5, 0.25]].forEach(([x, z, w, d]) => {
         const p = mesh(G.box, wood, x, 0.04, z, w, 0.34, d); p.receiveShadow = true; stage.add(p);
       });
@@ -13985,6 +14106,7 @@ const ThreeViewPlugin = {
     const cBody = new THREE.Color(), cTmp = new THREE.Color();
     const BROWN = new THREE.Color(0x8b5e3c), ANGRY = new THREE.Color(0xb8452a), GREEN = new THREE.Color(0x2e9e4f);
     const TAN = new THREE.Color(0xc9a07a), TAN2 = new THREE.Color(0xd9803f), ICE = new THREE.Color(0x8fd3ff);
+    const A_BODY = new THREE.Color(0x47b3a3), A_ANGRY = new THREE.Color(0xe0525e), A_HIT = new THREE.Color(0xfff08a), A_TAN = new THREE.Color(0xb9a6f0), A_TAN2 = new THREE.Color(0x8f78e8);
     const approach = (cur, target, k) => cur + (target - cur) * k;
 
     const updateMole = (cell, h, dt, mood) => {
@@ -13994,8 +14116,9 @@ const ThreeViewPlugin = {
       m.g.visible = m.g.position.y > DOWN_Y + 0.05;
       if (!m.g.visible) return;
       // Color: marrón → rojizo con el enfado; verde si lo golpeas
-      cBody.copy(BROWN).lerp(ANGRY, clamp(mood / 4, 0, 1) * 0.85);
-      if (hit) cBody.copy(GREEN);
+      const adv = CONFIG.view === "aventura";
+      cBody.copy(adv ? A_BODY : BROWN).lerp(adv ? A_ANGRY : ANGRY, clamp(mood / 4, 0, 1) * 0.85);
+      if (hit) cBody.copy(adv ? A_HIT : GREEN);
       m.body.color.copy(cBody);
       // Movimiento: respira, se ríe al burlarse, se aplasta al golpearlo
       cell.hit = Math.max(0, cell.hit - dt * 4);
@@ -14030,7 +14153,7 @@ const ThreeViewPlugin = {
       if (!p.g.visible) return;
       const sc = 0.4 + 0.58 * (p.size || 0);
       p.inner.scale.setScalar(sc);
-      cTmp.copy(TAN).lerp(TAN2, (p.lvl || 0) * 0.35);
+      cTmp.copy(CONFIG.view === "aventura" ? A_TAN : TAN).lerp(CONFIG.view === "aventura" ? A_TAN2 : TAN2, (p.lvl || 0) * 0.35);
       if (p.frozen) cTmp.lerp(ICE, 0.65);
       p.body.color.copy(cTmp);
       p.ice.visible = !!p.frozen;
@@ -14051,7 +14174,7 @@ const ThreeViewPlugin = {
       k.leaves.scale.setScalar(k.s);
       k.leaves.rotation.z = dead ? 0.45 : grew ? Math.sin(time * 2 + cell.c + cell.r) * 0.05 : 0;
       k.leaves.rotation.x = threat ? Math.sin(time * 40) * 0.12 : 0;
-      k.leafMat.color.set(dead ? 0x7a6a4a : hurt ? 0xd96b4a : blight ? 0xa7a84a : 0x5fbf4a);
+      k.leafMat.color.set(dead ? 0x7a6a4a : hurt ? 0xd96b4a : blight ? 0xa7a84a : CONFIG.view === "aventura" ? 0x3fae6a : 0x5fbf4a);
       const showCarrot = !dead && grow > 0.3;
       k.carrot.visible = showCarrot;
       if (showCarrot) {
@@ -14123,7 +14246,7 @@ const ThreeViewPlugin = {
       if (bossRig && bossRig.v === CONFIG.view) return bossRig;
       if (bossRig) scene.remove(bossRig.root);
       const V = CONFIG.view === "voxel";
-      const mole = V ? buildMoleV() : buildMoleS();
+      const mole = V ? buildMoleV() : CONFIG.view === "aventura" ? buildMoleA() : buildMoleS();
       const gold = mat(0xffd54a, { emissive: 0x553300 });
       mole.g.add(mesh(G.box, gold, 0, 1.14, 0, 0.8, 0.16, 0.6));
       [-0.3, 0, 0.3].forEach(x => mole.g.add(mesh(G.box, gold, x, 1.32, 0, 0.14, 0.26, 0.14)));
