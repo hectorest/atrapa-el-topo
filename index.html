@@ -705,6 +705,8 @@ body.gate #gate{display:flex;animation:gatein .5s ease-out}
 @keyframes devpulse{from{background:#ffd54a}}
 #link-input{font-size:max(5vmin,24px);width:4em;text-align:center;text-transform:uppercase;letter-spacing:.2em;margin-left:1vmin;border-radius:1.4vmin;border:.4vmin solid var(--wood-2);padding:.6vmin}
 #link-tap{font-size:max(3vmin,16px)!important}
+#link-start{font-size:max(4.4vmin,20px)!important;padding:2.4vmin 2vmin!important}
+#link-mytv{display:flex;flex-direction:column;align-items:center;gap:.3vmin}#link-mytv[hidden]{display:none}#link-mytv small{font-size:max(2vmin,11px);opacity:.85;font-weight:600}
 #link-play,#link-go{font-size:max(4.4vmin,20px)!important;padding:2.4vmin 2vmin!important}
 #link-hname{font-size:max(3vmin,16px);width:7em;text-align:center;margin-left:1vmin;border-radius:1.4vmin;border:.4vmin solid var(--wood-2);padding:.6vmin}
 #link-name{font-size:max(3vmin,16px);width:7em;text-align:center;margin-left:1vmin;border-radius:1.4vmin;border:.4vmin solid var(--wood-2);padding:.6vmin}
@@ -753,6 +755,7 @@ body.gate #gate{display:flex;animation:gatein .5s ease-out}
 #tv-steps{margin:0;padding-left:3.4vmin;font-size:max(2.5vmin,13px);font-weight:600;line-height:1.5;align-self:flex-start}
 #tv-steps small{display:block;opacity:.6;font-size:.8em;word-break:break-all}
 .wa{background:linear-gradient(#4be07a,#1fa855)!important;border-color:#127a3a!important;color:#fff!important;font-weight:800}
+body.tv-home #tv-wa{display:none}
 #tv-wa{align-self:center;font-size:max(2.8vmin,15px);padding:1.2vmin 3vmin;border-radius:99px}
 #tv-code{font-size:max(11vmin,44px);font-weight:900;letter-spacing:.14em;color:#ffd54a;text-shadow:0 .6vmin 0 #8a5a00,0 1.2vmin 0 rgba(0,0,0,.4);line-height:1}
 #tv-who{align-items:stretch}#tv-who h2{text-align:center}
@@ -1118,6 +1121,7 @@ body.vs-frame #app{padding:1.2vmin;gap:1vmin}
       <p><b>Carrera:</b> cada jugador juega su propio tablero y se compara el progreso en vivo. La TV es opcional: sin ella, quien crea la sala también juega y el puesto se ve en cada móvil. El tipo de conexión se elige en ⚙️ Ajustes.</p>
       <div class="mode-chips"></div>
       <label id="link-hname-in" for="link-hname">Tu nombre (si juegas tú también) <input id="link-hname" maxlength="12" autocomplete="off" placeholder="Granjero"></label>
+      <button id="link-mytv" hidden type="button">📺 Mi TV<small></small></button>
       <button id="link-host">📱 Crear carrera (yo también juego)</button>
       <button id="link-tv" class="secondary">📺 Crear carrera con TV: esta pantalla es la TV</button>
       <button id="link-pad" class="secondary">🔑 Unirme a una carrera</button>
@@ -1130,7 +1134,8 @@ body.vs-frame #app{padding:1.2vmin;gap:1vmin}
       <label id="link-name-in" for="link-name">Tu nombre <input id="link-name" maxlength="12" autocomplete="off" placeholder="Granjero"></label>
       <button id="link-join">Conectar</button>
       <p id="link-pad-status" class="link-status"></p>
-      <button id="link-play" hidden>🎮 Jugar mi partida</button>
+      <button id="link-start" hidden>▶ Empezar la carrera para todos</button>
+      <button id="link-play" class="secondary" hidden>🎮 Jugar solo mi partida</button>
       <p id="link-wait" class="link-status" hidden>El anfitrión empezará la carrera para todos. También puedes jugar ya por tu cuenta.</p>
       <button id="link-tap" class="secondary" hidden>👋 Probar toque</button>
       <p id="link-rtt" class="link-status"></p>
@@ -1333,7 +1338,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.17.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.18.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -4684,7 +4689,7 @@ const LinkPlugin = {
       if (window.qrcode) return make();
       const sc = document.createElement("script"); sc.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"; sc.onload = make; document.head.appendChild(sc);
     };
-    const startTV = async (withTv = true) => {
+    const startTV = async (withTv = true, home = false) => {
       mode = "tv"; hostPlays = !withTv;
       myName = (hostPlays ? $("link-hname").value : "").trim().slice(0, 12) || (hostPlays ? "Granjero" : "Anfitrión");
       if (hostPlays) { try { localStorage.setItem("topo-nombre", myName); } catch (e) {} } view("link-tvview"); const st = $("link-tv-status"), my = ++token;
@@ -4692,12 +4697,14 @@ const LinkPlugin = {
       const order = pref === "auto" ? ["W", "M", "N", "R"] : { webrtc: ["W"], mqtt: ["M", "N"], room: ["R"] }[pref] || ["R"];
       const A = "ABCDEFGHJKLMNPQRSTUVWXYZ", code4 = () => Array.from({ length: 4 }, () => A[Math.floor(Math.random() * A.length)]).join("");
       let got = null, T = null, code = null, lastErr = null, tried = [];
+      let saved = ""; if (home) { try { saved = (localStorage.getItem("topo-tv-room") || "").toUpperCase(); } catch (e) {} }
+      if (saved.length === 5 && order.includes(saved[0])) order.splice(0, order.length, saved[0], ...order.filter(x => x !== saved[0]));   // la TV de casa conserva su código
       for (const id of order) {
         T = LinkTransports[id];
         status(st, `Probando ${T.label}…`);
         if (!(await T.avail())) { tried.push(T.label + ": no disponible"); lastErr = null; continue; }
         for (let k = 0; k < 3 && !got; k++) {
-          code = code4();
+          code = home && saved.length === 5 && saved[0] === id && k === 0 ? saved.slice(1) : code4();
           try { got = await T.open(code, true); }
           catch (e) { lastErr = e; if (!(e && e.type === "unavailable-id")) break; }
         }
@@ -4707,15 +4714,17 @@ const LinkPlugin = {
       }
       if (!got) { status(st, pref === "auto" ? "No se pudo establecer ninguna conexión (WebRTC, Internet ni sala de Claude)." : errMsg(lastErr, T) + " Prueba otro tipo en Ajustes.", "err"); diag(tried.join(" · ")); return; }
       ch = got; const full = T.id + code;
+      if (home) { try { localStorage.setItem("topo-tv-room", full); } catch (e) {} }
       $("tv-code").textContent = full; $("tv-chip-code").textContent = "Sala " + full; $("tv-chip-time").hidden = true; $("tv-chip-lead").hidden = true;
       drawQR(ARTIFACT_URL + "#mando=" + full);
       $("tv-wa").onclick = () => shareWA(`🐭 ¡Únete a mi carrera en Atrapa el topo! Código de sala: ${full}\n${ARTIFACT_URL}#mando=${full}`);
       phase = "lobby"; lastLead = null; tvShow("tv-lobby"); ov.hidden = true; $("tv-screen").hidden = false; $("tv-wait").hidden = false; $("link-go").hidden = true;
       diag(`Conexión: ${T.label} (${T.lat})` + (tried.length ? " · descartadas: " + tried.join(", ") : ""));
-      ch.presence({ role: "tv", name: hostPlays ? myName : undefined });
+      ch.presence({ role: "tv", home: home || undefined, name: hostPlays ? myName : undefined });
       off.push(ch.on("up", m => {
         const d = m.data; if (!d || m.sameTab) return;
         if (d.t === "ping") ch.emit("down", { t: "pong", to: m.peer, ts: d.ts });
+        else if (d.t === "start") { if ((phase === "lobby" || phase === "end") && (ch.peers().some(q => q.presence && q.presence.role === "pad"))) launch(); }
         else if (d.t === "score") {
           players[m.peer] = { score: d.score | 0, errors: d.errors | 0, harvested: d.harvested | 0, goal: d.goal | 0, wave: d.wave | 0, st: d.st === "end" ? "end" : "play", reason: d.reason };
           renderDevs(ch.peers());
@@ -4758,6 +4767,7 @@ const LinkPlugin = {
         every(() => { if (phase === "live" && game.state.running) { hostScore(false); renderDevs(); } hostRank(); }, 1000);
       }
       $("link-go").onclick = launch; $("tv-replay").onclick = launch;
+      if (home) { const li = $("tv-steps").querySelectorAll("li"); if (li[2]) li[2].innerHTML = "Escribe el código <b>una sola vez</b>: tu móvil recordará esta TV (botón «📺 Mi TV»)"; }
       $("tv-lobbyback").onclick = () => { phase = "lobby"; clearInterval(tvTimer); players = {}; $("tv-chip-time").hidden = true; $("tv-chip-lead").hidden = true; tvShow("tv-lobby"); renderDevs(); };
     };
 
@@ -4780,8 +4790,9 @@ const LinkPlugin = {
       const rtts = [];
       off.push(ch.onPeers(c => {
         const tv = c.peers.some(p => p.presence && p.presence.role === "tv");
-        if (tv && !tvSeen) { tvSeen = true; status(st, "✅ Conectado a la sala " + code, "ok"); $("link-tap").hidden = false; $("link-play").hidden = false; $("link-wait").hidden = false; }
-        else if (!tv && tvSeen) { tvSeen = false; status(st, "El anfitrión ha salido de la sala…", "err"); $("link-tap").hidden = true; $("link-wait").hidden = true; }
+        if (tv && !tvSeen) { tvSeen = true; status(st, "✅ Conectado a la sala " + code, "ok"); $("link-tap").hidden = false; $("link-play").hidden = false; $("link-start").hidden = false; $("link-wait").hidden = false;
+          if (c.peers.some(p => p.presence && p.presence.role === "tv" && p.presence.home)) { try { localStorage.setItem("topo-mi-tv", code); } catch (e) {} } }
+        else if (!tv && tvSeen) { tvSeen = false; status(st, "El anfitrión ha salido de la sala…", "err"); $("link-tap").hidden = true; $("link-wait").hidden = true; $("link-start").hidden = true; }
       }));
       const sendScore = fin => {
         if (!ch || mode !== "pad") return;
@@ -4801,6 +4812,7 @@ const LinkPlugin = {
         game.start();
       };
       $("link-play").onclick = () => startMatch();
+      $("link-start").onclick = () => { ch.emit("up", { t: "start" }); try { navigator.vibrate && navigator.vibrate(25); } catch (e) {} };
       let lastGo = 0;
       off.push(game.bus.on("game:start", () => sendScore(false)));
       off.push(game.bus.on("game:end", s => { if (s.endReason !== "tutorial") { sendScore(true); $("link-rank").hidden = true;
@@ -4840,6 +4852,13 @@ const LinkPlugin = {
     $("link-tv").addEventListener("click", () => startTV(true));
     $("link-host").addEventListener("click", () => startTV(false));
     $("link-pad").addEventListener("click", () => { mode = "pad"; view("link-padview"); $("link-input").focus(); });
+    const myTv = () => { try { const c = (localStorage.getItem("topo-mi-tv") || "").toUpperCase(); return c.length === 5 ? c : ""; } catch (e) { return ""; } };
+    const showMyTv = () => { const c = myTv(), b = $("link-mytv"); b.hidden = !c; if (c) b.querySelector("small").textContent = "Sala " + c + " · un toque y entras de jugador"; };
+    $("link-mytv").addEventListener("click", () => { const c = myTv(); if (!c) return; mode = "pad"; view("link-padview"); $("link-input").value = c; startPad(c); });
+    game.bus.on("link:open", showMyTv); showMyTv();
+    if (/^#tv\b/i.test(location.hash || "")) setTimeout(() => {        // «TV de casa»: abre …/tv en la TV y queda esperando a los móviles
+      document.body.classList.remove("gate"); game.bus.emit("vs:frame"); document.body.classList.add("tv-home"); startTV(true, true);
+    }, 400);
     $("link-join").addEventListener("click", () => startPad($("link-input").value));
     $("link-input").addEventListener("keydown", e => { if (e.key === "Enter") startPad(e.target.value); });
   }
