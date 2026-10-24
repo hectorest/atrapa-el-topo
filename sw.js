@@ -2,14 +2,14 @@
    - Archivos propios: primero red (así las actualizaciones llegan), y si no hay red, la copia guardada.
    - Librerías externas (three.js, fuentes…): copia guardada y se refresca en segundo plano.
    - Nunca guarda llamadas al ranking (Supabase) ni conexiones en vivo. */
-const V = "topo-v3";
+const V = "topo-v4";
 const PRE = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon.svg"];
 const CDN = ["cdnjs.cloudflare.com", "fonts.googleapis.com", "fonts.gstatic.com", "cdn.jsdelivr.net", "unpkg.com"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(V).then(c => c.addAll(PRE).catch(() => {})).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener("fetch", e => {
   const r = e.request, u = new URL(r.url);
-  if (r.method !== "GET") return;
+  if (r.method !== "GET" || u.pathname.endsWith("/version.json")) return;   // siempre a la red
   const same = u.origin === self.location.origin;
   if (!same && !CDN.includes(u.hostname)) return;
   if (same) {
