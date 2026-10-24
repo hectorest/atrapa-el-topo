@@ -701,6 +701,7 @@ body.gate #gate{display:flex;animation:gatein .5s ease-out}
 #link-input{font-size:max(5vmin,24px);width:4em;text-align:center;text-transform:uppercase;letter-spacing:.2em;margin-left:1vmin;border-radius:1.4vmin;border:.4vmin solid var(--wood-2);padding:.6vmin}
 #link-tap{font-size:max(3vmin,16px)!important}
 #link-play,#link-go{font-size:max(4.4vmin,20px)!important;padding:2.4vmin 2vmin!important}
+#link-hname{font-size:max(3vmin,16px);width:7em;text-align:center;margin-left:1vmin;border-radius:1.4vmin;border:.4vmin solid var(--wood-2);padding:.6vmin}
 #link-name{font-size:max(3vmin,16px);width:7em;text-align:center;margin-left:1vmin;border-radius:1.4vmin;border:.4vmin solid var(--wood-2);padding:.6vmin}
 #link-devs li{align-items:center}#link-devs li .nm{text-align:left}#link-devs li .sc{text-align:right;font-variant-numeric:tabular-nums}
 #link-devs li.end{opacity:.75}
@@ -1072,6 +1073,7 @@ body.vs-frame #app{padding:1.2vmin;gap:1vmin}
   <div id="link-box">
     <div id="link-choose">
       <p><b>Carrera:</b> cada jugador juega su propio tablero y se compara el progreso en vivo. La TV es opcional: sin ella, quien crea la sala también juega y el puesto se ve en cada móvil. El tipo de conexión se elige en ⚙️ Ajustes.</p>
+      <label id="link-hname-in" for="link-hname">Tu nombre (si juegas tú también) <input id="link-hname" maxlength="12" autocomplete="off" placeholder="Granjero"></label>
       <button id="link-host">📱 Crear carrera (yo también juego)</button>
       <button id="link-tv" class="secondary">📺 Crear carrera con TV: esta pantalla es la TV</button>
       <button id="link-pad" class="secondary">🔑 Unirme a una carrera</button>
@@ -1286,7 +1288,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.13.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.13.1", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -4583,7 +4585,8 @@ const LinkPlugin = {
     };
     const startTV = async (withTv = true) => {
       mode = "tv"; hostPlays = !withTv;
-      myName = ($("link-name").value || "").trim().slice(0, 12) || "Anfitrión"; view("link-tvview"); const st = $("link-tv-status"), my = ++token;
+      myName = (hostPlays ? $("link-hname").value : "").trim().slice(0, 12) || (hostPlays ? "Granjero" : "Anfitrión");
+      if (hostPlays) { try { localStorage.setItem("topo-nombre", myName); } catch (e) {} } view("link-tvview"); const st = $("link-tv-status"), my = ++token;
       const pref = CONFIG.linkType || "auto";
       const order = pref === "auto" ? ["W", "M", "N", "R"] : { webrtc: ["W"], mqtt: ["M", "N"], room: ["R"] }[pref] || ["R"];
       const A = "ABCDEFGHJKLMNPQRSTUVWXYZ", code4 = () => Array.from({ length: 4 }, () => A[Math.floor(Math.random() * A.length)]).join("");
@@ -4728,7 +4731,7 @@ const LinkPlugin = {
     if (hm) setTimeout(() => { open(); $("link-pad").click(); $("link-input").value = hm[1].toUpperCase(); }, 600);
     $("link-back").addEventListener("click", close);
     $("link-disc").addEventListener("click", disconnect);
-    try { $("link-name").value = localStorage.getItem("topo-nombre") || ""; } catch (e) {}
+    try { $("link-name").value = $("link-hname").value = localStorage.getItem("topo-nombre") || ""; } catch (e) {}
     $("link-tv").addEventListener("click", () => startTV(true));
     $("link-host").addEventListener("click", () => startTV(false));
     $("link-pad").addEventListener("click", () => { mode = "pad"; view("link-padview"); $("link-input").focus(); });
