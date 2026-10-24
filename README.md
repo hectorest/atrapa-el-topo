@@ -12,7 +12,7 @@ Granjero contra granjero, con las reglas de siempre: cada jugador defiende su ca
 
 - **Ataque:** 🐭 Topo · 👑 Gigante (3 golpes) · 🐛 Plaga (marchita el mejor cultivo) · 🐦 Cuervo (se come un cultivo maduro) · ⛈️ Tormenta (cultivos lentos 10 s)
 - **Defensa:** 🪤 Trampa · 🧑‍🌾 Espantapájaros · 🌱 Abono
-- Los topos enviados **cavan un túnel** (1,5 s de aviso). Si lo golpeas **justo al salir**, **rebota** contra quien lo envió.
+- **Los topos y las crías son los mismos en los dos campos:** cada topo que golpeas pasa al campo del rival (túnel de 1,5 s de aviso; si lo golpeas **justo al salir** rebota más enfadado) y el que se te escapa se queda en tu campo. Tocar una cría también la manda al rival; solo las trampas la eliminan.
 - Gana quien **arrase el campo del rival** (60 % de cultivos muertos) o, a los 3 minutos, quien tenga más puntos. El último minuto da energía doble.
 - **Pantalla dividida** (una tablet, frente a frente): dos copias del juego en iframes, la de arriba girada 180°, que hablan por `postMessage`.
 - **Online:** crea un duelo y comparte el código (o el QR); usa WebRTC, MQTT o la sala de Claude como el resto de modos de conexión.
