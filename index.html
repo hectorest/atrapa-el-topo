@@ -709,6 +709,18 @@ body.gate #gate{display:flex;animation:gatein .5s ease-out}
 
 /* Elegir modo de juego */
 #mode-overlay{position:fixed!important;z-index:84!important;border-radius:0!important;background:radial-gradient(ellipse at center,rgba(18,32,18,.94),rgba(8,18,10,.98))!important;padding:3vmin;gap:3vmin!important}
+#pre-overlay{position:fixed!important;z-index:84!important;border-radius:0!important;justify-content:flex-start!important;overflow:auto;background:radial-gradient(ellipse at center,rgba(18,32,18,.94),rgba(8,18,10,.98))!important;padding:3vmin;gap:2.4vmin!important}
+#pre-overlay h1{font-size:max(5.6vmin,24px)!important;flex:none}
+#pre-box{width:min(620px,100%);box-sizing:border-box;padding:2.4vmin;border-radius:2.6vmin;background:linear-gradient(var(--cream),var(--cream-2));color:var(--ink);border:.45vmin solid var(--wood-2);box-shadow:var(--lift);display:flex;flex-direction:column;gap:1.6vmin}
+#pre-modes{display:flex;gap:1.2vmin}
+#pre-modes button{flex:1;font-size:max(3vmin,16px);padding:1.1vmin .6vmin}
+#pre-goal{list-style:none;margin:0;padding:1.2vmin 1.6vmin;border-radius:1.8vmin;background:rgba(138,90,43,.14);display:flex;flex-direction:column;gap:.6vmin;font-weight:700;font-size:max(2.6vmin,14px)}
+#pre-tips{display:flex;flex-direction:column;gap:.9vmin}
+#pre-tips div{display:flex;align-items:center;gap:1.4vmin;font-size:max(2.5vmin,14px);font-weight:600;line-height:1.25}
+#pre-tips i{font-style:normal;font-size:max(5vmin,24px);flex:none;width:1.4em;text-align:center}
+#pre-hint{margin:0;text-align:center;font-size:max(2.2vmin,12px);font-weight:700;opacity:.75;min-height:2.6em}
+#pre-go{font-size:max(4.6vmin,22px)!important;padding:2vmin 6vmin!important;flex:none}
+#pre-back{flex:none}
 #mode-cards{display:flex;gap:3vmin;flex-wrap:wrap;justify-content:center;width:min(900px,100%)}
 #mode-cards button{flex:1 1 260px;display:flex;flex-direction:column;align-items:center;gap:1vmin;padding:3.4vmin 2.4vmin;font-size:max(4vmin,20px);border-radius:3vmin}
 #mode-cards .mi{font-size:max(11vmin,52px);line-height:1}
@@ -839,7 +851,7 @@ body.gate #gate{display:flex;animation:gatein .5s ease-out}
 #pwa-no{font-size:max(2.5vmin,14px)!important;padding:1vmin!important}
 @media (max-height:520px){.pwa-ico{display:none}.pwa-perks{display:none}}
 /* Zonas seguras (notch / isla dinámica / barra inferior) en pantallas que no cuelgan de <html> */
-#intro,#gate,#mode-overlay,#link-overlay,#rk-overlay,#settings-overlay,#tv-screen{
+#intro,#gate,#mode-overlay,#pre-overlay,#link-overlay,#rk-overlay,#settings-overlay,#tv-screen{
   padding-top:calc(2.5vmin + var(--sat))!important;padding-bottom:calc(2.5vmin + var(--sab))!important;
   padding-left:calc(2.5vmin + var(--sal))!important;padding-right:calc(2.5vmin + var(--sar))!important}
 #countdown{padding:var(--sat) var(--sar) var(--sab) var(--sal)}
@@ -878,7 +890,7 @@ body.no-fs #fs-btn,body.no-fs #vs-split-fs{display:none!important}
 /* ventana de la PWA más corta que la pantalla: estira html y lo fijo hasta el borde real */
 :root{--vpx:0px}
 html.vp-short{height:calc(100% + var(--vpx))}
-html.vp-short :is(#intro,#countdown,#gate,#tv-screen,#pwa-card,#vs-split-host,#vs-overlay,#link-overlay,#mode-overlay,#rk-overlay,#settings-overlay){bottom:calc(-1 * var(--vpx))}
+html.vp-short :is(#intro,#countdown,#gate,#tv-screen,#pwa-card,#vs-split-host,#vs-overlay,#link-overlay,#mode-overlay,#pre-overlay,#rk-overlay,#settings-overlay){bottom:calc(-1 * var(--vpx))}
 html.vp-short #tuto[data-pos=bottom]{bottom:calc(8px - var(--vpx))}
 html.vp-short #ver{bottom:calc(env(safe-area-inset-bottom,0px) + 6px - var(--vpx))}
 html.vp-short #fs-hint{bottom:calc(env(safe-area-inset-bottom,0px) + 14px - var(--vpx))}
@@ -887,6 +899,7 @@ input,textarea{-webkit-user-select:text;user-select:text;touch-action:auto}   /*
 #mus-btn{position:fixed;z-index:500;display:none;top:calc(env(safe-area-inset-top,0px) + 6px);right:calc(env(safe-area-inset-right,0px) + 6px);width:max(5.4vmin,38px);height:max(5.4vmin,38px);padding:0;border-radius:50%;
   align-items:center;justify-content:center;font-size:max(3vmin,19px);line-height:1;color:#fff4d6;background:rgba(40,25,10,.72);border:.3vmin solid rgba(255,244,214,.55);box-shadow:0 .4vmin 0 rgba(0,0,0,.35);cursor:pointer;touch-action:manipulation}
 body.intro:not(.gate):not(.vs-frame) #mus-btn{display:flex}
+body:has(:is(#mode-overlay,#pre-overlay,#link-overlay,#vs-overlay,#settings-overlay,#rk-overlay):not([hidden])) #mus-btn{display:none!important}
 body.intro:not(.no-fs) #mus-btn{right:calc(env(safe-area-inset-right,0px) + 6px + max(5.4vmin,38px) + 8px)}
 #mus-btn.off{opacity:.8}
 #mus-btn:active{transform:translateY(.3vmin)}
@@ -1003,6 +1016,21 @@ body.vs-frame #app{padding:1.2vmin;gap:1vmin}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body class="intro gate">
+<div class="overlay" id="pre-overlay" hidden>
+  <h1>🌾 ¡Prepara tu granja!</h1>
+  <div id="pre-box">
+    <div id="pre-modes"></div>
+    <ul id="pre-goal"></ul>
+    <div id="pre-tips">
+      <div><i>🥕</i><span>Toca los cultivos <b>maduros</b> para cosecharlos</span></div>
+      <div><i>🐭</i><span>Toca al <b>topo</b> antes de que se coma el cultivo</span></div>
+      <div><i>🥀</i><span>Replanta los cultivos muertos con una <b>semilla</b> 🌰</span></div>
+    </div>
+    <p id="pre-hint"></p>
+  </div>
+  <button id="pre-go">▶ ¡Listo, a jugar!</button>
+  <button id="pre-back" class="secondary">← Volver</button>
+</div>
 <div class="overlay" id="mode-overlay" hidden>
   <h1>¿Cómo quieres jugar?</h1>
   <div id="mode-cards">
@@ -1295,7 +1323,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.14.1", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.15.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -4233,7 +4261,27 @@ const IntroPlugin = {
     bus.on("game:end", s => { if (s.endReason === "tutorial") show(); });
     $("i-play").addEventListener("click", () => { $("mode-overlay").hidden = false; });
     document.body.appendChild($("mode-overlay"));
-    $("m-solo").addEventListener("click", () => { $("mode-overlay").hidden = true; game.multi = false; game.start(); });
+    /* Previa de la partida individual: dificultad, objetivo y un par de consejos antes de la cuenta atrás */
+    const HINTS = ["💡 Con 5 aciertos seguidos ganas un poder: ⏳ cámara lenta, 🌱 abono, 🛡️ espantapájaros o ❄️ helada.",
+      "💡 Las crías solo se eliminan con trampas 🪤: cómpralas con cosechas y colócalas en el cultivo más crecido.",
+      "💡 Cuanto más come el topo, más se llena su barriga… y nace una cría 🐣.",
+      "💡 Tocar fuera del topo cuenta como error y muerde tu cultivo: no toques a lo loco.",
+      "💡 Replanta rápido: un cultivo muerto contagia a sus vecinos.",
+      "💡 Cada cierto tiempo llega un topo gigante 👑: hay que golpearlo muchas veces antes de que huya.",
+      "💡 La lluvia acelera los cultivos y la sequía los frena; con la noche cuesta ver. Siempre hay aviso."];
+    const renderPre = () => {
+      const m = byKey("mode"), box = $("pre-modes"); box.innerHTML = "";
+      m.options.forEach(o => { const b = document.createElement("button"); b.className = "secondary" + (m.get() === o.value ? " on" : ""); b.textContent = o.label;
+        b.addEventListener("click", () => { m.set(o.value); if (game.saveSettings) game.saveSettings(); renderPre(); }); box.appendChild(b); });
+      const g = CONFIG.goalHarvest | 0, r = CONFIG.razePct | 0, goal = $("pre-goal"); goal.innerHTML = "";
+      [g > 0 ? `🏆 Cosecha <b>${g}</b> 🥕 para ganar` : "♾️ Sin meta: aguanta todo lo que puedas",
+       r >= 100 ? "🔥 Pierdes si mueren <b>todos</b> los cultivos a la vez" : `🔥 Pierdes si muere el <b>${r}%</b> de los cultivos`,
+       `🌰 Empiezas con <b>${CONFIG.startSeeds}</b> semilla${CONFIG.startSeeds === 1 ? "" : "s"}`].forEach(t => { const li = document.createElement("li"); li.innerHTML = t; goal.appendChild(li); });
+    };
+    $("m-solo").addEventListener("click", () => { $("mode-overlay").hidden = true; renderPre(); $("pre-hint").textContent = HINTS[Math.floor(Math.random() * HINTS.length)]; $("pre-overlay").hidden = false; });
+    document.body.appendChild($("pre-overlay"));
+    $("pre-go").addEventListener("click", () => { $("pre-overlay").hidden = true; game.multi = false; game.start(); });
+    $("pre-back").addEventListener("click", () => { $("pre-overlay").hidden = true; $("mode-overlay").hidden = false; });
     $("m-back").addEventListener("click", () => { $("mode-overlay").hidden = true; });
     $("m-multi").addEventListener("click", () => { $("mode-overlay").hidden = true; game.bus.emit("link:open"); });
     $("i-tuto").addEventListener("click", () => $("btn-tutorial").click());
