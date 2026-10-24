@@ -1,1 +1,1 @@
-{ "v": "1.19.8", "date": "24 oct 2026", "notes": "Sala de la TV/anfitrión en tablet: ya no se cortan jugadores ni botones." }
+{ "v": "1.19.9", "date": "24 oct 2026", "notes": "Salas por WebRTC también por Internet (MQTT): los móviles con Safari/iPhone que no pueden por WebRTC entran igual." }

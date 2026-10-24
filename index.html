@@ -11503,7 +11503,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.19.8", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.19.9", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -14747,7 +14747,7 @@ const LinkTransports = (() => {
       }
       const pr = await openPeer();
       const c = pr.connect("topo-" + code, { reliable: true });
-      await new Promise((res, rej) => { c.on("open", res); c.on("error", rej); pr.on("error", rej); setTimeout(() => rej({ type: "peer-unavailable" }), 9000); });
+      await new Promise((res, rej) => { c.on("open", res); c.on("error", rej); pr.on("error", rej); setTimeout(() => rej({ type: "peer-unavailable" }), 6000); });
       let L = []; const fire = () => peerHs.forEach(f => f({ peers: list() }));
       const list = () => L.map(p => ({ peer: p.peer, sameTab: p.peer === pr.id, isMe: p.peer === pr.id, presence: p.presence }));
       c.on("data", m => {
@@ -14764,7 +14764,19 @@ const LinkTransports = (() => {
       };
     } };
 
-  return { W: peerT, M: mqttT("M", "wss://broker.emqx.io:8084/mqtt", "Internet (MQTT)"), N: mqttT("N", "wss://broker.hivemq.com:8884/mqtt", "Internet (MQTT 2)"), R: roomT };
+  /* Canal doble: la sala escucha por dos transportes a la vez (cada móvil entra por el que le funcione) */
+  const dualCh = (a, b) => {
+    const list = () => { const A = a.peers(); return [...A, ...b.peers().filter(p => !p.isMe)]; };
+    return {
+      emit: (t, d) => { a.emit(t, d); b.emit(t, d); return RES; },
+      on: (t, f) => { const x = a.on(t, f), y = b.on(t, f); return () => { x && x(); y && y(); }; },
+      presence: p => { a.presence(p); b.presence(p); return RES; },
+      peers: list,
+      onPeers: f => { const g = () => f({ peers: list() }); const x = a.onPeers(g), y = b.onPeers(g); return () => { x && x(); y && y(); }; },
+      leave: () => { try { a.leave(); } catch (e) {} try { b.leave(); } catch (e) {} return RES; }
+    };
+  };
+  return { dual: dualCh, W: peerT, M: mqttT("M", "wss://broker.emqx.io:8084/mqtt", "Internet (MQTT)"), N: mqttT("N", "wss://broker.hivemq.com:8884/mqtt", "Internet (MQTT 2)"), R: roomT };
 })();
 
 const LinkPlugin = {
@@ -14913,6 +14925,7 @@ const LinkPlugin = {
         tried.push(T.label + ": " + (lastErr && (lastErr.type || lastErr.message || lastErr.code) || "error"));
       }
       if (!got) { status(st, pref === "auto" ? "No se pudo establecer ninguna conexión (WebRTC, Internet ni sala de Claude)." : errMsg(lastErr, T) + " Prueba otro tipo en Ajustes.", "err"); diag(tried.join(" · ")); return; }
+      if (T.id === "W" && pref === "auto") { try { const m = await Promise.race([LinkTransports.M.open(code, true), new Promise((_, no) => setTimeout(() => no(0), 9000))]); if (my !== token) { try { m.leave(); got.leave(); } catch (e) {} return; } got = LinkTransports.dual(got, m); diag("W+M"); } catch (e) {} }
       ch = got; const full = T.id + code;
       if (home) { try { localStorage.setItem("topo-tv-room", full); } catch (e) {} }
       $("tv-code").textContent = full; $("tv-chip-code").textContent = "Sala " + full; $("tv-chip-time").hidden = true; $("tv-chip-lead").hidden = true;
@@ -14976,11 +14989,15 @@ const LinkPlugin = {
       const code = (raw || "").toUpperCase().replace(/[^A-Z]/g, "");
       const st = $("link-pad-status");
       if (code.length !== 5 || !LinkTransports[code[0]]) return status(st, "El código tiene 5 letras (por ejemplo RABCD).", "err");
-      reset(); mode = "pad"; const my = ++token, T = LinkTransports[code[0]];
+      reset(); mode = "pad"; const my = ++token; let T = LinkTransports[code[0]];
       status(st, `Conectando (${T.label})…`);
       if (!(await T.avail())) return status(st, `Este dispositivo no admite ${T.label}. Elige otro tipo de conexión en el anfitrión (Ajustes).`, "err");
       let got;
-      try { got = await T.open(code.slice(1), false); } catch (e) { if (my === token) status(st, errMsg(e, T), "err"); return; }
+      try { got = await T.open(code.slice(1), false); }
+      catch (e) {
+        if (T.id === "W" && my === token) { try { status(st, "Probando por Internet…"); T = LinkTransports.M; got = await T.open(code.slice(1), false); } catch (e2) { if (my === token) status(st, errMsg(e2, T), "err"); return; } }
+        else { if (my === token) status(st, errMsg(e, T), "err"); return; }
+      }
       if (my !== token) { try { got.leave(); } catch (e) {} return; }
       myName = ($("link-name").value || "").trim().slice(0, 12) || "Granjero";
       try { localStorage.setItem("topo-nombre", myName); } catch (e) {}
