@@ -11507,7 +11507,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.21.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.21.1", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -12907,10 +12907,7 @@ const PowerUpsPlugin = {
     btns.forEach(b => b.addEventListener("click", () => activate(b.dataset.power)));
 
     const award = () => {
-      let keys = Object.keys(POWERS);
-      const c = game.cropFx ? game.cropFx.counts() : { dead: 0, ripe: 0 };   // los poderes de granja solo caen si sirven
-      const useful = keys.filter(k => k === "fungi" ? c.dead > 0 : k === "combine" ? c.dead + c.ripe > 0 : true);
-      if (useful.length) keys = useful;
+      const keys = Object.keys(POWERS);
       const t = keys[randInt(0, keys.length - 1)];
       game.state.powerStock[t]++;
       popText(board, `⚡ ¡Potenciador! ${POWERS[t].icon}`, null);
