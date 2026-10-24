@@ -18,3 +18,8 @@ Granjero contra granjero, con las reglas de siempre: cada jugador defiende su ca
 - **Online:** crea un duelo y comparte el código (o el QR); usa WebRTC, MQTT o la sala de Claude como el resto de modos de conexión.
 
 - **3D:** los efectos del versus (túnel que tiembla, topo gigante con corona, cuervo, lluvia de la tormenta) se dibujan también en la vista 3D. En la pantalla dividida el 3D es opcional (casilla en el menú del Versus, desactivada por defecto porque son dos escenas a la vez).
+
+## TV de casa (Carrera)
+Abre **`…/atrapa-el-topo/tv`** en el navegador de la TV (por ejemplo Silk en Fire TV; guárdala como favorito o página de inicio).
+La TV queda esperando con un código fijo que recuerda. En el móvil: *Jugar → Carrera → Unirme* y escribe el código **una vez**;
+después aparece el botón **📺 Mi TV** para entrar de jugador con un toque, y el móvil puede pulsar **▶ Empezar la carrera para todos**.
