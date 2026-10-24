@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="28%" r="80%"><stop offset="0" stop-color="#a5e872"/><stop offset=".55" stop-color="#47932f"/><stop offset="1" stop-color="#244f1e"/></radialGradient>
+    <radialGradient id="fur" cx="45%" cy="25%" r="85%"><stop offset="0" stop-color="#7a6560"/><stop offset=".6" stop-color="#4c3b37"/><stop offset="1" stop-color="#2e2321"/></radialGradient>
+    <linearGradient id="dirt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9744a"/><stop offset="1" stop-color="#6b4423"/></linearGradient>
+    <radialGradient id="snout" cx="50%" cy="35%" r="70%"><stop offset="0" stop-color="#ffc4c4"/><stop offset="1" stop-color="#ee8f9b"/></radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g fill="#fff" opacity=".18"><ellipse cx="96" cy="92" rx="60" ry="18"/><ellipse cx="420" cy="132" rx="46" ry="14"/></g>
+  <!-- montículo y agujero -->
+  <ellipse cx="256" cy="372" rx="196" ry="66" fill="url(#dirt)"/>
+  <ellipse cx="256" cy="362" rx="150" ry="46" fill="#1d1109"/>
+  <!-- topo -->
+  <g>
+    <path d="M142 372 C128 250 170 150 256 150 C342 150 384 250 370 372 Z" fill="url(#fur)"/>
+    <ellipse cx="226" cy="190" rx="52" ry="26" fill="#fff" opacity=".13" transform="rotate(-20 226 190)"/>
+    <!-- ojos -->
+    <circle cx="210" cy="238" r="12" fill="#0d0908"/><circle cx="302" cy="238" r="12" fill="#0d0908"/>
+    <circle cx="214" cy="233" r="4" fill="#fff"/><circle cx="306" cy="233" r="4" fill="#fff"/>
+    <!-- hocico rosado -->
+    <path d="M256 258 C222 262 206 292 214 318 C226 336 286 336 298 318 C306 292 290 262 256 258 Z" fill="url(#snout)"/>
+    <ellipse cx="256" cy="270" rx="17" ry="13" fill="#e0707f"/>
+    <circle cx="249" cy="270" r="3.2" fill="#8a2f3d"/><circle cx="263" cy="270" r="3.2" fill="#8a2f3d"/>
+    <path d="M256 283 L256 304 M256 304 C246 314 238 312 232 306 M256 304 C266 314 274 312 280 306" stroke="#b9565f" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <rect x="248" y="304" width="9" height="15" rx="3" fill="#fff"/><rect x="259" y="304" width="9" height="15" rx="3" fill="#fff"/>
+  </g>
+  <!-- borde delantero de tierra -->
+  <path d="M60 372 C60 430 150 450 256 450 C362 450 452 430 452 372 C452 392 360 412 256 412 C152 412 60 392 60 372 Z" fill="url(#dirt)"/>
+  <path d="M142 372 C160 392 352 392 370 372 C352 360 160 360 142 372 Z" fill="#1d1109" opacity="0"/>
+  <!-- manos con garras -->
+  <g>
+    <g transform="rotate(-22 128 352)"><ellipse cx="128" cy="352" rx="52" ry="34" fill="#f4a9ac"/><g fill="#fff6ec" stroke="#d9a58f" stroke-width="2"><ellipse cx="86" cy="338" rx="9" ry="14"/><ellipse cx="82" cy="355" rx="9" ry="14"/><ellipse cx="88" cy="372" rx="9" ry="14"/></g></g>
+    <g transform="rotate(22 384 352)"><ellipse cx="384" cy="352" rx="52" ry="34" fill="#f4a9ac"/><g fill="#fff6ec" stroke="#d9a58f" stroke-width="2"><ellipse cx="426" cy="338" rx="9" ry="14"/><ellipse cx="430" cy="355" rx="9" ry="14"/><ellipse cx="424" cy="372" rx="9" ry="14"/></g></g>
+  </g>
+  <!-- tierra suelta -->
+  <g fill="#8b5e3c"><circle cx="70" cy="330" r="10"/><circle cx="446" cy="320" r="12"/><circle cx="98" cy="300" r="7"/><circle cx="418" cy="296" r="8"/><circle cx="170" cy="438" r="9"/><circle cx="352" cy="440" r="10"/></g>
+  <!-- hierba -->
+  <g stroke="#7fd04a" stroke-width="10" stroke-linecap="round" fill="none"><path d="M54 452 q4 -34 18 -48 M74 458 q2 -26 -6 -44"/><path d="M458 452 q-4 -34 -18 -48 M438 458 q-2 -26 6 -44"/></g>
+</svg>
