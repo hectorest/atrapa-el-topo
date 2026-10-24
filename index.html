@@ -20,7 +20,7 @@
   --good:#2e9e4f; --bad:#d64545; --shadow:rgba(0,0,0,.2);
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
-  padding-bottom:env(safe-area-inset-bottom,0px);
+  padding-bottom:calc(env(safe-area-inset-bottom,0px) * .3);   /* la barra de inicio de iOS es fina: no desperdiciar la franja entera */
   padding-left:env(safe-area-inset-left,0px);
   padding-right:env(safe-area-inset-right,0px);
   --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px); --sal:env(safe-area-inset-left,0px); --sar:env(safe-area-inset-right,0px);
@@ -245,7 +245,8 @@ button.secondary.on{background:var(--accent);box-shadow:0 3px 0 rgba(0,0,0,.25)}
   :root:not([data-theme="light"]){ --cream:#4a3a2b; --cream-2:#382b20; --ink:#fbeed3; --wood-1:#9a6a38; --wood-2:#6e4824; --wood-3:#3d2813; }
 }
 :root[data-theme="dark"]{ --cream:#4a3a2b; --cream-2:#382b20; --ink:#fbeed3; --wood-1:#9a6a38; --wood-2:#6e4824; --wood-3:#3d2813; }
-body{font-family:var(--font);background:radial-gradient(120vmax 70vmax at 50% -10%,#bfe6a4,var(--bg))}
+html{background:radial-gradient(120vmax 70vmax at 50% -10%,#bfe6a4,var(--bg)) fixed,var(--bg);min-height:100vh;min-height:100dvh}
+body{font-family:var(--font);background:transparent}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) body{background:radial-gradient(120vmax 70vmax at 50% -10%,#2d4d36,var(--bg))} }
 :root[data-theme="dark"] body{background:radial-gradient(120vmax 70vmax at 50% -10%,#2d4d36,var(--bg))}
 
@@ -1243,7 +1244,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.12.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.12.1", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
