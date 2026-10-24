@@ -1200,7 +1200,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.9.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.9.1", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -1537,6 +1537,7 @@ class Game {
 
   showMole() {
     if (this.state.breather || this.state.bossActive) return;   // pausa de oleada / combate contra el jefe
+    if (this.vs && !(this.vsBank > 0)) return;           // versus: solo sale un topo si este campo «tiene» uno
     if (this.board.el.querySelector(".hole.up")) return; // solo un topo en pantalla
     const free = [...Array(this.board.size).keys()].filter(i => !this.active.has(i) && !this.targets.has(i));
     if (!free.length) return;
@@ -1550,6 +1551,7 @@ class Game {
     this.board.setUp(i, true);
     const t = Timers.timeout(() => this.hideMole(i, "escape"), rand(p.moleVisibleMs.min, p.moleVisibleMs.max) * this.state.slow);
     this.active.set(i, t);
+    if (this.vs) this.vsBank--;
     this.bus.emit("mole:show", { index: i });
   }
 
@@ -2284,6 +2286,12 @@ const PupsPlugin = {
     };
     const poke = p => {
       const i = p.hole;
+      if (game.vs) {                       // versus: tocar una cría la manda al campo del rival
+        popText(board, "➡️ ¡Cría al rival!", i);
+        hide(p, true); pups = pups.filter(q => q !== p); updateCount();
+        bus.emit("pup:pass", { size: p.size });
+        return;
+      }
       freeze(p, P().freezeSec);
       hide(p, false);                      // vuelve a asomar más tarde
       bus.emit("pup:poke", { index: i });
@@ -2320,6 +2328,14 @@ const PupsPlugin = {
       render();
     };
 
+    game.addPup = size => {                // versus: llega una cría del rival (conserva su tamaño)
+      if (!game.state.running) return;
+      const p = { id: nextId++, size: Math.max(0, Math.min(1, +size || 0)), hole: null, el: null, timer: null, frozen: false, freezeTimer: null };
+      pups.push(p); born++; updateCount();
+      popText(board, "🐭 ¡Te llega una cría!", null);
+      bus.emit("pup:born", { id: p.id });
+      schedule(p);
+    };
     const clearPups = () => { pups.forEach(p => hide(p, true)); pups = []; updateCount(); };
 
     bus.on("crop:eat", ({ amount, source, by }) => {
@@ -4788,8 +4804,8 @@ const UpdatePlugin = {
    VERSUS — granjero contra granjero (a lo Clash Royale, con la mecánica de siempre)
    Cada jugador defiende SU campo con las reglas de siempre. Lo que haces bien llena una barra de energía ⚡
    y la gastas en cartas: unas atacan el campo del rival (topo, gigante, plaga, cuervo, tormenta) y otras
-   te refuerzan (trampa, espantapájaros, abono). Los topos enviados cavan un túnel (1,5 s de aviso) y, si
-   los golpeas justo al salir, REBOTAN contra quien los envió. Gana quien arrase el campo del otro
+   te refuerzan (trampa, espantapájaros, abono). Los topos son COMPARTIDOS: cada topo que golpeas pasa al campo rival (túnel de 1,5 s de aviso; si lo golpeas
+   justo al salir REBOTA más enfadado y da más energía) y el que se te escapa se queda en tu campo. Igual las crías: tocar una la manda al rival. Gana quien arrase el campo del otro
    (VS.razePct % de cultivos muertos) o, al acabarse el tiempo, quien tenga más puntos.
    Local y online usan el mismo protocolo de mensajes {t, f, ...}:
      hi · go · card · st · over · fin · rematch · bye
@@ -4798,7 +4814,7 @@ const UpdatePlugin = {
 const VS = { timeSec: 180, maxEnergy: 10, startEnergy: 5, regenSec: 2.8, tunnelMs: 1500, reboundMs: 650, razePct: 60,
   stormSec: 10, stormMul: 0.35, powerSec: 8, hand: 4 };
 const VS_CARDS = {
-  mole:   { icon: "🐭", name: "Topo",     cost: 3, atk: true,  txt: "Un topo cava un túnel hasta el campo rival" },
+  mole:   { icon: "🐭", name: "Topo",     cost: 3, atk: true,  txt: "Añade un topo más al campo rival" },
   giant:  { icon: "👑", name: "Gigante",  cost: 6, atk: true,  txt: "Topo gigante: necesita 3 golpes" },
   blight: { icon: "🐛", name: "Plaga",    cost: 3, atk: true,  txt: "Marchita el mejor cultivo del rival" },
   crow:   { icon: "🐦", name: "Cuervo",   cost: 4, atk: true,  txt: "Se come un cultivo maduro del rival" },
@@ -4832,6 +4848,7 @@ const VersusPlugin = {
 
     /* ---- Estado de una partida ---- */
     let energy = 0, dbl = false, lastF = -1, hand = [], queue = [], stormT = null;
+    const showAt = new Map();                      // cuándo salió cada topo (para el rebote rápido)
     const vsMoles = new Map();                     // topos enviados por el rival que están fuera: índice -> { born, kind, rebound, hp }
     const tun = new Map();                         // túneles en marcha: índice -> temporizador
     const btns = [];
@@ -4948,19 +4965,21 @@ const VersusPlugin = {
       }
       return false;
     });
-    bus.on("mole:escape", ({ index }) => { vsMoles.delete(index); board.holes[index].classList.remove("giant"); });
+    bus.on("mole:escape", ({ index }) => { vsMoles.delete(index); board.holes[index].classList.remove("giant"); if (game.vs) game.vsBank = (game.vsBank || 0) + 1; });   // el topo que escapa se queda en este campo
+    bus.on("mole:show", ({ index }) => showAt.set(index, performance.now()));
     bus.on("mole:hit", ({ index }) => {
       if (!game.vs) return;
       const m = vsMoles.get(index); board.holes[index].classList.remove("giant");
-      if (!m) { addEnergy(0.5); return; }
       vsMoles.delete(index);
-      if (m.kind === "mole" && !m.rebound && performance.now() - m.born <= VS.reboundMs) {     // ¡rebote!: vuelve a quien lo envió
-        send({ t: "card", c: "mole", rb: 1 }); popText(board, "↩️ ¡Rebote!", index); addEnergy(1); bus.emit("vs:rebound", { index });
-      } else {
-        addEnergy(m.kind === "giant" ? 2 : 0.5);
-        if (m.kind === "giant") { game.state.score += 4; bus.emit("score:change", game.state.score); popText(board, "👑 +4", index); }
+      if (m && m.kind === "giant") {                 // el gigante muere aquí
+        addEnergy(2); game.state.score += 4; bus.emit("score:change", game.state.score); popText(board, "👑 +4", index); return;
       }
+      const quick = performance.now() - (showAt.get(index) || 0) <= VS.reboundMs;     // golpe rápido = rebote (vuelve más enfadado y da más energía)
+      send({ t: "card", c: "mole", rb: quick ? 1 : 0 });                              // todo topo golpeado pasa al campo del rival
+      popText(board, quick ? "↩️ ¡Rebote!" : "➡️ ¡Al rival!", index); addEnergy(quick ? 1 : 0.5);
+      if (quick) bus.emit("vs:rebound", { index });
     });
+    bus.on("pup:pass", ({ size }) => { if (game.vs) { send({ t: "pup", size }); addEnergy(0.5); } });
     bus.on("crop:harvest", () => { if (game.vs) addEnergy(1); });
     bus.on("pup:caught", () => { if (game.vs) addEnergy(1); });
     bus.on("crop:dead", renderDead); bus.on("crop:replant", renderDead);
@@ -4975,7 +4994,7 @@ const VersusPlugin = {
       if (!game.vs) return;
       board.holes.forEach(h => h.classList.remove("tunnel", "giant", "crow")); vsMoles.clear(); tun.clear();
       board.el.classList.remove("vs-storm");
-      energy = VS.startEnergy; dbl = false; lastF = -1;
+      energy = VS.startEnergy; dbl = false; lastF = -1; game.vsBank = 1; showAt.clear();
       const d = shuffle(Object.keys(VS_CARDS)); hand = d.slice(0, VS.hand); queue = d.slice(VS.hand);
       $("vs-end").hidden = true; $("vs-quit").textContent = "🏳️";
       renderEnergy(); renderCards(); renderDead(); renderRival();
@@ -5077,6 +5096,7 @@ const VersusPlugin = {
           if (!S.host && (S.phase === "lobby" || S.phase === "end")) beginMatch(m);
           break;
         case "card": if (S.phase === "play" && VS_CARDS[m.c]) incoming(m.c, m.rb); break;
+        case "pup": if (S.phase === "play" && game.addPup) game.addPup(m.size); break;
         case "st": if (S.phase === "play" || S.phase === "end") { S.lastSeen = Date.now(); S.oppSt = { sc: m.sc | 0, en: m.en | 0, cells: String(m.cells || ""), mo: Array.isArray(m.mo) ? m.mo : [] }; if (S.phase === "play") renderRival(); } break;
         case "over":
           if (S.phase === "play") { S.why = m.r === "quit" ? `${S.oppName} se ha rendido` : `¡Has arrasado el campo de ${S.oppName}! 🔥`; game.end("vswin"); }
