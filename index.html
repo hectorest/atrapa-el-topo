@@ -692,6 +692,17 @@ body.gate #gate{display:flex;animation:gatein .5s ease-out}
 #link-box>div[hidden]{display:none}
 #link-box p{margin:0;font-size:max(2.5vmin,14px);font-weight:600;line-height:1.35}
 #link-box button{width:100%;font-size:max(3vmin,16px);padding:1.4vmin 2vmin}
+/* Tablet (unirse / elegir carrera): panel más grande y centrado, no como una TV */
+@media (min-width:700px) and (min-height:640px){
+  #link-overlay:has(#link-choose:not([hidden])),#link-overlay:has(#link-padview:not([hidden])){justify-content:center!important;gap:2.4vmin}
+  #link-overlay:has(#link-choose:not([hidden])) h1,#link-overlay:has(#link-padview:not([hidden])) h1{font-size:max(6.4vmin,40px)!important}
+  #link-box:has(#link-choose:not([hidden])),#link-box:has(#link-padview:not([hidden])){width:min(760px,92%);padding:3.4vmin 3.6vmin;gap:2vmin}
+  #link-box:has(#link-choose:not([hidden])) p,#link-box:has(#link-padview:not([hidden])) p{font-size:max(2.5vmin,19px)}
+  #link-box:has(#link-choose:not([hidden])) button,#link-box:has(#link-padview:not([hidden])) button{font-size:max(3vmin,24px);padding:1.8vmin 2.4vmin}
+  #link-box:has(#link-choose:not([hidden])) label,#link-box:has(#link-padview:not([hidden])) label{font-size:max(2.6vmin,20px)}
+  #link-box:has(#link-choose:not([hidden])) #link-name,#link-box:has(#link-padview:not([hidden])) #link-name,#link-box #link-hname{font-size:max(3.2vmin,24px)}
+  #link-box:has(#link-padview:not([hidden])) #link-input{font-size:max(7vmin,48px)}
+}
 #link-code[hidden]{display:none}
 #link-code{display:flex;flex-direction:column;align-items:center;gap:.8vmin}
 #link-code-txt{font-family:var(--font);font-size:max(11vmin,48px);letter-spacing:.12em;line-height:1;color:var(--wood-3)}
@@ -11455,7 +11466,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.19.3", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.19.4", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
