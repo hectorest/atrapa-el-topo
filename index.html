@@ -843,6 +843,7 @@ body.gate #gate{display:flex;animation:gatein .5s ease-out}
 /* Versión */
 #ver{position:fixed;z-index:55;right:calc(env(safe-area-inset-right,0px) + 10px);bottom:calc(env(safe-area-inset-bottom,0px) + 6px);font-size:max(1.8vmin,10px);font-weight:700;color:rgba(255,255,255,.92);text-shadow:0 1px 3px rgba(0,0,0,.7);pointer-events:none;display:none}
 body.intro #ver{display:block}
+#set-diag{opacity:.55;font-size:max(1.6vmin,10px);font-weight:600;flex:none;text-align:center}
 #set-ver,#tv-ver{opacity:.65;font-size:max(1.9vmin,11px);font-weight:600;flex:none}
 /* Aviso de nueva versión */
 #upd-card{position:fixed;z-index:700;left:50%;top:calc(env(safe-area-inset-top,0px) + 8px);transform:translateX(-50%);width:min(620px,calc(100vw - 16px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px)));box-sizing:border-box;display:flex;align-items:center;gap:2vmin;padding:2vmin 2.4vmin;border-radius:3vmin;
@@ -1197,6 +1198,7 @@ body.vs-frame #app{padding:1.2vmin;gap:1vmin}
       <div id="set-tabs"></div>
       <div id="settings"></div>
       <small id="set-ver"></small>
+      <small id="set-diag"></small>
       <button id="btn-upd" class="secondary" type="button" hidden>🔄 Buscar actualización</button>
       <button id="btn-settings-back">← Volver</button>
     </div>
@@ -1244,7 +1246,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.12.1", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.12.2", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -4871,6 +4873,14 @@ const PwaPlugin = {
   const t = `Versión ${GAME_VERSION.v} · ${GAME_VERSION.date}`;
   ["ver", "set-ver", "tv-ver"].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = t; });
   document.title = `Atrapa el topo v${GAME_VERSION.v}`;
+  (() => {   /* diagnóstico de pantalla (zonas seguras): se ve en Ajustes */
+    const probe = document.createElement("div"); probe.style.cssText = "position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;padding-bottom:env(safe-area-inset-bottom,0px);padding-top:env(safe-area-inset-top,0px)";
+    document.body.appendChild(probe);
+    const upd = () => { const cs = getComputedStyle(probe), vv = window.visualViewport, el = document.getElementById("set-diag"); if (!el) return;
+      const sa = !!(navigator.standalone || (window.matchMedia && matchMedia("(display-mode: standalone)").matches));
+      el.textContent = `Pantalla ${screen.width}×${screen.height} · ventana ${innerWidth}×${innerHeight} · visual ${vv ? Math.round(vv.width) + "×" + Math.round(vv.height) : "-"} · html ${document.documentElement.clientHeight} · margen sup ${cs.paddingTop} inf ${cs.paddingBottom} · ${sa ? "instalada" : "navegador"}`; };
+    upd(); window.addEventListener("resize", upd); document.getElementById("btn-settings").addEventListener("click", () => setTimeout(upd, 50));
+  })();
 })();
 /* Aviso de actualización: consulta version.json (sin caché) y, si hay una versión más nueva, sugiere forzar la recarga
    borrando la copia guardada (por si está instalado como app o hay caché). Nunca interrumpe una partida. */
