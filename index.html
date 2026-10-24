@@ -767,6 +767,23 @@ body.gate #gate{display:flex;animation:gatein .5s ease-out}
 #tv-steps small{display:block;opacity:.6;font-size:.8em;word-break:break-all}
 .wa{background:linear-gradient(#4be07a,#1fa855)!important;border-color:#127a3a!important;color:#fff!important;font-weight:800}
 body.tv-home #tv-wa{display:none}
+/* Anfitrión que también juega (sin TV): sala compacta, no a lo grande de una TV */
+body.host-play #tv-steps,body.host-play #tv-url{display:none}
+body.host-play #tv-screen{padding-bottom:calc(2.2vmin + env(safe-area-inset-bottom,0px) + 14px);padding-top:calc(2.2vmin + env(safe-area-inset-top,0px))}
+body.host-play #tv-lobby{overflow:auto;-webkit-overflow-scrolling:touch}
+body.host-play #tv-join,body.host-play #tv-who{min-height:max-content}
+body.host-play #tv-lobby-list{flex:1 0 auto;overflow:visible}
+body.host-play #tv-head{padding-right:max(96px,14vmin)}
+body.host-play #tv-qr{width:min(26vmin,200px)}
+body.host-play #tv-code{font-size:max(8vmin,38px)}
+body.host-play #tv-join h2{font-size:max(3.4vmin,18px)}
+@media (orientation:portrait){
+  body.host-play #tv-lobby{flex-direction:column;align-items:center;overflow:auto;justify-content:flex-start}
+  body.host-play #tv-join,body.host-play #tv-who{flex:none;width:min(640px,100%);box-sizing:border-box}
+  body.host-play #tv-who{flex:1 0 auto}
+  body.host-play #tv-lobby{align-items:center}
+  body.host-play #tv-lobby>*{flex-shrink:0}
+}
 #tv-wa{align-self:center;font-size:max(2.8vmin,15px);padding:1.2vmin 3vmin;border-radius:99px}
 #tv-code{font-size:max(11vmin,44px);font-weight:900;letter-spacing:.14em;color:#ffd54a;text-shadow:0 .6vmin 0 #8a5a00,0 1.2vmin 0 rgba(0,0,0,.4);line-height:1}
 #tv-who{align-items:stretch}#tv-who h2{text-align:center}
@@ -11466,7 +11483,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.19.4", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.19.6", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -14744,7 +14761,7 @@ const LinkPlugin = {
       token++;
       timers.forEach(t => { clearTimeout(t); clearInterval(t); }); timers = [];
       off.forEach(f => { try { f(); } catch (e) {} }); off = [];
-      try { ch && ch.leave(); } catch (e) {} ch = null; mode = null; names = {}; taps = {}; nName = 0; tvSeen = false; players = {}; lastRank = []; phase = "lobby"; tvAv = {}; prevSc = {}; clearTimeout(endTO); endTO = 0; hostPlays = false; $("tv-screen").hidden = true;
+      try { ch && ch.leave(); } catch (e) {} document.body.classList.remove("host-play"); ch = null; mode = null; names = {}; taps = {}; nName = 0; tvSeen = false; players = {}; lastRank = []; phase = "lobby"; tvAv = {}; prevSc = {}; clearTimeout(endTO); endTO = 0; hostPlays = false; $("tv-screen").hidden = true;
       $("link-tap").hidden = true; $("link-play").hidden = true; $("link-wait").hidden = true; $("link-go").hidden = true;
       $("link-disc").hidden = true; $("link-rank").hidden = true; $("tv-lobby-list").innerHTML = ""; $("tv-lanes").innerHTML = ""; $("link-rtt").textContent = ""; diag("");
     };
@@ -14853,6 +14870,7 @@ const LinkPlugin = {
     };
     const startTV = async (withTv = true, home = false) => {
       mode = "tv"; hostPlays = !withTv;
+      document.body.classList.toggle("host-play", hostPlays);
       myName = (hostPlays ? $("link-hname").value : "").trim().slice(0, 12) || (hostPlays ? "Granjero" : "Anfitrión");
       if (hostPlays) { try { localStorage.setItem("topo-nombre", myName); } catch (e) {} } view("link-tvview"); const st = $("link-tv-status"), my = ++token;
       const pref = CONFIG.linkType || "auto";
