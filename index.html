@@ -884,6 +884,12 @@ html.vp-short #ver{bottom:calc(env(safe-area-inset-bottom,0px) + 6px - var(--vpx
 html.vp-short #fs-hint{bottom:calc(env(safe-area-inset-bottom,0px) + 14px - var(--vpx))}
 #board,#board *,#hud,#tools,#tools *{touch-action:none}
 input,textarea{-webkit-user-select:text;user-select:text;touch-action:auto}   /* en iOS un campo dentro de un contenedor con user-select:none no deja escribir */
+#mus-btn{position:fixed;z-index:500;display:none;top:calc(env(safe-area-inset-top,0px) + 6px);right:calc(env(safe-area-inset-right,0px) + 6px);width:max(5.4vmin,38px);height:max(5.4vmin,38px);padding:0;border-radius:50%;
+  align-items:center;justify-content:center;font-size:max(3vmin,19px);line-height:1;color:#fff4d6;background:rgba(40,25,10,.72);border:.3vmin solid rgba(255,244,214,.55);box-shadow:0 .4vmin 0 rgba(0,0,0,.35);cursor:pointer;touch-action:manipulation}
+body.intro:not(.gate):not(.vs-frame) #mus-btn{display:flex}
+body.intro:not(.no-fs) #mus-btn{right:calc(env(safe-area-inset-right,0px) + 6px + max(5.4vmin,38px) + 8px)}
+#mus-btn.off{opacity:.8}
+#mus-btn:active{transform:translateY(.3vmin)}
 #set-tabs{width:min(960px,100%);display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.8vmin;flex:none}
 #set-tabs button{display:flex;flex-direction:column;align-items:center;gap:.2vmin;font-size:max(2vmin,10px);padding:.8vmin .3vmin;border-radius:1.6vmin;white-space:nowrap;min-width:0}
 #set-tabs .ti{font-size:max(3.6vmin,18px);line-height:1}
@@ -1096,6 +1102,7 @@ body.vs-frame #app{padding:1.2vmin;gap:1vmin}
   <button id="link-back" class="secondary">← Volver</button>
 </div>
 <div id="link-rank" hidden></div>
+<button id="mus-btn" type="button" aria-label="Música" title="Música"></button>
 <button id="fs-btn" type="button" aria-label="Pantalla completa" title="Pantalla completa">⛶</button>
 <div id="fs-hint" hidden></div>
 <div id="ver" aria-label="Versión del juego"></div>
@@ -1288,7 +1295,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.13.1", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.14.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -4745,7 +4752,13 @@ const LinkPlugin = {
 const GatePlugin = {
   init(game) {
     const $ = id => document.getElementById(id), gate = $("gate");
+    const SEEN = "topo-gate-visto";
+    const seen = () => { try { return localStorage.getItem(SEEN) === "1"; } catch (e) { return false; } };
+    const mus = $("mus-btn"), icon = () => { mus.textContent = CONFIG.music ? "🎵" : "🔇"; mus.classList.toggle("off", !CONFIG.music); mus.title = mus.ariaLabel = CONFIG.music ? "Música: activada (pulsa para silenciar)" : "Música: silenciada (pulsa para activar)"; };
+    mus.addEventListener("click", () => { CONFIG.music = !CONFIG.music; game.bus.emit("settings:change"); if (game.saveSettings) game.saveSettings(); icon(); });
+    game.bus.on("settings:change", icon); icon();
     const close = () => {
+      try { localStorage.setItem(SEEN, "1"); } catch (e) {}
       document.body.classList.remove("gate");
       gate.classList.add("leaving"); setTimeout(() => gate.classList.remove("leaving"), 500);
     };
@@ -4758,7 +4771,8 @@ const GatePlugin = {
     };
     $("gate-sound").addEventListener("click", () => choose(true));
     $("gate-mute").addEventListener("click", () => choose(false));
-    // Si ya habías desactivado música y efectos, no hace falta preguntar
+    // La invitación grande sale solo la primera vez; después queda el botón pequeño 🎵 de la portada (el audio arranca con el primer toque)
+    if (seen()) document.body.classList.remove("gate");
     const off = game.bus.on("settings:change", () => { off(); if (!CONFIG.sound && !CONFIG.music) document.body.classList.remove("gate"); });
     setTimeout(() => { try { $("gate-sound").focus({ preventScroll: true }); } catch (e) {} }, 50);
   }
