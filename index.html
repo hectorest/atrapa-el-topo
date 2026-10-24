@@ -859,6 +859,83 @@ body.intro #ver{display:block}
 #set-tabs button{font-size:max(2.3vmin,12px);padding:.9vmin 1.6vmin;border-radius:1.6vmin;white-space:nowrap}
 #set-tabs .grp{font-size:max(1.9vmin,10px);font-weight:700;color:#fff4d6;opacity:.75;letter-spacing:.08em;text-transform:uppercase;padding:0 .8vmin}
 #set-tabs .sep{width:.4vmin;align-self:stretch;background:rgba(255,244,214,.3);border-radius:9px;margin:0 .6vmin}
+/* ===== VERSUS: granjero contra granjero ===== */
+#vs-rival,#vs-bar{display:none}
+body.vs #vs-rival,body.vs #vs-bar{display:flex}
+body.intro #vs-rival,body.intro #vs-bar{visibility:hidden}
+body.vs #tools,body.vs #btn-pause,body.vs #btn-start,body.vs #btn-tutorial,body.vs #btn-settings,body.vs #btn-menu,body.vs #howto,body.vs #rk-save,body.vs #goal{display:none!important}
+body.vs-frame #brood,body.vs-frame #intro,body.vs-frame #gate,body.vs-frame #fs-btn,body.vs-frame #ver,body.vs-frame #upd-card,body.vs-frame #pwa-card,body.vs-frame #link-rank{display:none!important}
+@media (orientation:landscape) and (max-height:540px){body.vs-frame #wave,body.vs-frame #pups{display:none}}
+body.vs-split-on #fs-btn{display:none}
+#vs-rival{flex:none;align-items:center;gap:1.6vmin;padding:.6vmin 2vmin;border-radius:99px;background:linear-gradient(var(--cream),var(--cream-2));color:var(--ink);border:.4vmin solid var(--wood-2);box-shadow:var(--lift);font-weight:800;font-size:max(2.3vmin,12px)}
+#vs-rival .vr-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#vs-rival .vr-cells{letter-spacing:.1em;font-size:max(2.3vmin,12px);white-space:nowrap}
+#vs-rival .vr-sc,#vs-rival .vr-en{white-space:nowrap;font-variant-numeric:tabular-nums}
+#vs-quit{padding:.3vmin 1.2vmin;font-size:max(2.2vmin,12px);border-radius:99px;box-shadow:none;white-space:nowrap}
+#vs-bar{flex:none;flex-direction:column;gap:.8vmin}
+#vs-cards{display:flex;gap:1.1vmin;align-items:stretch}
+.vs-card{position:relative;flex:1;min-width:0;height:max(13.5vmin,56px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3vmin;padding:.4vmin .2vmin;border-radius:1.8vmin;border:.4vmin solid var(--wood-2);
+  background:linear-gradient(#fff4d6,#f0d9a0);color:#3a2a08;font-weight:800;box-shadow:0 .6vmin 0 var(--wood-3),0 1vmin 1.4vmin rgba(0,0,0,.28);touch-action:manipulation;transition:filter .15s,opacity .15s}
+.vs-card:active{transform:translateY(.5vmin);box-shadow:0 .1vmin 0 var(--wood-3)}
+.vs-card .ci{font-size:max(5.2vmin,22px);line-height:1}
+.vs-card .cn{font-size:max(1.9vmin,10px);line-height:1;white-space:nowrap}
+.vs-card .cc{position:absolute;top:-1vmin;left:-.6vmin;min-width:max(3.6vmin,19px);height:max(3.6vmin,19px);border-radius:50%;background:#7b3fe4;color:#fff;font-size:max(2.2vmin,11px);display:flex;align-items:center;justify-content:center;border:.3vmin solid #fff;box-shadow:0 .3vmin 0 rgba(0,0,0,.3)}
+.vs-card.atk{border-color:#b3261e;background:linear-gradient(#ffe3dc,#f6b3a2)}
+.vs-card.def{border-color:#2e7d32;background:linear-gradient(#e6f8d8,#b3dd9b)}
+.vs-card.off{opacity:.5;filter:grayscale(.6)}
+.vs-card.ok{box-shadow:0 .6vmin 0 var(--wood-3),0 0 0 .5vmin rgba(255,255,255,.85),0 0 2.4vmin rgba(255,230,120,.9)}
+.vs-card.nope{animation:vsnope .25s}
+@keyframes vsnope{25%{transform:translateX(-.8vmin)}75%{transform:translateX(.8vmin)}}
+#vs-next{flex:none;width:max(9vmin,44px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2vmin;font-size:max(1.7vmin,9px);font-weight:800;opacity:.9;color:var(--text)}
+#vs-next .nx{font-size:max(4vmin,18px);line-height:1}
+#vs-en{display:flex;align-items:center;gap:1.2vmin;font-weight:800;font-size:max(2.4vmin,12px);color:var(--text)}
+#vs-en .e-track{position:relative;flex:1;height:max(2.8vmin,15px);border-radius:99px;background:rgba(0,0,0,.28);border:.3vmin solid var(--wood-3);overflow:hidden}
+#vs-en .e-track i{display:block;height:100%;width:50%;background:linear-gradient(#c9a0ff,#7b3fe4);transition:width .12s linear}
+#vs-en .e-track::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),rgba(0,0,0,.35) calc(10% - 1px) 10%);pointer-events:none}
+#vs-en.x2 .e-track i{background:linear-gradient(#ffe27a,#ff9800)}
+#vs-en b{min-width:2ch;text-align:right;font-variant-numeric:tabular-nums}
+#vs-dead{white-space:nowrap}
+#vs-dead.warn{color:var(--bad);animation:alert .5s infinite}
+/* túnel, topo gigante, cuervo y tormenta */
+.hole.tunnel::after{content:"";position:absolute;left:16%;right:16%;bottom:12%;height:34%;border-radius:50%;background:radial-gradient(ellipse at 50% 30%,#b98353,#6b4423 72%);box-shadow:0 0 0 .6vmin rgba(255,200,80,.6);animation:vstun .2s linear infinite;z-index:2}
+@keyframes vstun{0%,100%{transform:translate(0,0)}25%{transform:translate(-4%,3%)}75%{transform:translate(4%,-3%)}}
+.hole.crow::after{content:"🐦";position:absolute;left:50%;top:4%;transform:translateX(-50%);font-size:max(6vmin,24px);line-height:1;z-index:3;animation:vscrow .45s ease-in-out infinite alternate}
+@keyframes vscrow{to{transform:translate(-50%,8%) rotate(8deg)}}
+.hole.giant .mole{transform:translate(-50%,0) scale(1.4);filter:hue-rotate(35deg) saturate(1.6)}
+.hole.giant::after{content:"👑";position:absolute;left:50%;top:0;transform:translateX(-50%);font-size:max(5vmin,20px);line-height:1;z-index:3}
+#vs-storm{position:absolute;inset:0;z-index:3;pointer-events:none;border-radius:inherit;display:none;background:linear-gradient(rgba(20,30,70,.5),rgba(20,30,70,.18));overflow:hidden}
+#vs-storm::after{content:"🌧️ 🌧️ 🌧️ 🌧️ 🌧️ 🌧️ 🌧️ 🌧️";position:absolute;left:0;right:0;top:-10%;text-align:center;font-size:max(6vmin,26px);line-height:1.5;word-spacing:6vmin;animation:vsrain .9s linear infinite;opacity:.8}
+@keyframes vsrain{to{transform:translateY(14%)}}
+#board.vs-storm #vs-storm{display:block;animation:vsflash 3.2s infinite}
+@keyframes vsflash{0%,92%,100%{filter:none}94%{filter:brightness(2.4)}96%{filter:brightness(1.1)}98%{filter:brightness(2)}}
+/* resultado */
+#vs-end{display:flex;gap:2vmin;flex-wrap:wrap;justify-content:center}
+#vs-end[hidden]{display:none}
+#vs-end button{font-size:max(3.4vmin,17px);padding:1.4vmin 3.4vmin}
+/* menú del duelo */
+#vs-overlay{position:fixed!important;z-index:85!important;border-radius:0!important;justify-content:flex-start!important;overflow:auto;
+  background:radial-gradient(ellipse at center,rgba(18,32,18,.97),rgba(8,18,10,.99))!important;padding:3vmin;
+  padding-top:calc(2.5vmin + var(--sat))!important;padding-bottom:calc(2.5vmin + var(--sab))!important;padding-left:calc(2.5vmin + var(--sal))!important;padding-right:calc(2.5vmin + var(--sar))!important}
+#vs-overlay h1{font-size:max(5.6vmin,24px)!important;flex:none}
+#vs-box{width:min(560px,100%);box-sizing:border-box;padding:2.4vmin;border-radius:2.6vmin;background:linear-gradient(var(--cream),var(--cream-2));color:var(--ink);
+  border:.45vmin solid var(--wood-2);box-shadow:var(--lift);display:flex;flex-direction:column;gap:1.4vmin;text-align:center}
+#vs-box>div{display:flex;flex-direction:column;gap:1.4vmin;align-items:center}
+#vs-box>div[hidden]{display:none}
+#vs-box p{margin:0;font-size:max(2.5vmin,14px);font-weight:600;line-height:1.35}
+#vs-box button{width:100%;font-size:max(3vmin,16px);padding:1.4vmin 2vmin;display:flex;flex-direction:column;align-items:center;gap:.3vmin}
+#vs-box button small{font-size:max(2vmin,11px);font-weight:600;opacity:.85}
+#vs-name,#vs-input{font-size:max(3vmin,16px);text-align:center;margin-left:1vmin;border-radius:1.4vmin;border:.4vmin solid var(--wood-2);padding:.6vmin;width:7em}
+#vs-input{font-size:max(5vmin,24px);width:4em;text-transform:uppercase;letter-spacing:.2em}
+#vs-code{font-family:var(--font);font-size:max(11vmin,48px);letter-spacing:.12em;line-height:1;color:var(--wood-3)}
+#vs-qr svg{width:min(32vmin,220px);height:auto;background:#fff;padding:1.2vmin;border-radius:1.4vmin}
+#vs-url{word-break:break-all;opacity:.6;font-size:max(1.8vmin,10px)}
+/* pantalla dividida: dos copias del juego, la de arriba girada para jugar frente a frente */
+#vs-split-host{position:fixed;inset:0;z-index:450;background:#0b140b;display:none;flex-direction:column}
+#vs-split-host.on{display:flex}
+#vs-split-host iframe{flex:1;min-height:0;width:100%;border:0;display:block;background:#1a2b1a}
+#vs-split-host iframe.B{transform:rotate(180deg)}
+#vs-mid{flex:none;height:max(6vmin,36px);display:flex;align-items:center;justify-content:center;gap:2vmin;background:linear-gradient(#4a3320,#2b1d0f);color:#fff4d6;font-weight:800;font-size:max(2.4vmin,13px)}
+#vs-mid button{padding:.4vmin 2vmin;font-size:max(2.4vmin,13px);border-radius:99px;box-shadow:none}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -871,9 +948,35 @@ body.intro #ver{display:block}
   <div id="mode-cards">
     <button id="m-solo"><span class="mi">👤</span><b>Individual</b><small>Tú solo, en este dispositivo</small></button>
     <button id="m-multi"><span class="mi">👥</span><b>Multijugador</b><small>Una TV muestra el ranking y cada móvil juega su tablero</small></button>
+    <button id="m-vs"><span class="mi">⚔️</span><b>Versus</b><small>Granjero contra granjero: cartas, ataques y rebotes. En una tablet o por Internet</small></button>
   </div>
   <button id="m-back" class="secondary">← Volver</button>
 </div>
+<div class="overlay" id="vs-overlay" hidden>
+  <h1>⚔️ Versus</h1>
+  <div id="vs-box">
+    <div id="vs-choose">
+      <p><b>Granjero contra granjero.</b> Cada uno defiende su campo y lanza cartas al del rival. Gana quien lo arrase o, a los 3 minutos, quien tenga más puntos.</p>
+      <label for="vs-name">Tu nombre <input id="vs-name" maxlength="12" autocomplete="off" placeholder="Granjero"></label>
+      <button id="vs-split">📱 Una tablet, frente a frente<small>Pantalla dividida: cada uno juega en su mitad</small></button>
+      <button id="vs-create" class="secondary">🌐 Online: crear un duelo<small>Te da un código para tu rival</small></button>
+      <button id="vs-join" class="secondary">🔑 Online: unirme con un código</button>
+    </div>
+    <div id="vs-hostview" hidden>
+      <p id="vs-host-status" class="link-status"></p>
+      <div id="vs-code"></div>
+      <div id="vs-qr"></div>
+      <small id="vs-url"></small>
+    </div>
+    <div id="vs-joinview" hidden>
+      <label for="vs-input">Código del duelo <input id="vs-input" maxlength="5" autocapitalize="characters" autocomplete="off" placeholder="WABCD"></label>
+      <button id="vs-go-join">Unirme</button>
+      <p id="vs-join-status" class="link-status"></p>
+    </div>
+  </div>
+  <button id="vs-back" class="secondary">← Volver</button>
+</div>
+<div id="vs-split-host"><div id="vs-mid"><span>⚔️ Versus</span><button id="vs-split-fs" class="secondary" type="button">⛶ Pantalla completa</button><button id="vs-split-exit" class="secondary" type="button">✕ Salir</button></div></div>
 <div id="tv-screen" hidden>
   <header id="tv-head">
     <div id="tv-brand">🐭 <b>Atrapa el topo</b></div>
@@ -1005,6 +1108,7 @@ body.intro #ver{display:block}
     <div class="stat" id="pups"><small>🐭 Crías</small><b>0</b></div>
     <button id="btn-pause" aria-label="Pausa" hidden>⏸</button>
   </div>
+  <div id="vs-rival"><span class="vr-name">⚔️ Rival</span><span class="vr-cells"></span><span class="vr-sc">⭐ 0</span><span class="vr-en">⚡ 0</span><button id="vs-quit" class="secondary" type="button" title="Rendirse">🏳️</button></div>
   <div id="brood" hidden><span></span><div class="track"><i></i></div></div>
   <div id="stage" data-side="left">
   <div id="board">
@@ -1018,6 +1122,7 @@ body.intro #ver{display:block}
     </div>
     <div id="ar-bar"><button class="secondary" data-ar="center" title="Centrar">🎯</button><button class="secondary" data-ar="up" title="Más alto">▲</button><button class="secondary" data-ar="left" title="Girar a la izquierda">◀</button><button class="secondary" data-ar="right" title="Girar a la derecha">▶</button><button class="secondary" data-ar="down" title="Más bajo">▼</button><button class="secondary" data-ar="cam" title="Cámara">📷</button></div>
     <div id="fx"><i class="fx slow"></i><i class="fx fert"></i><i class="fx scare"></i><i class="fx frost"></i></div>
+    <div id="vs-storm"></div>
     <div id="active-powers"></div>
     <div id="wx" data-t="" data-p=""></div>
     <div id="event-bar" hidden><span></span><i></i></div>
@@ -1042,6 +1147,7 @@ body.intro #ver{display:block}
       <button id="btn-tutorial" class="secondary">📖 Tutorial</button>
       <button id="btn-settings" class="secondary">⚙️ Ajustes</button>
       <button id="btn-menu" class="secondary">🏠 Menú principal</button>
+      <div id="vs-end" hidden><button id="vs-rematch" type="button">🔄 Revancha</button><button id="vs-leave" class="secondary" type="button">🚪 Salir</button></div>
     </div>
     <div class="overlay" id="settings-overlay" hidden>
       <h1>Ajustes</h1>
@@ -1080,16 +1186,21 @@ body.intro #ver{display:block}
     </div>
   </div>
   </div>
+  <div id="vs-bar">
+    <div id="vs-cards"><div id="vs-next"><small>Siguiente</small><span class="nx"></span></div></div>
+    <div id="vs-en"><span>⚡</span><div class="e-track"><i></i></div><b>5</b><span id="vs-dead"></span></div>
+  </div>
 </div>
 
 <script>
 "use strict";
+const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   // el propio juego, para abrir las dos mitades de la pantalla dividida
 /* ============================================================
    PUBLICACIÓN ONLINE — rellena estas 3 líneas al publicar el juego en tu servidor (ver LEEME.md).
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.8.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.9.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -1340,6 +1451,7 @@ class Game {
   /* Empieza la partida. Con CONFIG.countdownSec > 0 el campo aparece y una cuenta atrás
      congela el juego (opts.countdown === false la omite, p. ej. en el tutorial). */
   start(opts = {}) {
+    if (this.vs && !opts.vs) { this.vs = false; this.bus.emit("vs:off"); }   // una partida normal sale del modo versus
     this.begin();
     const n = opts.countdown === false ? 0 : Math.round(CONFIG.countdownSec || 0);
     if (n > 0) this.countdown(n);
@@ -1387,7 +1499,7 @@ class Game {
 
   /* --- Pausa --- */
   pause() {
-    if (!this.state.running || this.state.paused) return;
+    if (!this.state.running || this.state.paused || this.vs) return;   // en el versus no hay pausa
     this.state.paused = true;
     Timers.pause();
     this.lastEscape = null;
@@ -1942,7 +2054,7 @@ const CropsPlugin = {
       const need = Math.max(1, Math.ceil(board.size * CONFIG.razePct / 100));
       const n = dead.filter(Boolean).length;
       if (n >= need) game.end("razed");
-      else if (need > 1 && n === need - 1) popText(board, "⚠️ ¡Queda un solo cultivo vivo!", null);
+      else if (need > 1 && n === need - 1) popText(board, need >= board.size ? "⚠️ ¡Queda un solo cultivo vivo!" : "⚠️ ¡Un cultivo más y pierdes!", null);
     };
 
     game.cropValue = i => (dead[i] ? 0 : growth[i] || 0);   // para que otros módulos (crías) sepan dónde hay cultivo
@@ -1962,6 +2074,9 @@ const CropsPlugin = {
       paint(i);
       return took;
     };
+
+    game.cropDead = i => !!dead[i];                       // el versus necesita saber qué cultivos han muerto
+    game.eatCrop = (i, amount, source) => eat(i, amount, source);   // y poder comer de un cultivo (plaga, cuervo)
 
     /* Mordisco del topo (con animación) */
     const bite = (i, amount) => {
@@ -2401,6 +2516,13 @@ const PowerUpsPlugin = {
       bus.emit("power:earned", { type: t });
     };
 
+    bus.on("power:force", ({ type, sec }) => {                 // lo usa el versus: activa un poder sin gastar inventario
+      if (!game.state.running || !POWERS[type]) return;
+      remain[type] = total[type] = Math.max(1, sec || CONFIG.powerSec);
+      applyEffects(); render();
+      popText(board, `${POWERS[type].icon} ¡${POWERS[type].name}!`, null);
+      bus.emit("power:used", { type });
+    });
     bus.on("power:grant", () => { if (game.state.running) award(); render(); });   // premios (p. ej. del jefe)
     bus.on("mole:hit", () => {
       const s = game.state, n = CONFIG.streakToPower;
@@ -3752,6 +3874,15 @@ const HapticsPlugin = {
     on("boss:hit", () => { tone(210, 0.2, { type: "square", v: 0.4, to: 70 }); noise(0.12, { v: 0.4, lp: 1200 }); buzz(45); });
     on("boss:defeated", () => { arp([392, 523, 659, 784, 1047], 0.1, { v: 0.4, dur: 0.3 }); buzz([60, 40, 60, 40, 150]); });
     on("boss:escaped", () => { arp([392, 330, 262, 196], 0.14, { type: "sawtooth", v: 0.25, dur: 0.3 }); buzz([150, 60, 150]); });
+    on("vs:send", () => { tone(520, 0.14, { type: "sawtooth", v: 0.22, to: 1000 }); buzz(15); });
+    on("vs:tunnel", () => { noise(0.5, { v: 0.35, lp: 300 }); tone(90, 0.45, { type: "sawtooth", v: 0.3, to: 55 }); buzz([40, 40, 40]); });
+    on("vs:rebound", () => { arp([392, 523, 784], 0.06, { v: 0.35, dur: 0.15 }); buzz([20, 20, 40]); });
+    on("vs:hurt", () => { tone(210, 0.1, { type: "square", v: 0.35, to: 90 }); noise(0.08, { v: 0.3, lp: 900 }); buzz(30); });
+    on("vs:alert", () => { tone(760, 0.1, { type: "square", v: 0.22 }); tone(560, 0.16, { type: "square", v: 0.22, at: 0.12 }); buzz([30, 30, 30]); });
+    on("vs:result", ({ win, draw }) => {
+      if (win) { arp([523, 659, 784, 1047, 784, 1047, 1319], 0.12, { v: 0.4, dur: 0.35 }); buzz([60, 40, 60, 40, 150]); }
+      else if (!draw) { arp([392, 349, 311, 262, 196], 0.18, { type: "sawtooth", v: 0.25, dur: 0.4 }); buzz([200, 80, 200]); }
+    });
     on("wave:start", () => { tone(330, 0.25, { type: "sawtooth", v: 0.25 }); tone(440, 0.4, { type: "sawtooth", v: 0.25, at: 0.22 }); });
     on("weather:warn", () => { tone(880, 0.14, { type: "square", v: 0.2 }); tone(880, 0.14, { type: "square", v: 0.2, at: 0.22 }); buzz([40, 60, 40]); });
     on("count:tick", ({ n }) => { if (n > 0) tone(660, 0.12, { type: "square", v: 0.22 }); else { tone(1320, 0.4, { type: "square", v: 0.25 }); tone(990, 0.4, { type: "triangle", v: 0.25 }); buzz(60); } });
@@ -3943,6 +4074,7 @@ const IntroPlugin = {
     const hide = () => { body.classList.remove("intro"); if (game.introView) { simStop(); game.introView.off(); } };
     show();
     bus.on("game:start", hide);
+    bus.on("vs:frame", hide);
     bus.on("game:end", s => { if (s.endReason === "tutorial") show(); });
     $("i-play").addEventListener("click", () => { $("mode-overlay").hidden = false; });
     document.body.appendChild($("mode-overlay"));
@@ -4548,7 +4680,7 @@ const RankingPlugin = {
 
     game.bus.on("game:start", () => { pending = null; $("rk-save").hidden = true; });
     game.bus.on("game:end", s => {
-      if (s.endReason === "tutorial" || !(s.score > 0)) return;
+      if (s.endReason === "tutorial" || game.vs || !(s.score > 0)) return;
       pending = { mode: CONFIG.mode in MODES ? CONFIG.mode : "normal", score: s.score | 0, harvested: s.harvested | 0, wave: s.wave | 0, elapsed: s.elapsed | 0, reason: s.endReason || "quit", multi: !!game.multi };
       $("rk-name").value = getName(); $("rk-msg").textContent = ""; $("rk-send").disabled = false; $("rk-send").textContent = "🏆 Guardar en el ranking"; $("rk-save").hidden = false;
     });
@@ -4652,7 +4784,469 @@ const UpdatePlugin = {
     game.bus.on("game:end", () => setTimeout(show, 1500));
   }
 };
-game.use(UIPlugin).use(DifficultyPlugin).use(TauntPlugin).use(CropsPlugin).use(PupsPlugin).use(TrapsPlugin).use(PowerUpsPlugin).use(WavesPlugin).use(WeatherPlugin).use(ThreeViewPlugin).use(PausePlugin).use(HapticsPlugin).use(TutorialPlugin).use(IntroPlugin).use(CountdownPlugin).use(MusicPlugin).use(GatePlugin).use(LinkPlugin).use(RankingPlugin).use(PwaPlugin).use(UpdatePlugin).use(SettingsPlugin);
+/* ============================================================
+   VERSUS — granjero contra granjero (a lo Clash Royale, con la mecánica de siempre)
+   Cada jugador defiende SU campo con las reglas de siempre. Lo que haces bien llena una barra de energía ⚡
+   y la gastas en cartas: unas atacan el campo del rival (topo, gigante, plaga, cuervo, tormenta) y otras
+   te refuerzan (trampa, espantapájaros, abono). Los topos enviados cavan un túnel (1,5 s de aviso) y, si
+   los golpeas justo al salir, REBOTAN contra quien los envió. Gana quien arrase el campo del otro
+   (VS.razePct % de cultivos muertos) o, al acabarse el tiempo, quien tenga más puntos.
+   Local y online usan el mismo protocolo de mensajes {t, f, ...}:
+     hi · go · card · st · over · fin · rematch · bye
+   - Pantalla dividida: dos copias del juego (iframes) hablan por postMessage a través de la página madre.
+   - Online: canal "vs" de LinkTransports (WebRTC / MQTT / sala de Claude), igual que la TV y los móviles. */
+const VS = { timeSec: 180, maxEnergy: 10, startEnergy: 5, regenSec: 2.8, tunnelMs: 1500, reboundMs: 650, razePct: 60,
+  stormSec: 10, stormMul: 0.35, powerSec: 8, hand: 4 };
+const VS_CARDS = {
+  mole:   { icon: "🐭", name: "Topo",     cost: 3, atk: true,  txt: "Un topo cava un túnel hasta el campo rival" },
+  giant:  { icon: "👑", name: "Gigante",  cost: 6, atk: true,  txt: "Topo gigante: necesita 3 golpes" },
+  blight: { icon: "🐛", name: "Plaga",    cost: 3, atk: true,  txt: "Marchita el mejor cultivo del rival" },
+  crow:   { icon: "🐦", name: "Cuervo",   cost: 4, atk: true,  txt: "Se come un cultivo maduro del rival" },
+  storm:  { icon: "⛈️", name: "Tormenta", cost: 4, atk: true,  txt: "Sus cultivos crecen muy despacio 10 s" },
+  trap:   { icon: "🪤", name: "Trampa",   cost: 2, atk: false, txt: "Pone una trampa en tu campo" },
+  scare:  { icon: "🧑‍🌾", name: "Espanta",  cost: 3, atk: false, txt: "Nadie come en tu campo 8 s" },
+  grow:   { icon: "🌱", name: "Abono",    cost: 2, atk: false, txt: "Tus cultivos crecen muy rápido 8 s" }
+};
+const VersusPlugin = {
+  init(game) {
+    const { bus, board } = game;
+    const $ = id => document.getElementById(id), body = document.body;
+    const FRAME = typeof window.VS_SIDE === "string" ? window.VS_SIDE : "";   // "A" (abajo) o "B" (arriba, girada) dentro de la pantalla dividida
+    const S = { phase: "idle", online: false, host: false, me: Math.random().toString(36).slice(2, 9), oppId: null, myName: "Granjero", oppName: "Rival", oppVer: "",
+      net: null, ch: null, offs: [], goId: 0, readyMe: false, readyOpp: false, oppSt: null, myFinal: null, oppFinal: null, lastSeen: 0, snap: null, tok: 0, ended: null, why: "", stT: 0, hiT: 0, wdT: 0 };
+    let timers = [], frames = {};
+    const every = (fn, ms) => { const t = setInterval(fn, ms); timers.push(t); return t; };
+    const later = (fn, ms) => { const t = setTimeout(fn, ms); timers.push(t); return t; };
+    const clearReal = () => { timers.forEach(t => { clearTimeout(t); clearInterval(t); }); timers = []; S.stT = S.hiT = S.wdT = 0; };
+    const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = randInt(0, i); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+    const send = o => { if (S.net) S.net.send({ ...o, f: S.me }); };
+    const need = () => Math.max(1, Math.ceil(board.size * CONFIG.razePct / 100));
+
+    /* ---- Ajustes: se guardan al entrar y se devuelven al salir ---- */
+    const snapshot = () => SETTINGS_SCHEMA.map(s => [s.key, s.get()]);
+    const restore = () => { if (!S.snap) return; S.snap.forEach(([k, v]) => { const s = byKey(k); if (s) s.set(v); }); S.snap = null; bus.emit("settings:change"); };
+    const override = () => {                       // en el versus no hay meta de cosecha, jefe, clima ni potenciadores por racha
+      CONFIG.goalHarvest = 0; CONFIG.bossEvery = 0; CONFIG.weather = false; CONFIG.streakToPower = 0; CONFIG.razePct = VS.razePct;
+      bus.emit("settings:change");
+    };
+
+    /* ---- Estado de una partida ---- */
+    let energy = 0, dbl = false, lastF = -1, hand = [], queue = [], stormT = null;
+    const vsMoles = new Map();                     // topos enviados por el rival que están fuera: índice -> { born, kind, rebound, hp }
+    const tun = new Map();                         // túneles en marcha: índice -> temporizador
+    const btns = [];
+    for (let k = 0; k < VS.hand; k++) {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "vs-card"; b.innerHTML = '<span class="cc"></span><span class="ci"></span><span class="cn"></span>';
+      b.addEventListener("pointerdown", e => { e.preventDefault(); play(k); });
+      $("vs-cards").insertBefore(b, $("vs-next")); btns.push(b);
+    }
+    const renderCards = () => {
+      btns.forEach((b, k) => {
+        const id = hand[k], c = VS_CARDS[id]; if (!c) return;
+        b.dataset.id = id; b.className = "vs-card " + (c.atk ? "atk" : "def") + (energy >= c.cost ? " ok" : " off");
+        b.querySelector(".ci").textContent = c.icon; b.querySelector(".cn").textContent = c.name; b.querySelector(".cc").textContent = c.cost; b.title = c.txt;
+      });
+      const nx = VS_CARDS[queue[0]]; if (nx) $("vs-next").querySelector(".nx").textContent = nx.icon;
+    };
+    const renderEnergy = () => {
+      const e = $("vs-en");
+      e.querySelector(".e-track i").style.width = (energy / VS.maxEnergy * 100) + "%";
+      e.querySelector("b").textContent = Math.floor(energy); e.classList.toggle("x2", dbl);
+      const f = Math.floor(energy); if (f !== lastF) { lastF = f; renderCards(); }
+    };
+    const addEnergy = n => { energy = Math.min(VS.maxEnergy, energy + n); renderEnergy(); };
+    const renderDead = () => {
+      const n = board.holes.filter((_, i) => game.cropDead && game.cropDead(i)).length, el = $("vs-dead");
+      el.textContent = `🥀 ${n}/${need()}`; el.classList.toggle("warn", n > 0 && n >= need() - 1);
+    };
+    const renderRival = () => {
+      const o = S.oppSt, r = $("vs-rival");
+      r.querySelector(".vr-name").textContent = "⚔️ " + S.oppName;
+      r.querySelector(".vr-sc").textContent = "⭐ " + (o ? o.sc : 0);
+      r.querySelector(".vr-en").textContent = "⚡ " + (o ? o.en : 0);
+      r.querySelector(".vr-cells").textContent = o && typeof o.cells === "string"
+        ? o.cells.split("").map((c, i) => (Array.isArray(o.mo) && o.mo.includes(i)) ? "🐭" : ({ x: "🥀", r: "🥕", y: "🌿", s: "🌱" })[c] || "·").join("") : "";
+    };
+
+    /* ---- Cartas ---- */
+    const freeHoles = () => board.holes.map((_, i) => i).filter(i => !game.active.has(i) && !game.targets.has(i) && !tun.has(i));
+    const placeTrap = () => {
+      const free = freeHoles().filter(i => !game.traps.has(i));
+      if (!free.length) { popText(board, "Sin sitio para la trampa", null); return false; }
+      const i = free[randInt(0, free.length - 1)];
+      game.traps.add(i); board.holes[i].insertAdjacentHTML("afterbegin", '<span class="trap">🪤</span>');
+      popText(board, "🪤 Colocada", i); bus.emit("trap:placed", { index: i }); return true;
+    };
+    const selfCard = id => {
+      if (id === "trap") return placeTrap();
+      bus.emit("power:force", { type: id === "scare" ? "scare" : "fert", sec: VS.powerSec }); return true;
+    };
+    function play(k) {
+      if (S.phase !== "play" || !game.state.running || game.state.paused) return;
+      const id = hand[k], c = VS_CARDS[id]; if (!c) return;
+      if (energy < c.cost) { const b = btns[k]; b.classList.remove("nope"); void b.offsetWidth; b.classList.add("nope"); return; }
+      if (!c.atk && selfCard(id) === false) return;
+      energy -= c.cost; hand[k] = queue.shift(); queue.push(id);
+      if (c.atk) { send({ t: "card", c: id }); popText(board, "📤 " + c.icon, null); bus.emit("vs:send", { id }); }
+      renderEnergy(); renderCards();
+    }
+    window.addEventListener("keydown", e => { if (game.vs && /^[1-4]$/.test(e.key)) play(+e.key - 1); });
+
+    /* Ataques recibidos */
+    const emerge = (i, kind, rebound) => {
+      if (!game.state.running) return;
+      if (game.active.has(i) || game.targets.has(i)) { const f = freeHoles(); if (!f.length) return; i = f[randInt(0, f.length - 1)]; }
+      if (game.traps.has(i)) { game.traps.delete(i); bus.emit("trap:broken", { index: i }); }   // un topo enviado es grande: rompe la trampa
+      const p = game.state.params, k = kind === "giant" ? 1.7 : rebound ? 0.8 : 1;
+      board.setUp(i, true);
+      game.active.set(i, Timers.timeout(() => game.hideMole(i, "escape"), rand(p.moleVisibleMs.min, p.moleVisibleMs.max) * game.state.slow * k));
+      vsMoles.set(i, { born: performance.now(), kind, rebound, hp: kind === "giant" ? 3 : 1 });
+      if (kind === "giant") board.holes[i].classList.add("giant");
+      bus.emit("mole:show", { index: i });
+    };
+    const tunnel = (kind, rebound) => {
+      const free = freeHoles(); if (!free.length) return;
+      const i = free[randInt(0, free.length - 1)];
+      board.holes[i].classList.add("tunnel");
+      popText(board, rebound ? "↩️ ¡Rebote!" : kind === "giant" ? "👑 ¡Gigante!" : "🕳️ ¡Túnel!", i);
+      bus.emit("vs:tunnel", { index: i, kind });
+      tun.set(i, Timers.timeout(() => { tun.delete(i); board.holes[i].classList.remove("tunnel"); emerge(i, kind, rebound); }, VS.tunnelMs));
+    };
+    const blight = () => {                          // mata el cultivo más crecido que no esté protegido
+      const idx = board.holes.map((_, i) => i).filter(i => !game.cropDead(i)).sort((a, b) => game.cropValue(b) - game.cropValue(a));
+      for (const i of idx) if (game.eatCrop(i, 100, "plaga") > 0) { popText(board, "🐛 ¡Plaga!", i); bus.emit("vs:alert", {}); return; }
+      popText(board, "🐛 ¡Plaga resistida!", null);
+    };
+    const crow = () => {                            // avisa y, si el cultivo sigue ahí, se lo come casi entero
+      const idx = board.holes.map((_, i) => i).filter(i => !game.cropDead(i) && game.cropValue(i) > 20).sort((a, b) => game.cropValue(b) - game.cropValue(a));
+      if (!idx.length) { popText(board, "🐦 ¡Cuervo sin nada que comer!", null); return; }
+      const i = idx[0];
+      board.holes[i].classList.add("crow"); popText(board, "🐦 ¡Cuervo!", i); bus.emit("vs:alert", {});
+      Timers.timeout(() => { board.holes[i].classList.remove("crow"); if (!game.state.running) return; const v = game.cropValue(i); if (v > 12) game.eatCrop(i, v - 10, "cuervo"); }, VS.tunnelMs);
+    };
+    const storm = () => {
+      game.state.growMul = VS.stormMul; board.el.classList.add("vs-storm");
+      popBanner(board, "⛈️ ¡Tormenta! Tus cultivos crecen más despacio", "warn"); bus.emit("vs:alert", {});
+      Timers.clear(stormT);
+      stormT = Timers.timeout(() => { game.state.growMul = 1; board.el.classList.remove("vs-storm"); }, VS.stormSec * 1000);
+    };
+    const incoming = (id, rebound) => {
+      if (!game.state.running || !VS_CARDS[id] || !VS_CARDS[id].atk) return;
+      if (id === "mole" || id === "giant") return tunnel(id, !!rebound);
+      if (id === "blight") return blight();
+      if (id === "crow") return crow();
+      if (id === "storm") return storm();
+    };
+
+    /* El gigante aguanta golpes: los toques lo van desgastando antes de que cuente el golpe final */
+    game.tapFirst.push((x, y) => {
+      for (const [i, m] of vsMoles) {
+        if (m.hp > 1 && game.active.has(i) && game.inZone(i, x, y, CONFIG.touchMargin)) {
+          m.hp--; board.flash(i, "hit"); popText(board, "💥 " + "❤️".repeat(m.hp), i); bus.emit("vs:hurt", { index: i }); return true;
+        }
+      }
+      return false;
+    });
+    bus.on("mole:escape", ({ index }) => { vsMoles.delete(index); board.holes[index].classList.remove("giant"); });
+    bus.on("mole:hit", ({ index }) => {
+      if (!game.vs) return;
+      const m = vsMoles.get(index); board.holes[index].classList.remove("giant");
+      if (!m) { addEnergy(0.5); return; }
+      vsMoles.delete(index);
+      if (m.kind === "mole" && !m.rebound && performance.now() - m.born <= VS.reboundMs) {     // ¡rebote!: vuelve a quien lo envió
+        send({ t: "card", c: "mole", rb: 1 }); popText(board, "↩️ ¡Rebote!", index); addEnergy(1); bus.emit("vs:rebound", { index });
+      } else {
+        addEnergy(m.kind === "giant" ? 2 : 0.5);
+        if (m.kind === "giant") { game.state.score += 4; bus.emit("score:change", game.state.score); popText(board, "👑 +4", index); }
+      }
+    });
+    bus.on("crop:harvest", () => { if (game.vs) addEnergy(1); });
+    bus.on("pup:caught", () => { if (game.vs) addEnergy(1); });
+    bus.on("crop:dead", renderDead); bus.on("crop:replant", renderDead);
+
+    /* ---- Desarrollo de la partida ---- */
+    const sendState = () => {
+      if (S.phase !== "play") return;
+      send({ t: "st", sc: game.state.score, en: Math.floor(energy), mo: [...game.active.keys()],
+        cells: board.holes.map((_, i) => game.cropDead(i) ? "x" : game.cropValue(i) >= 100 ? "r" : game.cropValue(i) >= 40 ? "y" : "s").join("") });
+    };
+    bus.on("game:start", () => {
+      if (!game.vs) return;
+      board.holes.forEach(h => h.classList.remove("tunnel", "giant", "crow")); vsMoles.clear(); tun.clear();
+      board.el.classList.remove("vs-storm");
+      energy = VS.startEnergy; dbl = false; lastF = -1;
+      const d = shuffle(Object.keys(VS_CARDS)); hand = d.slice(0, VS.hand); queue = d.slice(VS.hand);
+      $("vs-end").hidden = true; $("vs-quit").textContent = "🏳️";
+      renderEnergy(); renderCards(); renderDead(); renderRival();
+      $("time").querySelector("b").textContent = Math.floor(VS.timeSec / 60) + ":" + String(VS.timeSec % 60).padStart(2, "0");
+      Timers.interval(() => {
+        if (!game.state.running) return;
+        energy = Math.min(VS.maxEnergy, energy + (dbl ? 2 : 1) * 0.1 / VS.regenSec); renderEnergy();
+        vsMoles.forEach((m, i) => {                 // el gigante come el doble
+          if (m.kind === "giant" && game.active.has(i)) bus.emit("crop:hurt", { index: i, amount: CONFIG.moleEatPerSec * 0.1 * game.state.eatMul / game.state.slow, source: "mole" });
+        });
+      }, 100);
+    });
+    bus.on("game:tick", v => {
+      if (!game.vs || S.phase !== "play") return;
+      const left = Math.max(0, VS.timeSec - v);
+      $("time").querySelector("b").textContent = Math.floor(left / 60) + ":" + String(left % 60).padStart(2, "0");
+      if (!dbl && left <= 60 && left > 0) { dbl = true; popBanner(board, "⚡⚡ ¡Último minuto: energía doble!", "warn"); renderEnergy(); }
+      if (left <= 0) game.end("vstime");
+    });
+
+    /* ---- Final ---- */
+    const oppScore = () => S.oppFinal != null ? S.oppFinal : S.oppSt ? S.oppSt.sc : 0;
+    const result = (kind, why) => {
+      S.ended = kind;
+      $("ov-title").textContent = { win: "🏆 ¡Has ganado!", lose: "😵 Has perdido", draw: "🤝 ¡Empate!", wait: "⏱ ¡Tiempo!" }[kind];
+      $("ov-text").textContent = why;
+      const o = $("overlay"); o.classList.add("ended"); o.hidden = false;
+      $("vs-end").hidden = false; $("vs-rematch").disabled = false; $("vs-rematch").textContent = "🔄 Revancha";
+      if (kind !== "wait") bus.emit("vs:result", { win: kind === "win", draw: kind === "draw" });
+    };
+    const resolveTime = () => {
+      if (S.ended !== "wait") return;
+      const mine = S.myFinal, opp = oppScore();
+      const line = `⭐ ${mine} (${S.myName}) — ${opp} (${S.oppName})`;
+      result(mine > opp ? "win" : mine < opp ? "lose" : "draw", "Se acabó el tiempo · " + line);
+    };
+    bus.on("game:end", s => {
+      if (!game.vs || S.phase !== "play") return;
+      S.phase = "end"; clearInterval(S.wdT);
+      board.holes.forEach(h => h.classList.remove("tunnel", "giant", "crow")); vsMoles.clear(); tun.clear(); board.el.classList.remove("vs-storm");
+      const r = s.endReason, line = `⭐ ${s.score} (${S.myName}) — ${oppScore()} (${S.oppName})`;
+      if (r === "razed" || r === "quit") { send({ t: "over", r }); result("lose", (r === "quit" ? "Te has rendido" : "Te han arrasado el campo 🔥") + " · " + line); }
+      else if (r === "vswin") result("win", (S.why || "¡Has ganado!") + " · " + line);
+      else if (r === "vstime") { S.myFinal = s.score | 0; send({ t: "fin", sc: S.myFinal }); result("wait", "Esperando el resultado…"); later(resolveTime, S.oppFinal != null ? 0 : 3500); }
+      else result("lose", line);
+    });
+    $("vs-rematch").addEventListener("click", () => {
+      if (S.phase !== "end") return;
+      S.readyMe = true; send({ t: "rematch" }); $("vs-rematch").disabled = true; $("vs-rematch").textContent = "⏳ Esperando al rival…"; checkStart();
+    });
+    $("vs-leave").addEventListener("click", () => leave(true));
+    let armed = 0;
+    $("vs-quit").addEventListener("click", () => {
+      if (S.phase !== "play") return;
+      if (!armed) { armed = 1; $("vs-quit").textContent = "¿Rendirse?"; later(() => { armed = 0; $("vs-quit").textContent = "🏳️"; }, 3000); return; }
+      armed = 0; game.end("quit");
+    });
+
+    /* ---- Protocolo ---- */
+    const lobbyInfo = () => {
+      if (!S.online) return;
+      const warn = S.oppVer && S.oppVer !== GAME_VERSION.v ? ` ⚠️ Versiones distintas (tú ${GAME_VERSION.v}, rival ${S.oppVer}).` : "";
+      if (S.host) say($("vs-host-status"), `✅ ${S.oppName} se ha unido. ¡Preparando la partida!` + warn, "ok");
+      else say($("vs-join-status"), `✅ Conectado con ${S.oppName}. Empieza enseguida.` + warn, "ok");
+    };
+    const checkStart = () => {
+      if (S.host && S.readyMe && S.readyOpp && (S.phase === "lobby" || S.phase === "end")) {
+        const d = { t: "go", id: Date.now(), mode: CONFIG.mode, name: S.myName, v: GAME_VERSION.v };
+        send(d); later(() => send(d), 400); later(() => send(d), 1200);
+        beginMatch(d);
+      }
+    };
+    const beginMatch = d => {
+      if (!d || d.id === S.goId) return;
+      S.goId = d.id; S.phase = "play"; S.readyMe = S.readyOpp = false; S.oppSt = null; S.oppFinal = S.myFinal = null; S.ended = null; S.why = ""; S.lastSeen = Date.now();
+      if (!S.snap) S.snap = snapshot();
+      if (d.mode && d.mode !== CONFIG.mode && !S.host && MODES[d.mode] && !FRAME) byKey("mode").set(d.mode);   // el invitado juega en el modo del anfitrión
+      override();
+      $("vs-overlay").hidden = true; $("mode-overlay").hidden = true;
+      body.classList.add("vs"); game.vs = true;
+      clearInterval(S.stT); S.stT = every(sendState, 1000);
+      clearInterval(S.wdT);
+      if (S.online) S.wdT = every(() => { if (S.phase === "play" && Date.now() - S.lastSeen > 14000) { S.why = `${S.oppName} se ha desconectado`; game.end("vswin"); } }, 2000);
+      game.start({ vs: true });
+    };
+    const onNet = m => {
+      if (!m || typeof m !== "object" || !m.f || m.f === S.me) return;
+      if (S.oppId && m.f !== S.oppId) return;
+      switch (m.t) {
+        case "hi":
+          if (!S.oppId) S.oppId = m.f;
+          S.oppName = String(m.name || "Rival").slice(0, 12); S.oppVer = String(m.v || "");
+          if (S.phase === "lobby") { S.readyOpp = true; lobbyInfo(); checkStart(); }
+          break;
+        case "go":
+          if (!S.oppId) S.oppId = m.f;
+          if (m.name) S.oppName = String(m.name).slice(0, 12);
+          if (m.v) S.oppVer = String(m.v);
+          if (!S.host && (S.phase === "lobby" || S.phase === "end")) beginMatch(m);
+          break;
+        case "card": if (S.phase === "play" && VS_CARDS[m.c]) incoming(m.c, m.rb); break;
+        case "st": if (S.phase === "play" || S.phase === "end") { S.lastSeen = Date.now(); S.oppSt = { sc: m.sc | 0, en: m.en | 0, cells: String(m.cells || ""), mo: Array.isArray(m.mo) ? m.mo : [] }; if (S.phase === "play") renderRival(); } break;
+        case "over":
+          if (S.phase === "play") { S.why = m.r === "quit" ? `${S.oppName} se ha rendido` : `¡Has arrasado el campo de ${S.oppName}! 🔥`; game.end("vswin"); }
+          break;
+        case "fin": S.oppFinal = m.sc | 0; if (S.ended === "wait") resolveTime(); break;
+        case "rematch": S.readyOpp = true; if (S.phase === "end") { $("ov-text").textContent += " · ¡El rival quiere revancha!"; checkStart(); } break;
+        case "bye":
+          if (S.phase === "play") { S.why = `${S.oppName} ha salido`; game.end("vswin"); }
+          else if (S.phase === "end") { $("vs-rematch").disabled = true; $("vs-rematch").textContent = "El rival ha salido"; }
+          break;
+      }
+    };
+
+    /* ---- Salir ---- */
+    const teardown = () => {
+      clearReal(); S.tok++; S.phase = "idle";
+      S.offs.forEach(f => { try { f(); } catch (e) {} }); S.offs = [];
+      if (S.net) { try { S.net.close(); } catch (e) {} }
+      S.net = null; S.ch = null; S.oppId = null; S.online = false; S.host = false;
+      restore(); game.vs = false; body.classList.remove("vs");
+      board.holes.forEach(h => h.classList.remove("tunnel", "giant", "crow")); vsMoles.clear(); tun.clear(); board.el.classList.remove("vs-storm");
+    };
+    function leave(notify) {
+      if (FRAME) { if (notify) send({ t: "bye" }); try { parent.postMessage({ vsExit: 1 }, "*"); } catch (e) {} return; }
+      if (notify) send({ t: "bye" });
+      const wasRunning = game.state.running;
+      S.phase = "idle";
+      if (wasRunning) game.end("quit");
+      teardown();
+      $("overlay").hidden = true; $("vs-end").hidden = true;
+      $("btn-menu").click();
+    }
+    bus.on("vs:off", () => { if (S.phase !== "idle" || S.snap) teardown(); });
+
+    /* ---- Pantalla dividida (página madre) ---- */
+    const closeSplit = () => {
+      const host = $("vs-split-host"); host.querySelectorAll("iframe").forEach(f => f.remove()); host.classList.remove("on");
+      frames = {}; body.classList.remove("vs-split-on"); $("vs-overlay").hidden = false;
+    };
+    const openSplit = () => {
+      const host = $("vs-split-host"); host.querySelectorAll("iframe").forEach(f => f.remove());
+      const mk = side => {
+        const f = document.createElement("iframe"); f.className = side; f.title = "Jugador " + (side === "A" ? 1 : 2); f.setAttribute("allow", "autoplay; fullscreen");
+        f.srcdoc = SELF_HTML.replace("<head>", '<head><script>window.VS_SIDE="' + side + '";<\/script>'); return f;
+      };
+      const fb = mk("B"), fa = mk("A");
+      host.insertBefore(fb, $("vs-mid")); host.appendChild(fa); frames = { A: fa, B: fb };
+      host.classList.add("on"); body.classList.add("vs-split-on"); $("vs-overlay").hidden = true;
+    };
+    if (!FRAME) {
+      window.addEventListener("message", e => {
+        const d = e.data; if (!d || typeof d !== "object") return;
+        const src = frames.A && e.source === frames.A.contentWindow ? "A" : frames.B && e.source === frames.B.contentWindow ? "B" : null;
+        if (!src) return;
+        if (d.vsExit) return closeSplit();
+        if (d.vsMsg) { const o = frames[src === "A" ? "B" : "A"]; if (o && o.contentWindow) o.contentWindow.postMessage({ vsMsg: d.vsMsg }, "*"); }
+      });
+      $("vs-split").addEventListener("click", openSplit);
+      $("vs-split-exit").addEventListener("click", closeSplit);
+      $("vs-split-fs").addEventListener("click", () => $("fs-btn").click());
+    }
+
+    /* ---- Online ---- */
+    const view = id => ["vs-choose", "vs-hostview", "vs-joinview"].forEach(x => $(x).hidden = x !== id);
+    const say = (el, txt, cls = "") => { el.textContent = txt; el.className = "link-status " + cls; };
+    const getName = () => {
+      const n = ($("vs-name").value || "").trim().slice(0, 12) || "Granjero";
+      try { localStorage.setItem("topo-nombre", n); } catch (e) {}
+      return n;
+    };
+    const vsErr = e => {
+      const t = e && (e.type || e.code);
+      if (e && e.msg) return e.msg;
+      if (t === "noroom") return "Las salas de Claude no están disponibles aquí.";
+      if (t === "peer-unavailable") return "No existe ese duelo. Revisa el código.";
+      if (t === "script") return "No se pudo cargar la librería de conexión.";
+      return "La conexión no ha funcionado" + (e && e.message ? " (" + e.message + ")" : t ? " (" + t + ")" : "") + ".";
+    };
+    const drawQR = url => {
+      const box = $("vs-qr"); box.innerHTML = ""; $("vs-url").textContent = url;
+      const make = () => { try { const q = qrcode(0, "M"); q.addData(url); q.make(); box.innerHTML = q.createSvgTag({ scalable: true, margin: 0 }).replace(/(width|height)="\d+"/g, ""); } catch (e) {} };
+      if (window.qrcode) return make();
+      const sc = document.createElement("script"); sc.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"; sc.onload = make; document.head.appendChild(sc);
+    };
+    const openHost = async setStatus => {
+      const pref = CONFIG.linkType || "auto";
+      const order = pref === "auto" ? ["W", "M", "N", "R"] : ({ webrtc: ["W"], mqtt: ["M", "N"], room: ["R"] })[pref] || ["R"];
+      const A = "ABCDEFGHJKLMNPQRSTUVWXYZ", code4 = () => Array.from({ length: 4 }, () => A[Math.floor(Math.random() * A.length)]).join("");
+      const tried = [];
+      for (const id of order) {
+        const T = LinkTransports[id];
+        setStatus(`Probando ${T.label}…`);
+        if (!(await T.avail())) { tried.push(T.label + ": no disponible"); continue; }
+        for (let k = 0; k < 3; k++) {
+          const code = code4();
+          try { return { ch: await T.open(code, true), T, full: T.id + code }; }
+          catch (e) { tried.push(T.label + ": " + ((e && (e.type || e.message || e.code)) || "error")); if (!(e && e.type === "unavailable-id")) break; }
+        }
+      }
+      throw { msg: "No se pudo establecer ninguna conexión (" + tried.join(" · ") + ")." };
+    };
+    const openGuest = async (raw, setStatus) => {
+      const code = (raw || "").toUpperCase().replace(/[^A-Z]/g, "");
+      if (code.length !== 5 || !LinkTransports[code[0]]) throw { msg: "El código tiene 5 letras (por ejemplo WABCD)." };
+      const T = LinkTransports[code[0]];
+      setStatus(`Conectando (${T.label})…`);
+      if (!(await T.avail())) throw { msg: `Este dispositivo no admite ${T.label}. El anfitrión puede elegir otro tipo de conexión en Ajustes.` };
+      return { ch: await T.open(code.slice(1), false), T, full: code };
+    };
+    const attach = (ch, host) => {
+      S.ch = ch; S.online = true; S.host = host; S.phase = "lobby"; S.readyMe = true; S.readyOpp = false; S.oppId = null; S.snap = snapshot();
+      S.net = { send: d => { try { ch.emit("vs", d); } catch (e) {} }, close: () => { try { ch.leave(); } catch (e) {} } };
+      S.offs.push(ch.on("vs", m => { if (m.sameTab) return; onNet(m.data); }));
+      ch.presence({ role: "vs", name: S.myName });
+      S.hiT = every(() => { if (S.phase === "lobby") send({ t: "hi", name: S.myName, v: GAME_VERSION.v }); }, 800);
+    };
+    const cancelOnline = () => { if (S.phase === "lobby" || S.phase === "idle") { if (S.net) send({ t: "bye" }); teardown(); } };
+    $("m-vs").addEventListener("click", () => { $("mode-overlay").hidden = true; openMenu(); });
+    function openMenu() {
+      $("vs-overlay").hidden = false; view("vs-choose");
+      try { $("vs-name").value = localStorage.getItem("topo-nombre") || ""; } catch (e) {}
+    }
+    $("vs-back").addEventListener("click", () => {
+      if (!$("vs-choose").hidden) { $("vs-overlay").hidden = true; $("mode-overlay").hidden = false; }
+      else { cancelOnline(); view("vs-choose"); }
+    });
+    $("vs-create").addEventListener("click", async () => {
+      cancelOnline(); S.myName = getName(); view("vs-hostview");
+      const st = $("vs-host-status"), my = ++S.tok;
+      say(st, "Creando el duelo…"); $("vs-code").textContent = ""; $("vs-qr").innerHTML = ""; $("vs-url").textContent = "";
+      let got; try { got = await openHost(t => say(st, t)); } catch (e) { if (my === S.tok) say(st, vsErr(e), "err"); return; }
+      if (my !== S.tok) { try { got.ch.leave(); } catch (e) {} return; }
+      attach(got.ch, true);
+      $("vs-code").textContent = got.full; drawQR(ARTIFACT_URL + "#duelo=" + got.full);
+      say(st, `Esperando a tu rival… Que abra el juego, pulse Jugar → Versus → Unirme y escriba el código. (${got.T.label})`);
+    });
+    $("vs-join").addEventListener("click", () => { cancelOnline(); view("vs-joinview"); $("vs-input").focus(); });
+    const joinCode = async raw => {
+      cancelOnline(); S.myName = getName();
+      const st = $("vs-join-status"), my = ++S.tok;
+      let got; try { got = await openGuest(raw, t => say(st, t)); } catch (e) { if (my === S.tok) say(st, vsErr(e), "err"); return; }
+      if (my !== S.tok) { try { got.ch.leave(); } catch (e) {} return; }
+      attach(got.ch, false);
+      say(st, "Conectado. Buscando a tu rival…", "ok");
+      later(() => { if (S.phase === "lobby" && !S.oppId) say(st, "No hay nadie con ese código. Revisa el código.", "err"); }, 10000);
+    };
+    $("vs-go-join").addEventListener("click", () => joinCode($("vs-input").value));
+    $("vs-input").addEventListener("keydown", e => { if (e.key === "Enter") joinCode(e.target.value); });
+    if (!FRAME) {
+      const hm = /duelo=([A-Z]{5})/i.exec(location.hash || "");
+      if (hm) setTimeout(() => { openMenu(); $("vs-join").click(); $("vs-input").value = hm[1].toUpperCase(); }, 800);
+    }
+
+    /* ---- Copia dentro de la pantalla dividida ---- */
+    if (FRAME) {
+      body.classList.add("vs", "vs-frame"); body.classList.remove("intro", "gate");
+      CONFIG.music = false; CONFIG.view = "2d"; bus.emit("settings:change"); bus.emit("vs:frame");
+      S.host = FRAME === "A"; S.myName = FRAME === "A" ? "Jugador 1" : "Jugador 2";
+      S.net = { send: d => { try { parent.postMessage({ vsMsg: d }, "*"); } catch (e) {} }, close() {} };
+      S.snap = snapshot(); S.phase = "lobby"; S.readyMe = true;
+      window.addEventListener("message", e => { if (e.source === parent && e.data && e.data.vsMsg) onNet(e.data.vsMsg); });
+      $("ov-title").textContent = "⚔️ Versus"; $("ov-text").textContent = "Esperando al otro jugador…"; $("overlay").hidden = false;
+      S.hiT = every(() => { if (S.phase === "lobby") send({ t: "hi", name: S.myName, v: GAME_VERSION.v }); }, 700);
+    }
+    /* Pequeña API para otros módulos y pruebas */
+    game.versus = { give: n => addEnergy(n), phase: () => S.phase, hand: () => hand.slice(), play, send, state: S, moles: vsMoles };
+  }
+};
+
+game.use(UIPlugin).use(DifficultyPlugin).use(TauntPlugin).use(CropsPlugin).use(PupsPlugin).use(TrapsPlugin).use(PowerUpsPlugin).use(WavesPlugin).use(WeatherPlugin).use(ThreeViewPlugin).use(PausePlugin).use(HapticsPlugin).use(TutorialPlugin).use(IntroPlugin).use(CountdownPlugin).use(MusicPlugin).use(GatePlugin).use(LinkPlugin).use(RankingPlugin).use(PwaPlugin).use(UpdatePlugin).use(SettingsPlugin).use(VersusPlugin);
 
 /* Ideas para ampliar (ver la guía en la respuesta):
    - Récord de tiempo aguantado con localStorage -> plugin que escuche "game:end" (state.elapsed)
