@@ -1242,7 +1242,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.11.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.11.1", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -4189,7 +4189,6 @@ const IntroPlugin = {
     intro.addEventListener("pointermove", e => {            // el título se inclina hacia donde apuntas
       intro.style.setProperty("--px", (e.clientX / innerWidth - .5).toFixed(2));
       intro.style.setProperty("--py", (e.clientY / innerHeight - .5).toFixed(2));
-      if (game.introView) game.introView.look(e.clientX / innerWidth - .5, e.clientY / innerHeight - .5);
     });
     intro.addEventListener("pointerdown", e => { if (game.introView && !e.target.closest("button") && game.introView.tap(e.clientX, e.clientY)) game.bus.emit("intro:bonk"); });
     intro.querySelectorAll(".hl").forEach(h => h.addEventListener("pointerdown", () => {
