@@ -11503,7 +11503,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.19.11", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.19.12", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -14832,7 +14832,7 @@ const LinkPlugin = {
     const tvShow = id => { ["tv-lobby", "tv-live", "tv-podium"].forEach(x => $(x).hidden = x !== id); };
     const fmtT = ms => { const t = Math.max(0, Math.floor(ms / 1000)); return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0"); };
     const ticker = txt => { const el = $("tv-ticker"); el.innerHTML = ""; const sp = document.createElement("span"); sp.textContent = txt; el.appendChild(sp); };
-    let lastLead = null;
+    let lastLead = null, hostEndedAt = 0;
     const renderDevs = peers => {
       peers = peers || (ch ? ch.peers() : []);
       const pads = peers.filter(p => p.presence && p.presence.role === "pad");
@@ -14888,7 +14888,7 @@ const LinkPlugin = {
         if (d.st === "end" && !prevSc["e" + r.peer]) { prevSc["e" + r.peer] = 1; ticker(`${r.av} ${r.name} ha terminado con ${d.score} puntos`); }
         if (d.goal > 0 && d.harvested / d.goal >= .5 && !prevSc["half" + r.peer]) { prevSc["half" + r.peer] = 1; ticker(`${r.av} ${r.name} lleva la mitad de la cosecha`); }
       });
-      const played = rows.filter(r => r.d), allEnd = played.length > 0 && played.every(r => r.d.st === "end" || (r.peer !== "host" && r.d.t && Date.now() - r.d.t > 9000 && Date.now() - goAt > 15000));   // un móvil que ya no avisa (cerrado/suspendido) cuenta como terminado
+      const played = rows.filter(r => r.d), allEnd = played.length > 0 && ((hostEndedAt && Date.now() - hostEndedAt > 20000) || played.every(r => r.d.st === "end" || (r.peer !== "host" && r.d.t && Date.now() - r.d.t > 9000 && Date.now() - goAt > 15000)));   // si el anfitrión terminó hace 20 s se muestra el podio sí o sí; un móvil que ya no avisa (cerrado/suspendido) cuenta como terminado
       if (allEnd && !endTO) endTO = setTimeout(() => showPodium(rows), 2200);
       if (!allEnd) { clearTimeout(endTO); endTO = 0; }
     };
@@ -14969,7 +14969,7 @@ const LinkPlugin = {
       }, 1200);
       const launch = () => {
         players = {}; prevSc = {}; lastLead = null; clearTimeout(endTO); endTO = 0; $("tv-lanes").innerHTML = ""; $("tv-ticker").innerHTML = "";
-        phase = "live"; goAt = Date.now() + (CONFIG.countdownSec || 0) * 1000; tvShow("tv-live");
+        hostEndedAt = 0; phase = "live"; goAt = Date.now() + (CONFIG.countdownSec || 0) * 1000; tvShow("tv-live");
         $("tv-chip-time").hidden = false; $("tv-chip-time").textContent = "⏱ 0:00";
         clearInterval(tvTimer); tvTimer = setInterval(() => { $("tv-chip-time").textContent = "⏱ " + fmtT(Date.now() - goAt); }, 500); timers.push(tvTimer);
         game.wxSeed = (Math.random() * 2147483647) | 0; ch.emit("down", { t: "go", mode: CONFIG.mode, id: Date.now(), seed: game.wxSeed });
@@ -14988,7 +14988,7 @@ const LinkPlugin = {
           el.textContent = `🏅 ${i + 1}º de ${list.length} · líder ${list[0][1].score} pts`; el.hidden = false;
         };
         off.push(game.bus.on("game:start", () => { if (phase === "live") hostScore(false); }));
-        off.push(game.bus.on("game:end", s => { if (phase === "live" && s.endReason !== "tutorial") { hostScore(true); $("link-rank").hidden = true; $("tv-screen").hidden = false; renderDevs(); } }));
+        off.push(game.bus.on("game:end", s => { if (phase === "live" && s.endReason !== "tutorial") { hostScore(true); hostEndedAt = Date.now(); $("link-rank").hidden = true; $("tv-screen").hidden = false; renderDevs(); } }));
         every(() => { if (phase === "live" && game.state.running) hostScore(false); if (phase === "live") renderDevs(); hostRank(); }, 1000);
       }
       $("link-go").onclick = launch; $("tv-replay").onclick = launch;
