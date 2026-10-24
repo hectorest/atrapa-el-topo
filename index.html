@@ -1323,7 +1323,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.15.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.15.1", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -5026,6 +5026,7 @@ const UpdatePlugin = {
     };
     const force = async () => {
       $("upd-yes").disabled = true; $("upd-yes").textContent = "Actualizando…";
+      try { await Promise.all(["./", "index.html"].map(u => fetch(u, { cache: "reload" }).catch(() => {}))); } catch (e) {}   // refresca la caché HTTP del inicio: iOS abría la versión vieja
       try { const regs = await navigator.serviceWorker.getRegistrations(); await Promise.all(regs.map(g => g.unregister())); } catch (e) {}
       try { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); } catch (e) {}
       const u = new URL(location.href); u.searchParams.set("v", (latest && latest.v) || Date.now()); location.replace(u.toString());
