@@ -880,6 +880,7 @@ html.vp-short #tuto[data-pos=bottom]{bottom:calc(8px - var(--vpx))}
 html.vp-short #ver{bottom:calc(env(safe-area-inset-bottom,0px) + 6px - var(--vpx))}
 html.vp-short #fs-hint{bottom:calc(env(safe-area-inset-bottom,0px) + 14px - var(--vpx))}
 #board,#board *,#hud,#tools,#tools *{touch-action:none}
+input,textarea{-webkit-user-select:text;user-select:text;touch-action:auto}   /* en iOS un campo dentro de un contenedor con user-select:none no deja escribir */
 #set-tabs{width:min(960px,100%);display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.8vmin;flex:none}
 #set-tabs button{display:flex;flex-direction:column;align-items:center;gap:.2vmin;font-size:max(2vmin,10px);padding:.8vmin .3vmin;border-radius:1.6vmin;white-space:nowrap;min-width:0}
 #set-tabs .ti{font-size:max(3.6vmin,18px);line-height:1}
@@ -1268,7 +1269,7 @@ const fullH = () => innerHeight + VPX;
   let lastEnd = 0;
   document.addEventListener("touchend", e => {
     const now = Date.now(), t = e.target;
-    if (now - lastEnd < 400 && !(t && t.closest && t.closest("input,textarea,select"))) e.preventDefault();
+    if (now - lastEnd < 400 && !(t && t.closest && t.closest("input,textarea,select,label"))) e.preventDefault();
     lastEnd = now;
   }, { passive: false });
   ["gesturestart", "gesturechange", "gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), { passive: false }));
@@ -1281,7 +1282,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.12.4", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.12.5", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
