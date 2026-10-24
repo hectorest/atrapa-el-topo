@@ -1226,7 +1226,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.10.2", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.10.3", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -4232,6 +4232,7 @@ const MusicPlugin = {
     const want = () => {
       const st = game.state;
       if (!CONFIG.music) return null;
+      if (document.body.classList.contains("vs-split-on")) return "game";   // pantalla dividida: las mitades van sin música y suena la del juego aquí
       if (document.body.classList.contains("intro")) return "menu";
       if (game.counting) return null;
       if (!st.running) return "menu";
