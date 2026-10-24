@@ -1,1 +1,1 @@
-{ "v": "1.19.1", "date": "24 oct 2026", "notes": "Al abrir un enlace o QR de sala se une solo; el escáner rellena el código y conecta." }
+{ "v": "1.19.2", "date": "24 oct 2026", "notes": "Escáner de QR: avisa de lo que lee o del error, y el campo de código muestra las 5 letras." }
