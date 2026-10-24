@@ -1349,7 +1349,7 @@ body.vs-frame #app{padding:1.2vmin;gap:1vmin}
       <h2>🪤 Trampas</h2>
       <button id="btn-buy-trap" disabled></button>
       <button id="btn-place-trap" disabled></button>
-      <small>Las crías buscan los cultivos más crecidos. Las grandes huelen las trampas; el topo adulto las rompe.</small>
+      <small>Pulsa «Trampa» y toca un agujero. Las crías buscan los cultivos más crecidos; las grandes huelen las trampas y el topo adulto las rompe.</small>
     </div>
     <div id="power-box">
       <h2>⚡ Poderes</h2>
@@ -11507,7 +11507,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.21.1", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.22.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -12761,11 +12761,11 @@ const TrapsPlugin = {
       const st = game.state;
       trapBox.hidden = CONFIG.pups.maxPups <= 0;        // sin crías no hay trampas
       tools.hidden = trapBox.hidden && CONFIG.streakToPower <= 0;   // sin nada que mostrar, sin panel
-      buyBtn.textContent = `🪤 Comprar · ${cost()}🥕`;
-      buyBtn.disabled = !st.running || st.stock < cost();
-      placeBtn.textContent = placing ? "Cancelar" : `Colocar (${st.trapStock})`;
-      placeBtn.disabled = !st.running || (!placing && st.trapStock <= 0);
-      placeBtn.classList.toggle("on", placing);
+      // Un solo botón: compra (si hace falta) y pasa a «colocar»; después basta con tocar el agujero
+      buyBtn.textContent = placing ? "Cancelar" : st.trapStock > 0 ? `🪤 Colocar trampa (×${st.trapStock})` : `🪤 Trampa · ${cost()}🥕`;
+      buyBtn.disabled = !st.running || (!placing && st.trapStock <= 0 && st.stock < cost());
+      buyBtn.classList.toggle("on", placing);
+      placeBtn.hidden = true;
     };
     const setPlacing = on => {
       placing = on;
@@ -12786,9 +12786,14 @@ const TrapsPlugin = {
 
     buyBtn.addEventListener("click", () => {
       const st = game.state;
-      if (!st.running || st.paused || st.stock < cost()) return;
-      st.stock -= cost(); st.trapStock++;
-      bus.emit("stock:change", st.stock);
+      if (!st.running || st.paused) return;
+      if (placing) return setPlacing(false);
+      if (st.trapStock <= 0) {
+        if (st.stock < cost()) return;
+        st.stock -= cost(); st.trapStock++;
+        bus.emit("stock:change", st.stock);
+      }
+      setPlacing(true);
     });
     placeBtn.addEventListener("click", () => {
       const st = game.state;
@@ -12907,8 +12912,15 @@ const PowerUpsPlugin = {
     btns.forEach(b => b.addEventListener("click", () => activate(b.dataset.power)));
 
     const award = () => {
-      const keys = Object.keys(POWERS);
+      const keys = [...Object.keys(POWERS), "seeds"];
       const t = keys[randInt(0, keys.length - 1)];
+      if (t === "seeds") {                                       // premio de semillas para replantar
+        const n = 2; game.state.seeds += n;
+        popText(board, `⚡ ¡Premio! +${n} 🌰`, null);
+        bus.emit("stock:change", game.state.stock);
+        bus.emit("power:earned", { type: "seeds" });
+        return;
+      }
       game.state.powerStock[t]++;
       popText(board, `⚡ ¡Potenciador! ${POWERS[t].icon}`, null);
       bus.emit("power:earned", { type: t });
@@ -14382,8 +14394,8 @@ const TutorialPlugin = {
         hl: () => stageHoles("dead"), wait: "crop:replant", ok: "¡Replantado! Hazlo rápido: si mueren todos, pierdes la partida." },
       { t: "🐣 Crías", x: "Cuanto más come el topo, más se llena su barriga y… ¡nace una cría! Crecen comiendo cultivos y comen cada vez más. Tocarlas solo las frena ❄️ un rato.",
         enter: () => { CONFIG.pups.maxPups = 3; refreshAll(); later(() => bus.emit("crop:eat", { index: 0, amount: CONFIG.pups.feedToBirth, source: "mole" }), 500); }, next: true, hl: "#brood" },
-      { t: "🪤 Trampas", x: "Las crías solo se eliminan con trampas. Sigue los marcadores amarillos: 1) «Comprar» (cuesta cosechas), 2) «Colocar», 3) toca el agujero marcado, el del cultivo más crecido: las crías van a por él.",
-        hl: () => { const st = game.state; if (board.el.classList.contains("placing")) return holesOf([bestCrop()]); return st.trapStock > 0 ? sel("#btn-place-trap") : sel("#btn-buy-trap"); },
+      { t: "🪤 Trampas", x: "Las crías solo se eliminan con trampas. Sigue los marcadores amarillos: 1) pulsa «Trampa» (cuesta cosechas), 2) toca el agujero marcado, el del cultivo más crecido: las crías van a por él.",
+        hl: () => { const st = game.state; if (board.el.classList.contains("placing")) return holesOf([bestCrop()]); return sel("#btn-buy-trap"); },
         enter: () => { game.state.stock = Math.max(game.state.stock, Math.max(1, CONFIG.trapCost)); bus.emit("stock:change", game.state.stock); },
         wait: "trap:placed", ok: "Trampa lista. Ahora hay que esperar a que una cría asome ahí." },
       { t: "🎯 Caza", x: "Ahora espera: la cría asomará en el agujero de la trampa (marcado) y quedará cazada. Las pequeñas caen siempre; las grandes huelen las trampas.",
