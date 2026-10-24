@@ -914,6 +914,13 @@ body.intro:not(.no-fs) #mus-btn{right:calc(env(safe-area-inset-right,0px) + 6px 
 .mode-chips{display:flex;gap:1vmin;align-items:center;width:100%}
 .mode-chips .mc-lb{font-weight:800;font-size:max(2.3vmin,13px);flex:none;margin-right:.6vmin}
 #vs-box .mode-chips button,#link-box .mode-chips button{flex:1;width:auto;font-size:max(2.6vmin,14px);padding:1vmin .4vmin}
+#qr-scan{position:fixed;inset:0;z-index:700;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2vmin;padding:3vmin 3vmin calc(3vmin + var(--sab))}
+#qr-scan[hidden]{display:none}
+#qr-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#qr-frame{position:absolute;left:50%;top:44%;width:min(62vmin,300px);aspect-ratio:1;transform:translate(-50%,-50%);border:.8vmin solid #ffd54a;border-radius:3vmin;box-shadow:0 0 0 100vmax rgba(0,0,0,.55)}
+#qr-msg{position:relative;margin:0;padding:1vmin 2.4vmin;border-radius:99px;background:rgba(0,0,0,.65);color:#fff4d6;font-weight:700;font-size:max(2.6vmin,14px);text-align:center}
+#qr-cancel{position:relative;font-size:max(3vmin,16px);padding:1.2vmin 4vmin}
+.scanbtn{width:100%}
 #set-tabs{width:min(960px,100%);display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.8vmin;flex:none}
 #set-tabs button{display:flex;flex-direction:column;align-items:center;gap:.2vmin;font-size:max(2vmin,10px);padding:.8vmin .3vmin;border-radius:1.6vmin;white-space:nowrap;min-width:0}
 #set-tabs .ti{font-size:max(3.6vmin,18px);line-height:1}
@@ -1073,6 +1080,7 @@ body.vs-frame #app{padding:1.2vmin;gap:1vmin}
     <div id="vs-joinview" hidden>
       <label for="vs-input">Código del duelo <input id="vs-input" maxlength="5" autocapitalize="characters" autocomplete="off" placeholder="WABCD"></label>
       <button id="vs-go-join">Unirme</button>
+      <button id="vs-scan" class="secondary scanbtn" type="button">📷 Escanear el QR del duelo</button>
       <p id="vs-join-status" class="link-status"></p>
     </div>
   </div>
@@ -1121,6 +1129,7 @@ body.vs-frame #app{padding:1.2vmin;gap:1vmin}
       <p><b>Carrera:</b> cada jugador juega su propio tablero y se compara el progreso en vivo. La TV es opcional: sin ella, quien crea la sala también juega y el puesto se ve en cada móvil. El tipo de conexión se elige en ⚙️ Ajustes.</p>
       <div class="mode-chips"></div>
       <label id="link-hname-in" for="link-hname">Tu nombre (si juegas tú también) <input id="link-hname" maxlength="12" autocomplete="off" placeholder="Granjero"></label>
+      <button id="link-scan" class="secondary scanbtn" type="button">📷 Unirme escaneando el QR</button>
       <button id="link-mytv" hidden type="button">📺 Mi TV<small></small></button>
       <button id="link-host">📱 Crear carrera (yo también juego)</button>
       <button id="link-tv" class="secondary">📺 Crear carrera con TV: esta pantalla es la TV</button>
@@ -1133,6 +1142,7 @@ body.vs-frame #app{padding:1.2vmin;gap:1vmin}
       <label id="link-code-in" for="link-input">Código de sala <input id="link-input" maxlength="5" autocapitalize="characters" autocomplete="off" placeholder="RABCD"></label>
       <label id="link-name-in" for="link-name">Tu nombre <input id="link-name" maxlength="12" autocomplete="off" placeholder="Granjero"></label>
       <button id="link-join">Conectar</button>
+      <button id="link-scan2" class="secondary scanbtn" type="button">📷 Escanear el QR de la sala</button>
       <p id="link-pad-status" class="link-status"></p>
       <button id="link-start" hidden>▶ Empezar la carrera para todos</button>
       <button id="link-play" class="secondary" hidden>🎮 Jugar solo mi partida</button>
@@ -1173,6 +1183,12 @@ body.vs-frame #app{padding:1.2vmin;gap:1vmin}
     <p id="rk-status" class="link-status"></p>
   </div>
   <button id="rk-back" class="secondary">← Volver</button>
+</div>
+<div id="qr-scan" hidden role="dialog" aria-label="Escanear código QR">
+  <video id="qr-video" playsinline muted></video>
+  <div id="qr-frame"></div>
+  <p id="qr-msg">Apunta al código QR de la pantalla del anfitrión</p>
+  <button id="qr-cancel" class="secondary" type="button">✕ Cancelar</button>
 </div>
 <div id="gate" role="dialog" aria-label="Entrar al juego">
   <div class="gate-card">
@@ -1338,7 +1354,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.18.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.19.0", date: "24 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -4448,6 +4464,40 @@ const MusicPlugin = {
    La TV elige (Ajustes → Tipo de conexión; «Auto» prueba de más rápido a más lento) y la primera letra del código
    dice al móvil qué transporte usar. */
 const ARTIFACT_URL = ONLINE.publicUrl || "https://claude.ai/artifact/5qvUXbJfr7ZZ5kkCznzsMq";
+/* Escáner de QR dentro de la app: BarcodeDetector si existe (Chrome/Android); si no, la librería jsQR leyendo fotogramas de la cámara */
+const scanQR = () => new Promise(resolve => {
+  const ov = document.getElementById("qr-scan"), vid = document.getElementById("qr-video"), msg = document.getElementById("qr-msg"), cancel = document.getElementById("qr-cancel");
+  let stream = null, raf = 0, done = false, last = 0;
+  const finish = v => { if (done) return; done = true; cancelAnimationFrame(raf); try { stream && stream.getTracks().forEach(t => t.stop()); } catch (e) {} vid.srcObject = null; ov.hidden = true; cancel.onclick = null; resolve(v); };
+  cancel.onclick = () => finish(null);
+  ov.hidden = false; msg.textContent = "Abriendo la cámara…";
+  const loadJsQR = () => window.jsQR ? Promise.resolve() : new Promise((ok, no) => { const sc = document.createElement("script"); sc.src = "https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"; sc.onload = ok; sc.onerror = () => no(new Error("jsqr")); document.head.appendChild(sc); });
+  (async () => {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
+      if (done) { stream.getTracks().forEach(t => t.stop()); return; }
+      vid.srcObject = stream; await vid.play().catch(() => {});
+      msg.textContent = "Apunta al código QR de la pantalla del anfitrión";
+      const det = "BarcodeDetector" in window ? new BarcodeDetector({ formats: ["qr_code"] }) : null;
+      if (!det) await loadJsQR();
+      const cv = document.createElement("canvas"), cx = cv.getContext("2d", { willReadFrequently: true });
+      const tick = async t => {
+        if (done) return; raf = requestAnimationFrame(tick);
+        if (t - last < 120 || vid.readyState < 2 || !vid.videoWidth) return; last = t;
+        try {
+          if (det) { const r = await det.detect(vid); if (r && r[0] && r[0].rawValue) return finish(r[0].rawValue); }
+          else { const k = Math.min(1, 640 / vid.videoWidth); cv.width = Math.round(vid.videoWidth * k); cv.height = Math.round(vid.videoHeight * k); cx.drawImage(vid, 0, 0, cv.width, cv.height);
+            const im = cx.getImageData(0, 0, cv.width, cv.height), q = window.jsQR(im.data, im.width, im.height, { inversionAttempts: "dontInvert" }); if (q && q.data) return finish(q.data); }
+        } catch (e) {}
+      };
+      raf = requestAnimationFrame(tick);
+    } catch (e) {
+      msg.textContent = e && e.name === "NotAllowedError" ? "Sin permiso de cámara. Actívalo en los ajustes del navegador o escribe el código." : e && e.message === "jsqr" ? "No se pudo cargar el lector de QR (¿sin conexión?). Escribe el código a mano." : "No se pudo abrir la cámara. Escribe el código a mano.";
+      setTimeout(() => finish(null), 2600);
+    }
+  })();
+});
+const codeFromQR = (txt, kinds = "mando|duelo") => { const m = new RegExp("(?:" + kinds + ")=([A-Za-z]{5})", "i").exec(String(txt || "")) || /^\s*([A-Za-z]{5})\s*$/.exec(String(txt || "")); return m ? m[1].toUpperCase() : ""; };
 const shareWA = text => {                         // abre WhatsApp con el mensaje listo para elegir contacto o grupo
   const a = document.createElement("a"); a.href = "https://wa.me/?text=" + encodeURIComponent(text); a.target = "_blank"; a.rel = "noopener";
   document.body.appendChild(a); a.click(); a.remove();
@@ -4854,6 +4904,13 @@ const LinkPlugin = {
     $("link-pad").addEventListener("click", () => { mode = "pad"; view("link-padview"); $("link-input").focus(); });
     const myTv = () => { try { const c = (localStorage.getItem("topo-mi-tv") || "").toUpperCase(); return c.length === 5 ? c : ""; } catch (e) { return ""; } };
     const showMyTv = () => { const c = myTv(), b = $("link-mytv"); b.hidden = !c; if (c) b.querySelector("small").textContent = "Sala " + c + " · un toque y entras de jugador"; };
+    const scanJoin = async () => {
+      const txt = await scanQR(), c = codeFromQR(txt, "mando");
+      if (!c) { if (txt) status($("link-pad-status"), "Ese QR no es de una sala de Atrapa el topo.", "err"); return; }
+      mode = "pad"; view("link-padview"); $("link-input").value = c; startPad(c);
+    };
+    $("link-scan").addEventListener("click", () => { mode = "pad"; view("link-padview"); scanJoin(); });
+    $("link-scan2").addEventListener("click", scanJoin);
     $("link-mytv").addEventListener("click", () => { const c = myTv(); if (!c) return; mode = "pad"; view("link-padview"); $("link-input").value = c; startPad(c); });
     game.bus.on("link:open", showMyTv); showMyTv();
     if (/^#tv\b/i.test(location.hash || "")) setTimeout(() => {        // «TV de casa»: abre …/tv en la TV y queda esperando a los móviles
@@ -5566,6 +5623,11 @@ const VersusPlugin = {
       later(() => { if (S.phase === "lobby" && !S.oppId) say(st, "No hay nadie con ese código. Revisa el código.", "err"); }, 10000);
     };
     $("vs-go-join").addEventListener("click", () => joinCode($("vs-input").value));
+    $("vs-scan").addEventListener("click", async () => {
+      const txt = await scanQR(), c = codeFromQR(txt, "duelo");
+      if (!c) { if (txt) say($("vs-join-status"), "Ese QR no es de un duelo de Atrapa el topo.", "err"); return; }
+      $("vs-input").value = c; joinCode(c);
+    });
     $("vs-input").addEventListener("keydown", e => { if (e.key === "Enter") joinCode(e.target.value); });
     if (!FRAME) {
       const hm = /duelo=([A-Z]{5})/i.exec(location.hash || "");
