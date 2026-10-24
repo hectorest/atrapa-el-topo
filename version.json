@@ -1,1 +1,1 @@
-{ "v": "1.19.2", "date": "24 oct 2026", "notes": "Escáner de QR: avisa de lo que lee o del error, y el campo de código muestra las 5 letras." }
+{ "v": "1.19.3", "date": "24 oct 2026", "notes": "Escáner de QR: el lector va incluido en el juego (ya no falla al cargarlo)." }
