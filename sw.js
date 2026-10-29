@@ -2,7 +2,7 @@
    - Archivos propios: primero red revalidada (así las actualizaciones llegan aunque la caché HTTP esté vieja), y si no hay red, la copia guardada.
    - Librerías externas (three.js, fuentes…): copia guardada y se refresca en segundo plano.
    - Nunca guarda llamadas al ranking (Supabase) ni conexiones en vivo. */
-const V = "topo-v5";
+const V = "topo-v6";
 const PRE = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon.svg"];
 const CDN = ["cdnjs.cloudflare.com", "fonts.googleapis.com", "fonts.gstatic.com", "cdn.jsdelivr.net", "unpkg.com"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(V).then(c => Promise.all(PRE.map(u => fetch(new Request(u, { cache: "reload" })).then(res => res.ok && c.put(u, res)).catch(() => {})))).then(() => self.skipWaiting())); });

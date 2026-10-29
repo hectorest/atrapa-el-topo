@@ -1,10 +1,20 @@
 # Atrapa el topo 🐭
 
-Juego de granja (whack-a-mole) en un único `index.html`: individual, carrera (con TV opcional) y versus, ranking online (Supabase) y ranking local.
+Juego de granja (whack-a-mole) en un único `index.html`: individual, carrera (con TV opcional), versus y huerto 3D en primera persona, ranking online (Supabase) y ranking local.
 
 - Web: https://hectorest.github.io/atrapa-el-topo/
 - `supabase.sql`: tabla del ranking (ya aplicada en el proyecto).
 - Las claves de `index.html` son **públicas** por diseño (publishable key de Supabase). Nunca subas aquí la `service_role`.
+
+## Modo Huerto 3D 🧱 (v1.24)
+
+Caza al topo **en primera persona** por un huerto vallado: pradera con árboles y flores, surcos de lechugas y zanahorias y 10 agujeros. El topo asoma por uno; ve andando hasta él y dale con el martillo antes de que se esconda. Al darle se marea y sale por otro agujero, cada vez durante menos tiempo (de 6 a 2,5 s). 90 segundos por partida y récord guardado en el dispositivo.
+
+- **Ordenador:** ratón para mirar (o arrastrar si el navegador no deja capturar el ratón), WASD o flechas, Mayús para correr, Espacio para saltar, clic para el martillazo, Esc para pausar.
+- **Móvil / tablet:** joystick a la izquierda (a tope corre), arrastra a la derecha para mirar, botón 🔨 o toca al topo directamente, ⤒ para saltar y ⏸ para pausar.
+- Una **flecha naranja** indica dónde ha salido el topo y a cuántos metros; el punto de mira se pone rojo cuando está a tiro.
+- **Sigue el «Estilo visual» de Ajustes:** Bloques (cubos con texturas de píxeles), 3D y AR (formas redondeadas como el tablero 3D) o 2D (dibujo plano).
+- Es un plugin independiente (`HuertoPlugin`) con su propia escena Three.js: no cambia las reglas de los otros modos.
 
 ## Modo Versus ⚔️ (v1.9)
 
