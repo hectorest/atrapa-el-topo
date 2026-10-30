@@ -213,7 +213,7 @@ button.secondary{background:rgba(255,255,255,.2);box-shadow:none;font-size:max(2
 .mode-row{display:flex;gap:1.5vmin}
 .mode-row button{flex:1}
 button.secondary.on{background:var(--accent);box-shadow:0 3px 0 rgba(0,0,0,.25)}
-.set-row{display:grid;grid-template-columns:1.3fr 1fr 3.2em;gap:1.5vmin;align-items:center}
+.set-row{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 3.2em;gap:1.5vmin;align-items:center}
 .set-row input[type=range]{width:100%}
 .set-row input[type=checkbox]{justify-self:start;width:max(3.2vmin,22px);height:max(3.2vmin,22px)}
 .set-row output{text-align:right;font-variant-numeric:tabular-nums}
@@ -314,7 +314,12 @@ button.secondary.on{background:linear-gradient(var(--sun-1),var(--sun-2));border
   background:linear-gradient(var(--wood-1),var(--wood-2));border:.3vmin solid var(--wood-3);text-shadow:0 .2vmin 0 rgba(0,0,0,.35);position:sticky;top:-1.6vmin;z-index:1}
 .set-sec:first-child{margin-top:0}
 .set-sec,#settings .mode-row,#settings .set-label,#settings>button{grid-column:1/-1}
-@media (max-width:700px){#settings{grid-template-columns:1fr}}
+@media (max-width:700px){#settings{grid-template-columns:minmax(0,1fr)}}
+#settings{overflow-x:hidden}
+#settings>*{min-width:0;max-width:100%}
+#settings .mode-row{flex-wrap:wrap}
+#settings .mode-row button{flex:1 1 auto;min-width:0;padding-left:1.2vmin;padding-right:1.2vmin}
+@media (max-width:700px){#settings .mode-row{gap:1vmin}#settings .mode-row button{flex:1 1 28%}}
 #board:has(#settings-overlay:not([hidden])) #overlay{visibility:hidden}
 #settings-overlay{background:radial-gradient(ellipse at center,rgba(18,32,18,.96),rgba(8,18,10,.98))!important;z-index:30;padding:2vmin;justify-content:flex-start!important}
 #settings-overlay h1{font-size:max(6vmin,24px)!important;flex:none}
@@ -11580,7 +11585,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.25.0", date: "30 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.25.1", date: "31 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
