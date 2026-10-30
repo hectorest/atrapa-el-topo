@@ -383,6 +383,14 @@ body.adv{
   --lift:0 .6vmin 0 var(--wood-3),0 1.4vmin 2vmin rgba(0,0,0,.28),inset 0 .3vmin 0 rgba(255,255,255,.7);
   background:linear-gradient(#bfe6ff,#8fd6a8);
 }
+body.hw{
+  --cream:#f6e9d8; --cream-2:#e2cbb0; --ink:#2a1740;
+  --wood-1:#8a56c2; --wood-2:#5b3589; --wood-3:#2c1748;
+  --leaf-1:#ffb04a; --leaf-2:#ee7a1c; --leaf-3:#9a420a;
+  --sun-1:#ffd95e; --sun-2:#ff9a1f; --sun-3:#7a3d00; --berry:#7bd34a; --text:#2a1740;
+  --lift:0 .6vmin 0 var(--wood-3),0 1.4vmin 2vmin rgba(0,0,0,.4),inset 0 .3vmin 0 rgba(255,255,255,.55);
+  background:linear-gradient(#2b1a4a,#6a3478);
+}
 body.vox{
   --font:"Pixelify Sans","Courier New",monospace;
   --cream:#c6c6c6; --cream-2:#b2b2b2; --ink:#1d1d1d;
@@ -11572,7 +11580,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.24.0", date: "29 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.25.0", date: "30 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -11606,7 +11614,7 @@ const CONFIG = {
   bossBite: 30,                         // % que muerde a todos los cultivos si huye
   arInvert: false,                      // AR: invertir el sentido del giro
   arScale: 1,                           // AR: tamaño del tablero (1 = encaja en pantalla)
-  view: "3d",                           // estilo visual: "2d" | "3d" | "voxel" (Bloques) | "aventura" (Criaturas). Si Three.js no carga, se usa 2D
+  view: "3d",                           // estilo visual: "2d" | "3d" | "voxel" (Bloques) | "halloween" | "aventura" (Criaturas). Si Three.js no carga, se usa 2D
   blightDelaySec: 8,                    // segundos que tarda un cultivo muerto en empezar a contagiar (tiempo para replantarlo)
   blightPerSec: 1,                      // % de crecimiento por segundo que un cultivo muerto le quita a cada vecino (0 = sin contagio)
   cropShieldSec: 3,                     // segundos de protección de un cultivo recién cosechado/replantado (nadie puede comerlo)
@@ -11664,7 +11672,7 @@ const CONFIG = {
    ============================================================ */
 /* El estilo «Criaturas» está terminado pero oculto del selector. Para volver a mostrarlo: SHOW_CREATURES = true */
 const SHOW_CREATURES = false;
-const berry = () => document.body.classList.contains("adv") ? "🫐" : "🥕";   // la «cosecha» en el estilo Criaturas son bayas
+const berry = () => document.body.classList.contains("adv") ? "🫐" : document.body.classList.contains("hw") ? "🎃" : "🥕";   // la «cosecha» en el estilo Criaturas son bayas
 const rand = (min, max) => Math.random() * (max - min) + min;
 const randInt = (min, max) => Math.floor(rand(min, max + 1));
 
@@ -12252,8 +12260,8 @@ const SETTINGS_SCHEMA = [
   { key: "graceMs", label: "Tolerancia de retraso (ms)", min: 0, max: 400, step: 20,
     get: () => CONFIG.graceMs, set: v => CONFIG.graceMs = v },
   { key: "view", type: "select", label: "Estilo visual", showLabel: true,
-    options: [{ value: "2d", label: "2D" }, { value: "3d", label: "3D" }, { value: "voxel", label: "Bloques" }, ...(SHOW_CREATURES ? [{ value: "aventura", label: "Criaturas" }] : []), { value: "ar", label: "AR" }],
-    get: () => CONFIG.view, set: v => { if (["2d", "3d", "voxel", "aventura", "ar"].includes(v)) CONFIG.view = (v === "aventura" && !SHOW_CREATURES) ? "3d" : v; } },
+    options: [{ value: "2d", label: "2D" }, { value: "3d", label: "3D" }, { value: "voxel", label: "Bloques" }, { value: "halloween", label: "Halloween 🎃" }, ...(SHOW_CREATURES ? [{ value: "aventura", label: "Criaturas" }] : []), { value: "ar", label: "AR" }],
+    get: () => CONFIG.view, set: v => { if (["2d", "3d", "voxel", "halloween", "aventura", "ar"].includes(v)) CONFIG.view = (v === "aventura" && !SHOW_CREATURES) ? "3d" : v; } },
   { key: "countdownSec", label: "Cuenta atrás inicial (s, 0 = sin)", min: 0, max: 10, step: 1,
     get: () => CONFIG.countdownSec, set: v => CONFIG.countdownSec = v },
   { key: "arScale", label: "AR: tamaño del tablero", min: 0.5, max: 1.6, step: 0.1,
@@ -13311,9 +13319,10 @@ const ThreeViewPlugin = {
     // El tema «Bloques» de la interfaz (marcos de piedra, letra pixelada) se aplica aunque el 3D no cargue
     const syncTheme = () => {
       document.body.classList.toggle("vox", CONFIG.view === "voxel");
+      const hwn = CONFIG.view === "halloween"; document.body.classList.toggle("hw", hwn);
       const adv = CONFIG.view === "aventura"; document.body.classList.toggle("adv", adv);
       const ic = document.querySelector("#harvest .ic"), lb = document.querySelector("#harvest .lb");
-      if (ic) ic.textContent = adv ? "🫐" : "🥕"; if (lb) lb.textContent = adv ? " Bayas" : " Cosecha";
+      if (ic) ic.textContent = adv ? "🫐" : hwn ? "🎃" : "🥕"; if (lb) lb.textContent = adv ? " Bayas" : hwn ? " Calabazas" : " Cosecha";
     };
     bus.on("settings:change", syncTheme); syncTheme();
     if (typeof THREE === "undefined") { game.view3d = false; return; }
@@ -13401,7 +13410,7 @@ const ThreeViewPlugin = {
     const baseLight = { hi: 0.85, si: 0.75 };
     let lightK = 1;
     const applyTheme = () => {
-      const p = isDark() ? palette.night : CONFIG.view === "aventura" ? { sky: 0xa8dcff, hemi: 0xffffff, ground: 0x4fae7a, hi: 0.9, si: 0.7, sun: 0xfff6dc } : palette.day;
+      const p = CONFIG.view === "halloween" ? { sky: 0x2b1a4a, hemi: 0xffe3c8, ground: 0x3d2a5c, hi: 0.9, si: 0.6, sun: 0xffb070 } : isDark() ? palette.night : CONFIG.view === "aventura" ? { sky: 0xa8dcff, hemi: 0xffffff, ground: 0x4fae7a, hi: 0.9, si: 0.7, sun: 0xfff6dc } : palette.day;
       scene.background = new THREE.Color(p.sky);
       scene.fog = new THREE.Fog(p.sky, 38, 80);
       hemi.groundColor.set(p.ground); hemi.intensity = p.hi; baseLight.hi = p.hi;
@@ -13477,10 +13486,89 @@ const ThreeViewPlugin = {
     const holePos = (r, c, off) => new THREE.Vector3((c - (cols - 1) / 2) * S + off.x, 0, (r - (rows - 1) / 2) * S + off.z);
     const cellCenter = (r, c) => new THREE.Vector3((c - (cols - 1) / 2) * S, 0, (r - (rows - 1) / 2) * S);
 
+    /* Topo zombi (Halloween): ojo saltón, ojo en X, puntadas y el cerebro al aire */
+    const zombify = (g, eyeL, eyeR) => {
+      const dark = mat(0x1b1a14), brain = mat(0xe58aa0), white = mat(0xf4f0d0), red = mat(0xc42020);
+      eyeL.visible = false; eyeR.visible = false;
+      g.add(mesh(G.sphere, white, -0.2, 0.64, 0.46, 0.13, 0.14, 0.08), mesh(G.sphere, red, -0.19, 0.64, 0.535, 0.045, 0.05, 0.03));
+      [-1, 1].forEach(sg => { const b = mesh(G.box, dark, 0.21, 0.63, 0.5, 0.2, 0.04, 0.03); b.rotation.z = sg * 0.78; g.add(b); });
+      const st = mesh(G.box, dark, 0.05, 0.93, 0.34, 0.34, 0.03, 0.04); st.rotation.z = -0.18; g.add(st);
+      [-0.1, 0.02, 0.14].forEach(x => { const t = mesh(G.box, dark, x, 0.93, 0.35, 0.025, 0.12, 0.04); t.rotation.z = -0.18; g.add(t); });
+      [[-0.2, 1.0, 0.1, 0.17], [-0.05, 1.05, 0.02, 0.15], [-0.32, 0.93, 0.12, 0.13]].forEach(([x, y, z, r]) => g.add(mesh(G.sphere, brain, x, y, z, r, r * 0.7, r)));
+    };
+    /* Cultivo calabaza: la zanahoria se convierte en una calabaza con gajos y rabito */
+    const buildCropH = () => {
+      const k = buildCropS();
+      k.carrotMat.color.set(0xff7a1a);
+      [-0.55, 0.55].forEach(x => k.carrot.add(mesh(G.sphere, k.carrotMat, x, 0, 0, 0.62, 0.96, 0.9)));
+      k.carrot.add(mesh(G.box, mat(0x4b6a2a), 0, 1.05, 0, 0.16, 0.45, 0.16));
+      return k;
+    };
+    const buildPupH = () => buildPupS();
+
+    /* Decorado de Halloween: árboles secos, calabazas, lápidas, murciélagos y fantasmas */
+    const hwFx = [];
+    const addTreeH = (x, z, s) => {
+      const t = new THREE.Group(), bark = mat(0x2a1f2e);
+      t.add(mesh(G.cyl, bark, 0, 0.7 * s, 0, 0.2 * s, 1.4 * s, 0.2 * s));
+      for (let k = 0; k < 5; k++) {
+        const a = k * 1.26 + rng() * 0.5, len = (0.7 + rng() * 0.6) * s;
+        const b = mesh(G.cyl, bark, Math.cos(a) * len * 0.3, (1.2 + k * 0.17) * s, Math.sin(a) * len * 0.3, 0.06 * s, len, 0.06 * s);
+        b.rotation.set(Math.sin(a) * 1.0, 0, -Math.cos(a) * 1.0); t.add(b);
+      }
+      t.position.set(x, -0.4, z); t.rotation.y = rng() * 6; fixed.add(t);
+    };
+    const addBushH = (x, z, s) => {                       // calabaza (a veces con cara encendida)
+      const g = new THREE.Group(), om = mat(0xff7a1a, { emissive: 0x2a1000 });
+      g.add(mesh(G.sphereLo, om, 0, 0.3 * s, 0, 0.5 * s, 0.4 * s, 0.5 * s), mesh(G.sphereLo, om, -0.3 * s, 0.28 * s, 0, 0.32 * s, 0.38 * s, 0.4 * s), mesh(G.sphereLo, om, 0.3 * s, 0.28 * s, 0, 0.32 * s, 0.38 * s, 0.4 * s));
+      g.add(mesh(G.box, mat(0x4b6a2a), 0, 0.7 * s, 0, 0.07 * s, 0.2 * s, 0.07 * s));
+      if (rng() < 0.45) {
+        const glow = new THREE.MeshBasicMaterial({ color: 0xffe04a });
+        g.add(mesh(G.cone, glow, -0.17 * s, 0.4 * s, 0.46 * s, 0.09 * s, 0.1 * s, 0.03 * s), mesh(G.cone, glow, 0.17 * s, 0.4 * s, 0.46 * s, 0.09 * s, 0.1 * s, 0.03 * s), mesh(G.box, glow, 0, 0.2 * s, 0.48 * s, 0.34 * s, 0.07 * s, 0.03 * s));
+      }
+      g.position.set(x, -0.4, z); g.rotation.y = (rng() - 0.5) * 1.2; fixed.add(g);
+    };
+    const addRockH = (x, z, s) => {                       // lápida
+      const g = new THREE.Group(), st = mat(0x8c8a9c);
+      g.add(mesh(G.box, st, 0, 0.45 * s, 0, 0.7 * s, 0.9 * s, 0.18 * s));
+      const cap = mesh(G.cyl, st, 0, 0.9 * s, 0, 0.35 * s, 0.18 * s, 0.35 * s); cap.rotation.x = Math.PI / 2; g.add(cap);
+      g.add(mesh(G.sphereLo, mat(0x3a2a2a), 0, 0.02, 0.22 * s, 0.5 * s, 0.14 * s, 0.4 * s));
+      g.position.set(x, -0.4, z); g.rotation.y = (rng() - 0.5) * 0.8; g.rotation.z = (rng() - 0.5) * 0.15; fixed.add(g);
+    };
+    const makeBat = () => {
+      const g = new THREE.Group(), dm = mat(0x1a1024);
+      g.add(mesh(G.sphere, dm, 0, 0, 0, 0.12, 0.09, 0.16), mesh(G.cone, dm, -0.06, 0.1, 0.05, 0.03, 0.08, 0.03), mesh(G.cone, dm, 0.06, 0.1, 0.05, 0.03, 0.08, 0.03));
+      g.userData.wings = [-1, 1].map(sx => { const p = new THREE.Group(); p.add(mesh(G.box, dm, sx * 0.22, 0, 0, 0.42, 0.025, 0.2)); g.add(p); return [p, sx]; });
+      return g;
+    };
+    const makeGhost = () => {
+      const g = new THREE.Group(), gm = new THREE.MeshBasicMaterial({ color: 0xf2f0ff, transparent: true, opacity: 0.8 }), dk = new THREE.MeshBasicMaterial({ color: 0x1b1a2a });
+      g.add(mesh(G.sphere, gm, 0, 0.1, 0, 0.4, 0.45, 0.4), mesh(G.cone, gm, 0, -0.32, 0, 0.4, 0.7, 0.4), mesh(G.sphere, dk, -0.14, 0.18, 0.34, 0.07, 0.1, 0.05), mesh(G.sphere, dk, 0.14, 0.18, 0.34, 0.07, 0.1, 0.05), mesh(G.sphere, dk, 0, -0.02, 0.37, 0.07, 0.09, 0.05));
+      g.children.forEach(c => c.castShadow = false);
+      return g;
+    };
+    const hwDecor = (fw, fd) => {
+      const hw = fw / 2, hd = fd / 2;
+      for (let k = 0; k < 7; k++) {
+        const g = makeBat(), r = 5 + rng() * 9, ph = rng() * 6.28, sp = 0.5 + rng() * 0.5, h = 2.6 + rng() * 2.4;
+        g.children.forEach(c => c.castShadow = false); fixed.add(g);
+        hwFx.push(t => {
+          const a = t * sp + ph;
+          g.position.set(Math.cos(a) * r, h + Math.sin(t * 2.3 + ph) * 0.35, Math.sin(a) * r * 0.7); g.rotation.y = -a;
+          const f = Math.sin(t * 16 + ph) * 0.75; g.userData.wings.forEach(([p, sg]) => p.rotation.z = sg * f);
+        });
+      }
+      for (let k = 0; k < 4; k++) {
+        const g = makeGhost(), side = k % 2 ? 1 : -1, x = side * (hw + 2.2 + rng() * 3.5), z = -hd + rng() * (fd + 3), ph = rng() * 6.28;
+        fixed.add(g);
+        hwFx.push(t => { g.position.set(x + Math.sin(t * 0.6 + ph) * 0.5, 0.9 + Math.sin(t * 1.5 + ph) * 0.28, z); g.rotation.y = Math.sin(t * 0.5 + ph) * 0.5; });
+      }
+    };
+
     /* Topo adulto: cuerpo, hocico, ojos, cejas, boca (varias), manos con garras */
-    const buildMoleS = () => {
+    const buildMoleS = (Z) => {
       const g = new THREE.Group();
-      const body = buried(0x8b5e3c), light = buried(0xd9b896), pink = buried(0xe46a8a), dark = mat(0x111111), white = mat(0xffffff);
+      const body = buried(Z ? 0x7fa070 : 0x8b5e3c), light = buried(Z ? 0xb7c9a0 : 0xd9b896), pink = buried(Z ? 0x8a3a4a : 0xe46a8a), dark = mat(0x111111), white = mat(0xffffff);
       g.add(mesh(G.sphere, body, 0, 0.42, 0, 0.55, 0.63, 0.52));
       g.add(mesh(G.sphere, light, 0, 0.3, 0.46, 0.22, 0.17, 0.24));            // hocico
       g.add(mesh(G.sphere, pink, 0, 0.37, 0.66, 0.09, 0.08, 0.08));            // nariz
@@ -13515,6 +13603,7 @@ const ThreeViewPlugin = {
         hand.position.set(sx * 0.5, 0.25, 0.3); hand.rotation.y = -sx * 0.4;
         g.add(hand);
       });
+      if (Z) zombify(g, eyeL, eyeR);
       g.position.y = DOWN_Y; g.visible = false;
       return { g, body, mouths, browL, browR, eyes: [eyeL, eyeR] };
     };
@@ -13808,12 +13897,14 @@ const ThreeViewPlugin = {
       rows = CONFIG.rows; cols = CONFIG.cols; rng = makeRng(1234);
       const V = CONFIG.view === "voxel";
       builtView = CONFIG.view;
-      const A = CONFIG.view === "aventura";
-      const bd = V ? { mole: buildMoleV, pup: buildPupV, crop: buildCropV, trap: buildTrapV } : A ? { mole: buildMoleA, pup: buildPupA, crop: buildCropA, trap: buildTrapS } : { mole: buildMoleS, pup: buildPupS, crop: buildCropS, trap: buildTrapS };
-      const tree = V ? addTreeV : A ? addTreeA : addTree, bush = V ? addBushV : A ? addBushA : addBush, rock = V ? addRockV : addRock;
+      const A = CONFIG.view === "aventura", HWN = CONFIG.view === "halloween";
+      hwFx.length = 0;
+      const bd = HWN ? { mole: () => buildMoleS(true), pup: buildPupH, crop: buildCropH, trap: buildTrapS } : V ? { mole: buildMoleV, pup: buildPupV, crop: buildCropV, trap: buildTrapV } : A ? { mole: buildMoleA, pup: buildPupA, crop: buildCropA, trap: buildTrapS } : { mole: buildMoleS, pup: buildPupS, crop: buildCropS, trap: buildTrapS };
+      const tree = V ? addTreeV : A ? addTreeA : HWN ? addTreeH : addTree, bush = V ? addBushV : A ? addBushA : HWN ? addBushH : addBush, rock = V ? addRockV : HWN ? addRockH : addRock;
       applyTheme();
       ground.material.map = V ? vtex().grass : grassTex;
       if (V) vtex().grass.repeat.set(47, 47);
+      ground.material.color.set(HWN ? 0x8f86b8 : 0xffffff);
       ground.material.needsUpdate = true;
       parts.forEach(m => { m.geometry = V ? G.box : G.octa; });
       clearCells();
@@ -13822,9 +13913,9 @@ const ThreeViewPlugin = {
       const fw = cols * S + 1.0, fd = rows * S + 1.0;
       // Campo de tierra con marco de madera
       if (V) terrainVoxel(fw, fd); else {
-      const soil = new THREE.Mesh(G.box, new THREE.MeshLambertMaterial({ map: soilTex }));
+      const soil = new THREE.Mesh(G.box, new THREE.MeshLambertMaterial({ map: soilTex, color: HWN ? 0x8c7a96 : 0xffffff }));
       soil.scale.set(fw, 0.4, fd); soil.position.y = -0.2; soil.receiveShadow = true; stage.add(soil);
-      const wood = mat(A ? 0xf4f1e6 : 0x8a5a2b);
+      const wood = mat(A ? 0xf4f1e6 : HWN ? 0x3a2a3f : 0x8a5a2b);
       [[0, -fd / 2 - 0.12, fw + 0.5, 0.25], [0, fd / 2 + 0.12, fw + 0.5, 0.25]].forEach(([x, z, w, d]) => {
         const p = mesh(G.box, wood, x, 0.04, z, w, 0.34, d); p.receiveShadow = true; stage.add(p);
       });
@@ -13850,6 +13941,7 @@ const ThreeViewPlugin = {
         const x = (rng() - 0.5) * (fw + 14), z = -hd - 1 + rng() * (fd + 8);
         if (!(Math.abs(x) < hw + 0.9 && Math.abs(z) < hd + 0.9)) rock(x, z, 0.6 + rng() * 0.8);
       }
+      if (HWN) hwDecor(fw, fd);
       // Celdas: agujero, topo, cría, cultivo, trampa
       for (let i = 0; i < rows * cols; i++) {
         const r = Math.floor(i / cols), c = i % cols;
@@ -14165,6 +14257,7 @@ const ThreeViewPlugin = {
     const cBody = new THREE.Color(), cTmp = new THREE.Color();
     const BROWN = new THREE.Color(0x8b5e3c), ANGRY = new THREE.Color(0xb8452a), GREEN = new THREE.Color(0x2e9e4f);
     const TAN = new THREE.Color(0xc9a07a), TAN2 = new THREE.Color(0xd9803f), ICE = new THREE.Color(0x8fd3ff);
+    const Z_BODY = new THREE.Color(0x7fa070), Z_ANGRY = new THREE.Color(0xb7c24a), Z_HIT = new THREE.Color(0xe6ff6a), Z_TAN = new THREE.Color(0x9dbb88);
     const A_BODY = new THREE.Color(0x47b3a3), A_ANGRY = new THREE.Color(0xe0525e), A_HIT = new THREE.Color(0xfff08a), A_TAN = new THREE.Color(0xb9a6f0), A_TAN2 = new THREE.Color(0x8f78e8);
     const approach = (cur, target, k) => cur + (target - cur) * k;
 
@@ -14175,9 +14268,9 @@ const ThreeViewPlugin = {
       m.g.visible = m.g.position.y > DOWN_Y + 0.05;
       if (!m.g.visible) return;
       // Color: marrón → rojizo con el enfado; verde si lo golpeas
-      const adv = CONFIG.view === "aventura";
-      cBody.copy(adv ? A_BODY : BROWN).lerp(adv ? A_ANGRY : ANGRY, clamp(mood / 4, 0, 1) * 0.85);
-      if (hit) cBody.copy(adv ? A_HIT : GREEN);
+      const adv = CONFIG.view === "aventura", zom = CONFIG.view === "halloween";
+      cBody.copy(adv ? A_BODY : zom ? Z_BODY : BROWN).lerp(adv ? A_ANGRY : zom ? Z_ANGRY : ANGRY, clamp(mood / 4, 0, 1) * 0.85);
+      if (hit) cBody.copy(adv ? A_HIT : zom ? Z_HIT : GREEN);
       m.body.color.copy(cBody);
       // Movimiento: respira, se ríe al burlarse, se aplasta al golpearlo
       cell.hit = Math.max(0, cell.hit - dt * 4);
@@ -14212,7 +14305,7 @@ const ThreeViewPlugin = {
       if (!p.g.visible) return;
       const sc = 0.4 + 0.58 * (p.size || 0);
       p.inner.scale.setScalar(sc);
-      cTmp.copy(CONFIG.view === "aventura" ? A_TAN : TAN).lerp(CONFIG.view === "aventura" ? A_TAN2 : TAN2, (p.lvl || 0) * 0.35);
+      cTmp.copy(CONFIG.view === "aventura" ? A_TAN : CONFIG.view === "halloween" ? Z_TAN : TAN).lerp(CONFIG.view === "aventura" ? A_TAN2 : TAN2, (p.lvl || 0) * 0.35);
       if (p.frozen) cTmp.lerp(ICE, 0.65);
       p.body.color.copy(cTmp);
       p.ice.visible = !!p.frozen;
@@ -14233,12 +14326,13 @@ const ThreeViewPlugin = {
       k.leaves.scale.setScalar(k.s);
       k.leaves.rotation.z = dead ? 0.45 : grew ? Math.sin(time * 2 + cell.c + cell.r) * 0.05 : 0;
       k.leaves.rotation.x = threat ? Math.sin(time * 40) * 0.12 : 0;
-      k.leafMat.color.set(dead ? 0x7a6a4a : hurt ? 0xd96b4a : blight ? 0xa7a84a : CONFIG.view === "aventura" ? 0x3fae6a : 0x5fbf4a);
+      k.leafMat.color.set(dead ? 0x7a6a4a : hurt ? 0xd96b4a : blight ? 0xa7a84a : CONFIG.view === "aventura" ? 0x3fae6a : CONFIG.view === "halloween" ? 0x6d8f2e : 0x5fbf4a);
       const showCarrot = !dead && grow > 0.3;
       k.carrot.visible = showCarrot;
       if (showCarrot) {
         const cs = clamp((grow - 0.3) / 0.7, 0, 1);
-        k.carrot.scale.set(0.12 + 0.12 * cs, 0.08 + 0.1 * cs, 0.12 + 0.12 * cs);
+        const pk = CONFIG.view === "halloween" ? 1.35 : 1;
+        k.carrot.scale.set((0.12 + 0.12 * cs) * pk, (0.08 + 0.1 * cs) * pk, (0.12 + 0.12 * cs) * pk);
         k.carrot.position.y = 0.05 + 0.04 * cs;
       }
       const glow = ripe ? 0.25 + 0.2 * Math.sin(time * 6) : 0;
@@ -14305,7 +14399,7 @@ const ThreeViewPlugin = {
       if (bossRig && bossRig.v === CONFIG.view) return bossRig;
       if (bossRig) scene.remove(bossRig.root);
       const V = CONFIG.view === "voxel";
-      const mole = V ? buildMoleV() : CONFIG.view === "aventura" ? buildMoleA() : buildMoleS();
+      const mole = V ? buildMoleV() : CONFIG.view === "aventura" ? buildMoleA() : CONFIG.view === "halloween" ? buildMoleS(true) : buildMoleS();
       const gold = mat(0xffd54a, { emissive: 0x553300 });
       mole.g.add(mesh(G.box, gold, 0, 1.14, 0, 0.8, 0.16, 0.6));
       [-0.3, 0, 0.3].forEach(x => mole.g.add(mesh(G.box, gold, x, 1.32, 0, 0.14, 0.26, 0.14)));
@@ -14349,6 +14443,7 @@ const ThreeViewPlugin = {
         updateVsFx(cells[i], h, dt);
       }
       updateBoss(dt);
+      for (let i = 0; i < hwFx.length; i++) hwFx[i](time);
       if (AR.on) stepAR(dt);
       // Poderes: tinte de la luz y destellos
       const st = game.state;
@@ -16170,7 +16265,7 @@ const HuertoPlugin = {
     };
 
     /* ---------- Escena ---------- */
-    let renderer = null, scene, cam, worldMesh = null, decorMesh = null, atlasTex, hammer, moleRig, stars, clouds = [], parts = [], raycaster, clip;
+    let renderer = null, hemiL, sunL, scene, cam, worldMesh = null, decorMesh = null, atlasTex, hammer, moleRig, stars, clouds = [], parts = [], raycaster, clip;
     const SKY = 0x9fd3ff;
     const lam = (color, extra = {}) => new THREE.MeshLambertMaterial(Object.assign({ color }, extra));
     const BOX = new THREE.BoxGeometry(1, 1, 1);
@@ -16256,8 +16351,9 @@ const HuertoPlugin = {
        Bloques → cubos con texturas de píxeles · 3D y AR → formas redondeadas como el tablero 3D · 2D → dibujo plano tipo cómic.
        El mundo «por dentro» (colisiones, agujeros, árboles) es el mismo en los tres; solo cambia cómo se ve. */
     let ST = "voxel", builtST = null, styleGroup = null;
-    const styleOf = () => CONFIG.view === "voxel" ? "voxel" : CONFIG.view === "2d" ? "flat" : "smooth";
-    const SKIES = { voxel: 0x9fd3ff, smooth: 0xa9dcff, flat: 0xc4ecff };
+    const styleOf = () => CONFIG.view === "voxel" ? "voxel" : CONFIG.view === "2d" ? "flat" : CONFIG.view === "halloween" ? "halloween" : "smooth";
+    const SKIES = { voxel: 0x9fd3ff, smooth: 0xa9dcff, flat: 0xc4ecff, halloween: 0x2a1a4a };
+    const hwFxH = [];
     const SPH = new THREE.SphereGeometry(1, 16, 12), CYL = new THREE.CylinderGeometry(1, 1, 1, 12), CONE = new THREE.ConeGeometry(1, 1, 10),
       TOR = new THREE.TorusGeometry(1, 0.22, 8, 22), OCTA = new THREE.OctahedronGeometry(1),
       SPL = new THREE.SphereGeometry(1, 8, 6), CNL = new THREE.ConeGeometry(1, 1, 5);   // versiones ligeras para lo que se repite cientos de veces
@@ -16297,12 +16393,13 @@ const HuertoPlugin = {
 
     /* 3D y 2D: césped, surcos, valla de madera, pinos, cultivos y flores con formas redondeadas */
     const buildSmoothWorld = grp => {
-      const flat = ST === "flat", fw = F1 - F0 + 1, cx = F0 + fw / 2, white = MAT(0xffffff);
+      const flat = ST === "flat", hwn = ST === "halloween", fw = F1 - F0 + 1, cx = F0 + fw / 2, white = MAT(0xffffff);
+      hwFxH.length = 0;
       const BASIC = c => new THREE.MeshBasicMaterial({ color: c });   // superficies grandes sin luz: mucho más ligeras
       const ground = new THREE.Mesh(new THREE.PlaneGeometry(1400, 1400), flat ? BASIC(0x7fcf5c)
-        : new THREE.MeshLambertMaterial({ map: noiseTex("#5fae4f", ["rgba(255,255,255,.08)", "rgba(0,60,0,.12)"], 260) }));
+        : new THREE.MeshLambertMaterial({ map: noiseTex(hwn ? "#4a4a72" : "#5fae4f", hwn ? ["rgba(255,255,255,.06)", "rgba(20,0,40,.18)"] : ["rgba(255,255,255,.08)", "rgba(0,60,0,.12)"], 260) }));
       ground.rotation.x = -Math.PI / 2; ground.position.set(WX / 2, SURF, WZ / 2); grp.add(ground);
-      const soilMat = flat ? BASIC(0x8f5d36) : new THREE.MeshLambertMaterial({ map: noiseTex("#7a5230", ["rgba(255,220,170,.09)", "rgba(40,20,0,.16)"], 6) });
+      const soilMat = flat ? BASIC(0x8f5d36) : new THREE.MeshLambertMaterial({ map: noiseTex(hwn ? "#5b4256" : "#7a5230", ["rgba(255,220,170,.09)", "rgba(40,20,0,.16)"], 6) });
       grp.add(put(BOX, soilMat, cx, SURF + 0.01, cx, fw, 0.04, fw));
       const ridges = [], paths = [], lettuce = [], lettuceTop = [], carrot = [], leaves = [], flowers = [], stems = [];
       for (let z = F0; z <= F1; z++) {
@@ -16310,7 +16407,7 @@ const HuertoPlugin = {
         ridges.push({ p: [cx, SURF + 0.06, z + 0.5], s: [fw - 0.1, 0.1, 0.62] });
         for (let x = F0; x <= F1; x++) {
           if (isHole(x, z)) continue;
-          if (Math.floor((z - F0) / 3) % 2 === 0) {
+          if (hwn || Math.floor((z - F0) / 3) % 2 === 0) {
             lettuce.push({ p: [x + 0.5, SURF + 0.2, z + 0.5], s: [0.28, 0.16, 0.28] });
             lettuceTop.push({ p: [x + 0.5, SURF + 0.3, z + 0.5], s: [0.17, 0.1, 0.17] });
           } else {
@@ -16320,7 +16417,7 @@ const HuertoPlugin = {
         }
       }
       grp.add(inst(BOX, flat ? BASIC(0x75492a) : MAT(0x6e4627), ridges), inst(BOX, flat ? BASIC(0xd9c495) : MAT(0xc8b48a), paths),
-        inst(SPL, MAT(flat ? 0x7fd65a : 0x6cbf46), lettuce), inst(SPL, MAT(flat ? 0xb8f08a : 0x9ddc6e), lettuceTop),
+        inst(SPL, MAT(hwn ? 0xff7a1a : flat ? 0x7fd65a : 0x6cbf46), lettuce), inst(SPL, MAT(hwn ? 0xff9a3a : flat ? 0xb8f08a : 0x9ddc6e), lettuceTop),
         inst(SPL, MAT(0xff8a1f), carrot), inst(CNL, MAT(flat ? 0x55c23a : 0x4caf3a), leaves));
       holes.forEach(h => {                                 // agujeros: fondo oscuro con aro de tierra
         grp.add(put(CYL, MAT(0x1a0f07), h.x + 0.5, SURF + 0.1, h.z + 0.5, 0.36, 0.02, 0.36));
@@ -16339,7 +16436,13 @@ const HuertoPlugin = {
         trunks.push({ p: [t.x + 0.5, SURF + t.th / 2, t.z + 0.5], s: [0.22, t.th, 0.22] });
         for (let k = 0; k < 3; k++) crowns.push({ p: [t.x + 0.5, SURF + t.th - 0.9 + k * 1.05, t.z + 0.5], s: [2.1 - k * 0.55, 1.9, 2.1 - k * 0.55], c: tc[k] });
       });
-      grp.add(inst(CYL, MAT(0x6b4423), trunks), inst(CONE, white, crowns));
+      grp.add(inst(CYL, MAT(hwn ? 0x2a1f2e : 0x6b4423), trunks));
+      if (!hwn) grp.add(inst(CONE, white, crowns));
+      else {                                                // árboles secos: ramas desnudas
+        const br = [];
+        trees.forEach(t => { for (let k = 0; k < 5; k++) { const a = k * 1.26 + t.x, len = 1.6 + (k % 3) * 0.5; br.push({ p: [t.x + 0.5 + Math.cos(a) * 0.5, SURF + t.th - 1.2 + k * 0.45, t.z + 0.5 + Math.sin(a) * 0.5], s: [0.07, len, 0.07], r: [Math.sin(a) * 0.9, 0, -Math.cos(a) * 0.9] }); } });
+        grp.add(inst(CYL, MAT(0x2a1f2e), br));
+      }
       const petals = [0xe63c3c, 0xfadc3c, 0xf5f5f5, 0xaa5adc];
       for (let i = 0; i < 160; i++) {
         const x = 1 + Math.floor(Math.random() * (WX - 2)), z = 1 + Math.floor(Math.random() * (WZ - 2));
@@ -16349,7 +16452,38 @@ const HuertoPlugin = {
         stems.push({ p: [fx, SURF + 0.13, fz], s: [0.02, 0.26, 0.02] });
         flowers.push({ p: [fx, SURF + 0.29, fz], s: [0.08, 0.06, 0.08], c: petals[i % 4] });
       }
-      grp.add(inst(CNL, MAT(0x3c8c28), stems), inst(SPL, white, flowers));
+      if (!hwn) grp.add(inst(CNL, MAT(0x3c8c28), stems), inst(SPL, white, flowers));
+      else {
+        const pk = [], pks = [], tomb = [], cap = [];
+        for (let i = 0; i < 70; i++) {
+          const x = 1 + Math.floor(Math.random() * (WX - 2)), z = 1 + Math.floor(Math.random() * (WZ - 2));
+          if (x >= F0 - 1 && x <= F1 + 1 && z >= F0 - 1 && z <= F1 + 1) continue;
+          if (getB(x, SURF, z) !== AIR) continue;
+          const fx = x + 0.25 + Math.random() * 0.5, fz = z + 0.25 + Math.random() * 0.5, sc = 0.18 + Math.random() * 0.2;
+          if (i % 5 === 0) {
+            const h = 0.55 + Math.random() * 0.3, ry = (Math.random() - 0.5) * 0.8;
+            tomb.push({ p: [fx, SURF + h / 2, fz], s: [0.55, h, 0.14], r: [0, ry, 0] });
+            cap.push({ p: [fx, SURF + h, fz], s: [0.275, 0.14, 0.275], r: [Math.PI / 2, 0, ry] });
+          } else { pk.push({ p: [fx, SURF + sc * 0.8, fz], s: [sc, sc * 0.8, sc], c: 0xff7a1a }); pks.push({ p: [fx, SURF + sc * 1.6, fz], s: [0.025, sc * 0.5, 0.025] }); }
+        }
+        grp.add(inst(SPL, MAT(0xffffff), pk), inst(BOX, MAT(0x4b6a2a), pks), inst(BOX, MAT(0x8c8a9c), tomb), inst(CYL, MAT(0x8c8a9c), cap));
+        const bm = MAT(0x1a1024), batList = [];
+        for (let k = 0; k < 6; k++) {                        // murciélagos
+          const g = new THREE.Group(), wl = [];
+          g.add(put(SPH, bm, 0, 0, 0, 0.13, 0.1, 0.17));
+          [-1, 1].forEach(sx => { const pv = new THREE.Group(); pv.add(put(BOX, bm, sx * 0.25, 0, 0, 0.46, 0.03, 0.22)); g.add(pv); wl.push([pv, sx]); });
+          grp.add(g);
+          const r = 7 + Math.random() * 10, ph = Math.random() * 6.28, sp = 0.45 + Math.random() * 0.4, h = SURF + 4 + Math.random() * 4;
+          hwFxH.push(t => { const a = t * sp + ph; g.position.set(cx + Math.cos(a) * r, h + Math.sin(t * 2.3 + ph) * 0.4, cx + Math.sin(a) * r); g.rotation.y = -a; const f = Math.sin(t * 16 + ph) * 0.75; wl.forEach(([pv, sx]) => pv.rotation.z = sx * f); });
+        }
+        const gm = new THREE.MeshBasicMaterial({ color: 0xf2f0ff, transparent: true, opacity: 0.78 }), dk = new THREE.MeshBasicMaterial({ color: 0x1b1a2a });
+        for (let k = 0; k < 6; k++) {                        // fantasmas flotando entre la valla y los árboles
+          const g = new THREE.Group(), a0 = k * 1.05 + 0.3, r = 15 + Math.random() * 5, ph = Math.random() * 6.28;
+          g.add(put(SPH, gm, 0, 0.1, 0, 0.42, 0.46, 0.42), put(CONE, gm, 0, -0.35, 0, 0.42, 0.75, 0.42), put(SPH, dk, -0.15, 0.2, 0.35, 0.07, 0.1, 0.05), put(SPH, dk, 0.15, 0.2, 0.35, 0.07, 0.1, 0.05), put(SPH, dk, 0, 0, 0.38, 0.07, 0.09, 0.05));
+          grp.add(g);
+          hwFxH.push(t => { g.position.set(cx + Math.cos(a0) * r, SURF + 1.3 + Math.sin(t * 1.5 + ph) * 0.3, cx + Math.sin(a0) * r); g.rotation.y = -a0 + Math.PI / 2 + Math.sin(t * 0.7 + ph) * 0.4; });
+        }
+      }
     };
 
     /* Topo: de cubos (Bloques) o redondo (3D / 2D). Lo que está bajo tierra se recorta. */
@@ -16366,7 +16500,7 @@ const HuertoPlugin = {
         eyes = [boxMesh(black, -0.13, 0.77, 0.26, 0.07, 0.07, 0.03), boxMesh(black, 0.13, 0.77, 0.26, 0.07, 0.07, 0.03)];
         dizzy = [boxMesh(black, -0.13, 0.77, 0.26, 0.12, 0.025, 0.03), boxMesh(black, 0.13, 0.77, 0.26, 0.12, 0.025, 0.03)];
       } else {
-        const body = m(0x8b5e3c), light = m(0xd9b896), pink = m(0xe46a8a), white = m(0xffffff);
+        const zm = ST === "halloween", body = m(zm ? 0x7fa070 : 0x8b5e3c), light = m(zm ? 0xb7c9a0 : 0xd9b896), pink = m(zm ? 0x8a3a4a : 0xe46a8a), white = m(0xffffff);
         const main = put(SPH, body, 0, 0.47, 0, 0.42, 0.5, 0.4);
         inner.add(main, put(SPH, light, 0, 0.36, 0.33, 0.17, 0.13, 0.17), put(SPH, pink, 0, 0.42, 0.48, 0.07, 0.06, 0.06),
           put(SPH, light, -0.38, 0.27, 0.24, 0.12, 0.1, 0.11), put(SPH, light, 0.38, 0.27, 0.24, 0.12, 0.1, 0.11));
@@ -16376,13 +16510,25 @@ const HuertoPlugin = {
         eyes = [put(SPH, black, -0.15, 0.65, 0.34, 0.06, 0.07, 0.04), put(SPH, black, 0.15, 0.65, 0.34, 0.06, 0.07, 0.04)];
         inner.add(put(SPH, white, -0.135, 0.675, 0.375, 0.02, 0.02, 0.012), put(SPH, white, 0.165, 0.675, 0.375, 0.02, 0.02, 0.012));
         dizzy = [boxMesh(black, -0.15, 0.65, 0.36, 0.13, 0.025, 0.03), boxMesh(black, 0.15, 0.65, 0.36, 0.13, 0.025, 0.03)];
+        if (zm) {                                                   // zombi: ojo saltón, ojo en X, puntadas y cerebro al aire
+          const bone = m(0xf4f0d0), red = m(0xc42020), brain = m(0xe58aa0);
+          eyes[0].visible = false; eyes[1].visible = false;
+          const big = put(SPH, bone, -0.15, 0.66, 0.35, 0.095, 0.1, 0.06), pup = put(SPH, red, -0.145, 0.665, 0.405, 0.032, 0.036, 0.02);
+          const xg = new THREE.Group(); xg.position.set(0.15, 0.65, 0.37);
+          [-1, 1].forEach(sg => { const b = boxMesh(black, 0, 0, 0, 0.15, 0.03, 0.025); b.rotation.z = sg * 0.78; xg.add(b); });
+          eyes = [big, pup, xg];
+          inner.add(...eyes);
+          const st = boxMesh(black, 0.04, 0.86, 0.285, 0.24, 0.025, 0.03); st.rotation.z = -0.18; inner.add(st);
+          [-0.07, 0.02, 0.11].forEach(x => { const t = boxMesh(black, x, 0.86, 0.29, 0.02, 0.09, 0.03); t.rotation.z = -0.18; inner.add(t); });
+          [[-0.14, 0.96, 0.06, 0.1], [-0.02, 0.99, 0.0, 0.085], [-0.22, 0.9, 0.08, 0.075]].forEach(([x, y, z, r]) => inner.add(put(SPH, brain, x, y, z, r, r * 0.7, r)));
+        }
         if (ST === "flat") {                                        // contorno de dibujo animado
           const ol = new THREE.MeshBasicMaterial({ color: 0x2a1a10, side: THREE.BackSide, clippingPlanes: [clip] });
           inner.add(put(SPH, ol, 0, 0.47, 0, 0.45, 0.53, 0.43));
         }
       }
       dizzy.forEach(e => e.visible = false);
-      inner.add(...eyes, ...dizzy);
+      inner.add(...eyes.filter(e => !e.parent), ...dizzy);
       g.visible = false;
       return { g, inner, eyes, dizzy };
     };
@@ -16404,7 +16550,12 @@ const HuertoPlugin = {
 
     const buildClouds = () => {
       clouds.forEach(c => scene.remove(c)); clouds = [];
-      const cm = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.92, fog: false });
+      const cm = new THREE.MeshBasicMaterial({ color: ST === "halloween" ? 0x5a4a7a : 0xffffff, transparent: true, opacity: ST === "halloween" ? 0.85 : 0.92, fog: false });
+      if (ST === "halloween") {                                   // luna llena con halo, siempre al fondo del huerto
+        const moon = put(SPH, new THREE.MeshBasicMaterial({ color: 0xfff3c4, fog: false }), WX / 2 + 14, 34, WZ + 70, 9, 9, 9);
+        const halo = put(SPH, new THREE.MeshBasicMaterial({ color: 0xffe9a8, transparent: true, opacity: 0.18, fog: false, depthWrite: false }), WX / 2 + 14, 34, WZ + 69, 14, 14, 14);
+        moon.userData.fixed = halo.userData.fixed = true; scene.add(moon, halo); clouds.push(moon, halo);
+      }
       for (let i = 0; i < 18; i++) {
         const x = -80 + Math.random() * (WX + 160), z = -80 + Math.random() * (WZ + 160), w = 6 + Math.random() * 12;
         let c;
@@ -16423,6 +16574,10 @@ const HuertoPlugin = {
       if (ST === builtST) return;
       builtST = ST;
       scene.background = new THREE.Color(SKIES[ST]); scene.fog.color.setHex(SKIES[ST]);
+      const hwS = ST === "halloween";
+      hemiL.color.setHex(hwS ? 0xcdbcff : 0xffffff); hemiL.groundColor.setHex(hwS ? 0x3d2a5c : 0x557744); hemiL.intensity = hwS ? 1.0 : 0.9;
+      sunL.color.setHex(hwS ? 0xffb070 : 0xffffff); sunL.intensity = hwS ? 0.7 : 0.55;
+      scene.fog.near = hwS ? 16 : 28; scene.fog.far = hwS ? 56 : 72;
       if (moleRig) scene.remove(moleRig.g);
       moleRig = buildMole(); scene.add(moleRig.g);
       if (hammer) cam.remove(hammer);
@@ -16445,8 +16600,8 @@ const HuertoPlugin = {
       cam = new THREE.PerspectiveCamera(70, 1, 0.05, 300);
       cam.rotation.order = "YXZ";
       scene.add(cam);
-      scene.add(new THREE.HemisphereLight(0xffffff, 0x557744, 0.9));
-      const sun = new THREE.DirectionalLight(0xffffff, 0.55); sun.position.set(-0.4, 1, 0.6); scene.add(sun);
+      hemiL = new THREE.HemisphereLight(0xffffff, 0x557744, 0.9); scene.add(hemiL);
+      sunL = new THREE.DirectionalLight(0xffffff, 0.55); sunL.position.set(-0.4, 1, 0.6); scene.add(sunL);
       clip = new THREE.Plane(new THREE.Vector3(0, 1, 0), -SURF);   // lo que está por debajo del suelo no se ve
       raycaster = new THREE.Raycaster();
       buildAtlas();
@@ -16613,7 +16768,8 @@ const HuertoPlugin = {
       stepMole(); stepParts();
       swing *= 0.82; if (swingCd > 0) swingCd--;
       hitFlash *= 0.95; escFlash *= 0.96; shake *= 0.85;
-      clouds.forEach(c => { c.position.x += 0.02; if (c.position.x > WX + 80) c.position.x = -80; });
+      clouds.forEach(c => { if (c.userData.fixed) return; c.position.x += 0.02; if (c.position.x > WX + 80) c.position.x = -80; });
+      for (let i = 0; i < hwFxH.length; i++) hwFxH[i](performance.now() / 1000);
     };
 
     /* ---------- Dibujo ---------- */
