@@ -396,6 +396,14 @@ body.hw{
   --lift:0 .6vmin 0 var(--wood-3),0 1.4vmin 2vmin rgba(0,0,0,.4),inset 0 .3vmin 0 rgba(255,255,255,.55);
   background:linear-gradient(#2b1a4a,#6a3478);
 }
+body.xm{
+  --cream:#fff6ea; --cream-2:#f0dfcb; --ink:#4a1414;
+  --wood-1:#e0554a; --wood-2:#b0302c; --wood-3:#5c1414;
+  --leaf-1:#6fd18c; --leaf-2:#2f9a56; --leaf-3:#1c6a3a;
+  --sun-1:#ffe27a; --sun-2:#ffb52e; --sun-3:#8a5400; --berry:#e0554a; --text:#4a1414;
+  --lift:0 .6vmin 0 var(--wood-3),0 1.4vmin 2vmin rgba(0,0,0,.3),inset 0 .3vmin 0 rgba(255,255,255,.7);
+  background:linear-gradient(#bcd8f2,#eaf5ff);
+}
 body.vox{
   --font:"Pixelify Sans","Courier New",monospace;
   --cream:#c6c6c6; --cream-2:#b2b2b2; --ink:#1d1d1d;
@@ -11585,7 +11593,7 @@ const SELF_HTML = "<!doctype html>\n" + document.documentElement.outerHTML;   //
    Vacías, el juego funciona igual: el ranking queda solo en este dispositivo.
    ============================================================ */
 /* Versión del juego: súbela en cada publicación (se muestra en el título, en Ajustes y en la TV). */
-const GAME_VERSION = { v: "1.25.1", date: "31 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
+const GAME_VERSION = { v: "1.26.0", date: "31 oct 2026" };   // y la misma versión en version.json (es lo que consulta el aviso de actualización)
 const ONLINE = {
   publicUrl:   "https://hectorest.github.io/atrapa-el-topo/",   // URL pública del juego, p. ej. "https://tuusuario.github.io/atrapa-el-topo/" (la usa el QR)
   supabaseUrl: "https://sjnoxzmwyjvnywaflddk.supabase.co",   // p. ej. "https://abcdxyz.supabase.co"
@@ -11677,7 +11685,7 @@ const CONFIG = {
    ============================================================ */
 /* El estilo «Criaturas» está terminado pero oculto del selector. Para volver a mostrarlo: SHOW_CREATURES = true */
 const SHOW_CREATURES = false;
-const berry = () => document.body.classList.contains("adv") ? "🫐" : document.body.classList.contains("hw") ? "🎃" : "🥕";   // la «cosecha» en el estilo Criaturas son bayas
+const berry = () => document.body.classList.contains("adv") ? "🫐" : document.body.classList.contains("hw") ? "🎃" : document.body.classList.contains("xm") ? "🎁" : "🥕";   // la «cosecha» en el estilo Criaturas son bayas
 const rand = (min, max) => Math.random() * (max - min) + min;
 const randInt = (min, max) => Math.floor(rand(min, max + 1));
 
@@ -12265,8 +12273,8 @@ const SETTINGS_SCHEMA = [
   { key: "graceMs", label: "Tolerancia de retraso (ms)", min: 0, max: 400, step: 20,
     get: () => CONFIG.graceMs, set: v => CONFIG.graceMs = v },
   { key: "view", type: "select", label: "Estilo visual", showLabel: true,
-    options: [{ value: "2d", label: "2D" }, { value: "3d", label: "3D" }, { value: "voxel", label: "Bloques" }, { value: "halloween", label: "Halloween 🎃" }, ...(SHOW_CREATURES ? [{ value: "aventura", label: "Criaturas" }] : []), { value: "ar", label: "AR" }],
-    get: () => CONFIG.view, set: v => { if (["2d", "3d", "voxel", "halloween", "aventura", "ar"].includes(v)) CONFIG.view = (v === "aventura" && !SHOW_CREATURES) ? "3d" : v; } },
+    options: [{ value: "2d", label: "2D" }, { value: "3d", label: "3D" }, { value: "voxel", label: "Bloques" }, { value: "halloween", label: "Halloween 🎃" }, { value: "navidad", label: "Navidad 🎄" }, ...(SHOW_CREATURES ? [{ value: "aventura", label: "Criaturas" }] : []), { value: "ar", label: "AR" }],
+    get: () => CONFIG.view, set: v => { if (["2d", "3d", "voxel", "halloween", "navidad", "aventura", "ar"].includes(v)) CONFIG.view = (v === "aventura" && !SHOW_CREATURES) ? "3d" : v; } },
   { key: "countdownSec", label: "Cuenta atrás inicial (s, 0 = sin)", min: 0, max: 10, step: 1,
     get: () => CONFIG.countdownSec, set: v => CONFIG.countdownSec = v },
   { key: "arScale", label: "AR: tamaño del tablero", min: 0.5, max: 1.6, step: 0.1,
@@ -13324,10 +13332,10 @@ const ThreeViewPlugin = {
     // El tema «Bloques» de la interfaz (marcos de piedra, letra pixelada) se aplica aunque el 3D no cargue
     const syncTheme = () => {
       document.body.classList.toggle("vox", CONFIG.view === "voxel");
-      const hwn = CONFIG.view === "halloween"; document.body.classList.toggle("hw", hwn);
+      const hwn = CONFIG.view === "halloween", xmn = CONFIG.view === "navidad"; document.body.classList.toggle("hw", hwn); document.body.classList.toggle("xm", xmn);
       const adv = CONFIG.view === "aventura"; document.body.classList.toggle("adv", adv);
       const ic = document.querySelector("#harvest .ic"), lb = document.querySelector("#harvest .lb");
-      if (ic) ic.textContent = adv ? "🫐" : hwn ? "🎃" : "🥕"; if (lb) lb.textContent = adv ? " Bayas" : hwn ? " Calabazas" : " Cosecha";
+      if (ic) ic.textContent = adv ? "🫐" : hwn ? "🎃" : xmn ? "🎁" : "🥕"; if (lb) lb.textContent = adv ? " Bayas" : hwn ? " Calabazas" : xmn ? " Regalos" : " Cosecha";
     };
     bus.on("settings:change", syncTheme); syncTheme();
     if (typeof THREE === "undefined") { game.view3d = false; return; }
@@ -13415,7 +13423,7 @@ const ThreeViewPlugin = {
     const baseLight = { hi: 0.85, si: 0.75 };
     let lightK = 1;
     const applyTheme = () => {
-      const p = CONFIG.view === "halloween" ? { sky: 0x2b1a4a, hemi: 0xffe3c8, ground: 0x3d2a5c, hi: 0.9, si: 0.6, sun: 0xffb070 } : isDark() ? palette.night : CONFIG.view === "aventura" ? { sky: 0xa8dcff, hemi: 0xffffff, ground: 0x4fae7a, hi: 0.9, si: 0.7, sun: 0xfff6dc } : palette.day;
+      const p = CONFIG.view === "navidad" ? { sky: 0xc6dcf2, hemi: 0xffffff, ground: 0xdfe8f4, hi: 0.95, si: 0.7, sun: 0xfff2d6 } : CONFIG.view === "halloween" ? { sky: 0x2b1a4a, hemi: 0xffe3c8, ground: 0x3d2a5c, hi: 0.9, si: 0.6, sun: 0xffb070 } : isDark() ? palette.night : CONFIG.view === "aventura" ? { sky: 0xa8dcff, hemi: 0xffffff, ground: 0x4fae7a, hi: 0.9, si: 0.7, sun: 0xfff6dc } : palette.day;
       scene.background = new THREE.Color(p.sky);
       scene.fog = new THREE.Fog(p.sky, 38, 80);
       hemi.groundColor.set(p.ground); hemi.intensity = p.hi; baseLight.hi = p.hi;
@@ -13432,6 +13440,10 @@ const ThreeViewPlugin = {
         c.fillStyle = Math.random() < 0.5 ? "rgba(255,255,255,.07)" : "rgba(0,60,0,.10)";
         c.fillRect(Math.random() * w, Math.random() * h, 2, 4 + Math.random() * 3);
       }
+    }, [18, 18]);
+    const snowTex = canvasTex(256, 256, (c, w, h) => {
+      c.fillStyle = "#f2f7ff"; c.fillRect(0, 0, w, h);
+      for (let i = 0; i < 2200; i++) { c.fillStyle = Math.random() < 0.5 ? "rgba(255,255,255,.9)" : "rgba(150,185,230,.18)"; c.fillRect(Math.random() * w, Math.random() * h, 2 + Math.random() * 2, 2); }
     }, [18, 18]);
     const soilTex = canvasTex(256, 256, (c, w, h) => {
       c.fillStyle = "#7a5230"; c.fillRect(0, 0, w, h);
@@ -13511,6 +13523,66 @@ const ThreeViewPlugin = {
     };
     const buildPupH = () => buildPupS();
 
+    /* Navidad: gorro de Papá Noel, regalos como cultivo, árboles con luces, muñecos de nieve y nieve cayendo */
+    const santaHat = k => {
+      const h = new THREE.Group(), red = mat(0xd6322a), wh = mat(0xffffff);
+      const cone = mesh(G.cone, red, 0.04 * k, 1.28 * k, 0, 0.3 * k, 0.55 * k, 0.28 * k); cone.rotation.z = -0.4;
+      h.add(cone, mesh(G.cyl, wh, 0, 1.03 * k, 0, 0.36 * k, 0.1 * k, 0.34 * k), mesh(G.sphere, wh, 0.17 * k, 1.5 * k, 0, 0.08 * k, 0.08 * k, 0.08 * k));
+      return h;
+    };
+    const buildPupX = () => { const p = buildPupS(); p.inner.add(santaHat(0.85)); return p; };
+    const GIFT_C = [0xd6322a, 0x2f8a4a, 0x2f6fd6, 0xe0a020, 0x9a4ad6];
+    const buildCropX = () => {
+      const k = buildCropS();
+      k.carrot.geometry = G.box; k.carrotMat.color.set(0xd6322a);
+      const gold = mat(0xffd54a, { emissive: 0x332200 });
+      k.carrot.add(mesh(G.box, gold, 0, 0, 0, 1.03, 1.03, 0.2), mesh(G.box, gold, 0, 0, 0, 0.2, 1.03, 1.03));
+      k.carrot.add(mesh(G.sphere, gold, -0.2, 0.62, 0, 0.22, 0.16, 0.18), mesh(G.sphere, gold, 0.2, 0.62, 0, 0.22, 0.16, 0.18));
+      k.carrot.rotation.y = 0.5;
+      return k;
+    };
+    const addTreeX = (x, z, s) => {                       // abeto nevado con luces
+      const t = new THREE.Group();
+      t.add(mesh(G.cyl, mat(0x6b4423), 0, 0.5 * s, 0, 0.18 * s, 1 * s, 0.18 * s));
+      const cols = [0x1f6e3a, 0x2a8447, 0x1d6034], bulb = [0xff4a4a, 0xffe14a, 0x4ab0ff, 0xff8ad8];
+      for (let k = 0; k < 3; k++) {
+        const w = 1.15 - k * 0.22, y = (1.1 + k * 0.7) * s;
+        t.add(mesh(G.cone, mat(cols[k]), 0, y, 0, w * s, 1.1 * s, w * s));
+        t.add(mesh(G.cone, mat(0xffffff), 0, y + 0.22 * s, 0, w * 0.72 * s, 0.7 * s, w * 0.72 * s));
+        for (let b = 0; b < 4; b++) { const a = b * 1.6 + k + rng(); t.add(mesh(G.sphereLo, new THREE.MeshBasicMaterial({ color: bulb[(b + k) % 4] }), Math.cos(a) * w * 0.42 * s, y - 0.2 * s, Math.sin(a) * w * 0.42 * s, 0.07, 0.07, 0.07)); }
+      }
+      t.add(mesh(G.octa, new THREE.MeshBasicMaterial({ color: 0xffe14a }), 0, 2.75 * s, 0, 0.14 * s, 0.14 * s, 0.14 * s));
+      t.position.set(x, -0.4, z); t.rotation.y = rng() * 6; t.traverse(o => { if (o.isMesh) o.receiveShadow = false; });
+      fixed.add(t);
+    };
+    const addBushX = (x, z, s) => {                       // regalo suelto
+      const g = new THREE.Group(), c = GIFT_C[Math.floor(rng() * GIFT_C.length)], gold = mat(0xffd54a);
+      g.add(mesh(G.box, mat(c), 0, 0.28 * s, 0, 0.55 * s, 0.5 * s, 0.55 * s), mesh(G.box, gold, 0, 0.28 * s, 0, 0.58 * s, 0.52 * s, 0.1 * s), mesh(G.box, gold, 0, 0.28 * s, 0, 0.1 * s, 0.52 * s, 0.58 * s));
+      g.add(mesh(G.sphere, gold, -0.1 * s, 0.6 * s, 0, 0.11 * s, 0.08 * s, 0.09 * s), mesh(G.sphere, gold, 0.1 * s, 0.6 * s, 0, 0.11 * s, 0.08 * s, 0.09 * s));
+      g.position.set(x, -0.4, z); g.rotation.y = rng() * 6; fixed.add(g);
+    };
+    const addRockX = (x, z, s) => {                       // muñeco de nieve
+      const g = new THREE.Group(), w = mat(0xffffff), dk = mat(0x1b1a1a);
+      g.add(mesh(G.sphere, w, 0, 0.3 * s, 0, 0.38 * s, 0.34 * s, 0.38 * s), mesh(G.sphere, w, 0, 0.78 * s, 0, 0.28 * s, 0.26 * s, 0.28 * s), mesh(G.sphere, w, 0, 1.15 * s, 0, 0.21 * s, 0.2 * s, 0.21 * s));
+      g.add(mesh(G.cone, mat(0xff8a1f), 0, 1.15 * s, 0.24 * s, 0.045 * s, 0.22 * s, 0.045 * s)); g.children[g.children.length - 1].rotation.x = Math.PI / 2;
+      g.add(mesh(G.sphere, dk, -0.08 * s, 1.22 * s, 0.18 * s, 0.03 * s, 0.03 * s, 0.03 * s), mesh(G.sphere, dk, 0.08 * s, 1.22 * s, 0.18 * s, 0.03 * s, 0.03 * s, 0.03 * s));
+      g.add(mesh(G.cyl, mat(0xd6322a), 0, 0.98 * s, 0, 0.24 * s, 0.06 * s, 0.24 * s));
+      g.position.set(x, -0.4, z); g.rotation.y = rng() * 6; fixed.add(g);
+    };
+    const xmDecor = (fw, fd) => {                         // nieve cayendo sobre el tablero
+      const N = 220, pos = new Float32Array(N * 3), vel = [];
+      const R = Math.max(fw, fd) / 2 + 8;
+      for (let i = 0; i < N; i++) { pos[i * 3] = (rng() - 0.5) * 2 * R; pos[i * 3 + 1] = rng() * 12; pos[i * 3 + 2] = (rng() - 0.5) * 2 * R; vel.push(0.6 + rng() * 0.8); }
+      const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+      const pts = new THREE.Points(geo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.12, fog: false })); pts.frustumCulled = false; fixed.add(pts);
+      let last = 0;
+      hwFx.push(t => {
+        const dt = Math.min(0.05, Math.max(0, t - last)); last = t;
+        for (let i = 0; i < N; i++) { pos[i * 3 + 1] -= vel[i] * dt * 2; pos[i * 3] += Math.sin(t * 0.8 + i) * dt * 0.4; if (pos[i * 3 + 1] < -0.4) pos[i * 3 + 1] = 12; }
+        geo.attributes.position.needsUpdate = true;
+      });
+    };
+
     /* Decorado de Halloween: árboles secos, calabazas, lápidas, murciélagos y fantasmas */
     const hwFx = [];
     const addTreeH = (x, z, s) => {
@@ -13571,7 +13643,7 @@ const ThreeViewPlugin = {
     };
 
     /* Topo adulto: cuerpo, hocico, ojos, cejas, boca (varias), manos con garras */
-    const buildMoleS = (Z) => {
+    const buildMoleS = (Z, X) => {
       const g = new THREE.Group();
       const body = buried(Z ? 0x7fa070 : 0x8b5e3c), light = buried(Z ? 0xb7c9a0 : 0xd9b896), pink = buried(Z ? 0x8a3a4a : 0xe46a8a), dark = mat(0x111111), white = mat(0xffffff);
       g.add(mesh(G.sphere, body, 0, 0.42, 0, 0.55, 0.63, 0.52));
@@ -13609,6 +13681,7 @@ const ThreeViewPlugin = {
         g.add(hand);
       });
       if (Z) zombify(g, eyeL, eyeR);
+      if (X) g.add(santaHat(1));
       g.position.y = DOWN_Y; g.visible = false;
       return { g, body, mouths, browL, browR, eyes: [eyeL, eyeR] };
     };
@@ -13902,12 +13975,12 @@ const ThreeViewPlugin = {
       rows = CONFIG.rows; cols = CONFIG.cols; rng = makeRng(1234);
       const V = CONFIG.view === "voxel";
       builtView = CONFIG.view;
-      const A = CONFIG.view === "aventura", HWN = CONFIG.view === "halloween";
+      const A = CONFIG.view === "aventura", HWN = CONFIG.view === "halloween", NVN = CONFIG.view === "navidad";
       hwFx.length = 0;
-      const bd = HWN ? { mole: () => buildMoleS(true), pup: buildPupH, crop: buildCropH, trap: buildTrapS } : V ? { mole: buildMoleV, pup: buildPupV, crop: buildCropV, trap: buildTrapV } : A ? { mole: buildMoleA, pup: buildPupA, crop: buildCropA, trap: buildTrapS } : { mole: buildMoleS, pup: buildPupS, crop: buildCropS, trap: buildTrapS };
-      const tree = V ? addTreeV : A ? addTreeA : HWN ? addTreeH : addTree, bush = V ? addBushV : A ? addBushA : HWN ? addBushH : addBush, rock = V ? addRockV : HWN ? addRockH : addRock;
+      const bd = NVN ? { mole: () => buildMoleS(false, true), pup: buildPupX, crop: buildCropX, trap: buildTrapS } : HWN ? { mole: () => buildMoleS(true), pup: buildPupH, crop: buildCropH, trap: buildTrapS } : V ? { mole: buildMoleV, pup: buildPupV, crop: buildCropV, trap: buildTrapV } : A ? { mole: buildMoleA, pup: buildPupA, crop: buildCropA, trap: buildTrapS } : { mole: buildMoleS, pup: buildPupS, crop: buildCropS, trap: buildTrapS };
+      const tree = V ? addTreeV : A ? addTreeA : HWN ? addTreeH : NVN ? addTreeX : addTree, bush = V ? addBushV : A ? addBushA : HWN ? addBushH : NVN ? addBushX : addBush, rock = V ? addRockV : HWN ? addRockH : NVN ? addRockX : addRock;
       applyTheme();
-      ground.material.map = V ? vtex().grass : grassTex;
+      ground.material.map = V ? vtex().grass : NVN ? snowTex : grassTex;
       if (V) vtex().grass.repeat.set(47, 47);
       ground.material.color.set(HWN ? 0x8f86b8 : 0xffffff);
       ground.material.needsUpdate = true;
@@ -13918,9 +13991,9 @@ const ThreeViewPlugin = {
       const fw = cols * S + 1.0, fd = rows * S + 1.0;
       // Campo de tierra con marco de madera
       if (V) terrainVoxel(fw, fd); else {
-      const soil = new THREE.Mesh(G.box, new THREE.MeshLambertMaterial({ map: soilTex, color: HWN ? 0x8c7a96 : 0xffffff }));
+      const soil = new THREE.Mesh(G.box, new THREE.MeshLambertMaterial({ map: soilTex, color: HWN ? 0x8c7a96 : NVN ? 0xa89890 : 0xffffff }));
       soil.scale.set(fw, 0.4, fd); soil.position.y = -0.2; soil.receiveShadow = true; stage.add(soil);
-      const wood = mat(A ? 0xf4f1e6 : HWN ? 0x3a2a3f : 0x8a5a2b);
+      const wood = mat(A ? 0xf4f1e6 : HWN ? 0x3a2a3f : NVN ? 0xc8392f : 0x8a5a2b);
       [[0, -fd / 2 - 0.12, fw + 0.5, 0.25], [0, fd / 2 + 0.12, fw + 0.5, 0.25]].forEach(([x, z, w, d]) => {
         const p = mesh(G.box, wood, x, 0.04, z, w, 0.34, d); p.receiveShadow = true; stage.add(p);
       });
@@ -13947,6 +14020,7 @@ const ThreeViewPlugin = {
         if (!(Math.abs(x) < hw + 0.9 && Math.abs(z) < hd + 0.9)) rock(x, z, 0.6 + rng() * 0.8);
       }
       if (HWN) hwDecor(fw, fd);
+      if (NVN) xmDecor(fw, fd);
       // Celdas: agujero, topo, cría, cultivo, trampa
       for (let i = 0; i < rows * cols; i++) {
         const r = Math.floor(i / cols), c = i % cols;
@@ -14331,12 +14405,12 @@ const ThreeViewPlugin = {
       k.leaves.scale.setScalar(k.s);
       k.leaves.rotation.z = dead ? 0.45 : grew ? Math.sin(time * 2 + cell.c + cell.r) * 0.05 : 0;
       k.leaves.rotation.x = threat ? Math.sin(time * 40) * 0.12 : 0;
-      k.leafMat.color.set(dead ? 0x7a6a4a : hurt ? 0xd96b4a : blight ? 0xa7a84a : CONFIG.view === "aventura" ? 0x3fae6a : CONFIG.view === "halloween" ? 0x6d8f2e : 0x5fbf4a);
+      k.leafMat.color.set(dead ? 0x7a6a4a : hurt ? 0xd96b4a : blight ? 0xa7a84a : CONFIG.view === "aventura" ? 0x3fae6a : CONFIG.view === "halloween" ? 0x6d8f2e : CONFIG.view === "navidad" ? 0x2f8a4a : 0x5fbf4a);
       const showCarrot = !dead && grow > 0.3;
       k.carrot.visible = showCarrot;
       if (showCarrot) {
         const cs = clamp((grow - 0.3) / 0.7, 0, 1);
-        const pk = CONFIG.view === "halloween" ? 1.35 : 1;
+        const pk = CONFIG.view === "halloween" || CONFIG.view === "navidad" ? 1.35 : 1;
         k.carrot.scale.set((0.12 + 0.12 * cs) * pk, (0.08 + 0.1 * cs) * pk, (0.12 + 0.12 * cs) * pk);
         k.carrot.position.y = 0.05 + 0.04 * cs;
       }
@@ -14404,7 +14478,7 @@ const ThreeViewPlugin = {
       if (bossRig && bossRig.v === CONFIG.view) return bossRig;
       if (bossRig) scene.remove(bossRig.root);
       const V = CONFIG.view === "voxel";
-      const mole = V ? buildMoleV() : CONFIG.view === "aventura" ? buildMoleA() : CONFIG.view === "halloween" ? buildMoleS(true) : buildMoleS();
+      const mole = V ? buildMoleV() : CONFIG.view === "aventura" ? buildMoleA() : CONFIG.view === "halloween" ? buildMoleS(true) : CONFIG.view === "navidad" ? buildMoleS(false, true) : buildMoleS();
       const gold = mat(0xffd54a, { emissive: 0x553300 });
       mole.g.add(mesh(G.box, gold, 0, 1.14, 0, 0.8, 0.16, 0.6));
       [-0.3, 0, 0.3].forEach(x => mole.g.add(mesh(G.box, gold, x, 1.32, 0, 0.14, 0.26, 0.14)));
@@ -14891,6 +14965,13 @@ const MusicPlugin = {
         bass: [1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0], bt: "sine", bv: 0.32, kick: [], hat: [], snare: [] },
       game_h: { bpm: 112, prog: [[45, 1], [41, 0], [40, 0], [45, 1]], mel: mkMel(66, 69, SPK, 0.5), lead: "square", lv: 0.07, arp: false, bell: true,
         bass: [1, 0, 3, 0, 1, 0, 3, 0, 2, 0, 3, 0, 1, 0, 3, 0], bt: "sawtooth", bv: 0.2, kick: [0, 8], hat: [4, 12], snare: [] },
+      // Navidad: mayor, campanillas y cascabeles
+      menu_x: { bpm: 88, prog: [[48, 0], [53, 0], [55, 0], [48, 0]], mel: mkMel(41, 72, MAJ, 0.4), lead: "triangle", lv: 0.19, arp: true, bell: true,
+        bass: [1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0], bt: "sine", bv: 0.3, kick: [], hat: [], snare: [] },
+      game_x: { bpm: 122, prog: [[48, 0], [53, 0], [55, 0], [45, 1]], mel: mkMel(87, 72, MAJ, 0.58), lead: "square", lv: 0.075, arp: false, bell: true,
+        bass: [1, 0, 3, 0, 1, 0, 3, 0, 2, 0, 3, 0, 1, 0, 3, 0], bt: "triangle", bv: 0.32, kick: [0, 8], hat: [0, 2, 4, 6, 8, 10, 12, 14], snare: [] },
+      boss_x: { bpm: 148, prog: [[45, 1], [53, 0], [48, 0], [43, 0]], mel: mkMel(19, 72, MIN, 0.7), lead: "sawtooth", lv: 0.07, arp: false, bell: true,
+        bass: [1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3], bt: "sawtooth", bv: 0.2, kick: [0, 4, 8, 12], hat: [2, 6, 10, 14], snare: [4, 12] },
       boss_h: { bpm: 144, prog: [[45, 1], [46, 0], [45, 1], [44, 0]], mel: mkMel(13, 69, SPK, 0.72), lead: "sawtooth", lv: 0.07, arp: false, bell: true,
         bass: [1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3], bt: "sawtooth", bv: 0.2, kick: [0, 4, 8, 12], hat: [2, 6, 10, 14], snare: [4, 12] }
     };
@@ -14934,7 +15015,7 @@ const MusicPlugin = {
       const mul = curKey && curKey.indexOf("game") === 0 ? 1 + Math.min(0.25, ((game.state.wave || 1) - 1) * 0.04) : 1;
       while (nextT < ac.currentTime + 0.3) {
         if (step === 0) {
-          const w0 = want(), w = w0 && CONFIG.view === "halloween" ? w0 + "_h" : w0;
+          const w0 = want(), w = w0 && CONFIG.view === "halloween" ? w0 + "_h" : w0 && CONFIG.view === "navidad" ? w0 + "_x" : w0;
           if (w !== curKey) { curKey = w; cur = w ? TR[w] : null; bar = 0; }
         }
         if (cur) play(step, nextT, bar);
@@ -16364,8 +16445,8 @@ const HuertoPlugin = {
        Bloques → cubos con texturas de píxeles · 3D y AR → formas redondeadas como el tablero 3D · 2D → dibujo plano tipo cómic.
        El mundo «por dentro» (colisiones, agujeros, árboles) es el mismo en los tres; solo cambia cómo se ve. */
     let ST = "voxel", builtST = null, styleGroup = null;
-    const styleOf = () => CONFIG.view === "voxel" ? "voxel" : CONFIG.view === "2d" ? "flat" : CONFIG.view === "halloween" ? "halloween" : "smooth";
-    const SKIES = { voxel: 0x9fd3ff, smooth: 0xa9dcff, flat: 0xc4ecff, halloween: 0x2a1a4a };
+    const styleOf = () => CONFIG.view === "voxel" ? "voxel" : CONFIG.view === "2d" ? "flat" : CONFIG.view === "halloween" ? "halloween" : CONFIG.view === "navidad" ? "navidad" : "smooth";
+    const SKIES = { voxel: 0x9fd3ff, smooth: 0xa9dcff, flat: 0xc4ecff, halloween: 0x2a1a4a, navidad: 0xbcd6ee };
     const hwFxH = [];
     const SPH = new THREE.SphereGeometry(1, 16, 12), CYL = new THREE.CylinderGeometry(1, 1, 1, 12), CONE = new THREE.ConeGeometry(1, 1, 10),
       TOR = new THREE.TorusGeometry(1, 0.22, 8, 22), OCTA = new THREE.OctahedronGeometry(1),
@@ -16406,21 +16487,25 @@ const HuertoPlugin = {
 
     /* 3D y 2D: césped, surcos, valla de madera, pinos, cultivos y flores con formas redondeadas */
     const buildSmoothWorld = grp => {
-      const flat = ST === "flat", hwn = ST === "halloween", fw = F1 - F0 + 1, cx = F0 + fw / 2, white = MAT(0xffffff);
+      const flat = ST === "flat", hwn = ST === "halloween", nvn = ST === "navidad", fw = F1 - F0 + 1, cx = F0 + fw / 2, white = MAT(0xffffff);
       hwFxH.length = 0;
       const BASIC = c => new THREE.MeshBasicMaterial({ color: c });   // superficies grandes sin luz: mucho más ligeras
       const ground = new THREE.Mesh(new THREE.PlaneGeometry(1400, 1400), flat ? BASIC(0x7fcf5c)
-        : new THREE.MeshLambertMaterial({ map: noiseTex(hwn ? "#4a4a72" : "#5fae4f", hwn ? ["rgba(255,255,255,.06)", "rgba(20,0,40,.18)"] : ["rgba(255,255,255,.08)", "rgba(0,60,0,.12)"], 260) }));
+        : new THREE.MeshLambertMaterial({ map: noiseTex(hwn ? "#4a4a72" : nvn ? "#e3ecf7" : "#5fae4f", nvn ? ["rgba(255,255,255,.7)", "rgba(150,185,230,.25)"] : hwn ? ["rgba(255,255,255,.06)", "rgba(20,0,40,.18)"] : ["rgba(255,255,255,.08)", "rgba(0,60,0,.12)"], 260) }));
       ground.rotation.x = -Math.PI / 2; ground.position.set(WX / 2, SURF, WZ / 2); grp.add(ground);
-      const soilMat = flat ? BASIC(0x8f5d36) : new THREE.MeshLambertMaterial({ map: noiseTex(hwn ? "#5b4256" : "#7a5230", ["rgba(255,220,170,.09)", "rgba(40,20,0,.16)"], 6) });
+      const soilMat = flat ? BASIC(0x8f5d36) : new THREE.MeshLambertMaterial({ map: noiseTex(hwn ? "#5b4256" : nvn ? "#6a5a52" : "#7a5230", ["rgba(255,220,170,.09)", "rgba(40,20,0,.16)"], 6) });
       grp.add(put(BOX, soilMat, cx, SURF + 0.01, cx, fw, 0.04, fw));
-      const ridges = [], paths = [], lettuce = [], lettuceTop = [], carrot = [], leaves = [], flowers = [], stems = [];
+      const gifts = [], ribs = [], ridges = [], paths = [], lettuce = [], lettuceTop = [], carrot = [], leaves = [], flowers = [], stems = [];
       for (let z = F0; z <= F1; z++) {
         if (pathRow(z)) { paths.push({ p: [cx, SURF + 0.035, z + 0.5], s: [fw, 0.03, 0.92] }); continue; }
         ridges.push({ p: [cx, SURF + 0.06, z + 0.5], s: [fw - 0.1, 0.1, 0.62] });
         for (let x = F0; x <= F1; x++) {
           if (isHole(x, z)) continue;
-          if (hwn || Math.floor((z - F0) / 3) % 2 === 0) {
+          if (nvn) {
+            const ry = ((x * 7 + z * 3) % 10) / 10, gx = x + 0.5, gz = z + 0.5;
+            gifts.push({ p: [gx, SURF + 0.2, gz], s: [0.34, 0.28, 0.34], r: [0, ry, 0], c: [0xd6322a, 0x2f8a4a, 0x2f6fd6, 0xe0a020, 0x9a4ad6][(x * 3 + z) % 5] });
+            ribs.push({ p: [gx, SURF + 0.2, gz], s: [0.36, 0.3, 0.07], r: [0, ry, 0] }, { p: [gx, SURF + 0.2, gz], s: [0.07, 0.3, 0.36], r: [0, ry, 0] }, { p: [gx, SURF + 0.38, gz], s: [0.1, 0.07, 0.1], r: [0, ry, 0] });
+          } else if (hwn || Math.floor((z - F0) / 3) % 2 === 0) {
             lettuce.push({ p: [x + 0.5, SURF + 0.2, z + 0.5], s: [0.28, 0.16, 0.28] });
             lettuceTop.push({ p: [x + 0.5, SURF + 0.3, z + 0.5], s: [0.17, 0.1, 0.17] });
           } else {
@@ -16432,6 +16517,7 @@ const HuertoPlugin = {
       grp.add(inst(BOX, flat ? BASIC(0x75492a) : MAT(0x6e4627), ridges), inst(BOX, flat ? BASIC(0xd9c495) : MAT(0xc8b48a), paths),
         inst(SPL, MAT(hwn ? 0xff7a1a : flat ? 0x7fd65a : 0x6cbf46), lettuce), inst(SPL, MAT(hwn ? 0xff9a3a : flat ? 0xb8f08a : 0x9ddc6e), lettuceTop),
         inst(SPL, MAT(0xff8a1f), carrot), inst(CNL, MAT(flat ? 0x55c23a : 0x4caf3a), leaves));
+      if (nvn) grp.add(inst(BOX, white, gifts), inst(BOX, MAT(0xffd54a), ribs));
       holes.forEach(h => {                                 // agujeros: fondo oscuro con aro de tierra
         grp.add(put(CYL, MAT(0x1a0f07), h.x + 0.5, SURF + 0.1, h.z + 0.5, 0.36, 0.02, 0.36));
         const rim = put(TOR, MAT(0x6b4423), h.x + 0.5, SURF + 0.1, h.z + 0.5, 0.4, 0.4, 0.55); rim.rotation.x = Math.PI / 2; grp.add(rim);
@@ -16450,7 +16536,11 @@ const HuertoPlugin = {
         for (let k = 0; k < 3; k++) crowns.push({ p: [t.x + 0.5, SURF + t.th - 0.9 + k * 1.05, t.z + 0.5], s: [2.1 - k * 0.55, 1.9, 2.1 - k * 0.55], c: tc[k] });
       });
       grp.add(inst(CYL, MAT(hwn ? 0x2a1f2e : 0x6b4423), trunks));
-      if (!hwn) grp.add(inst(CONE, white, crowns));
+      if (nvn) {
+        const caps = [], bulbs = [], bc = [0xff4a4a, 0xffe14a, 0x4ab0ff, 0xff8ad8];
+        crowns.forEach((c, i) => { caps.push({ p: [c.p[0], c.p[1] + 0.42, c.p[2]], s: [c.s[0] * 0.72, 1.1, c.s[2] * 0.72], c: 0xffffff }); for (let b = 0; b < 4; b++) { const a = b * 1.6 + i; bulbs.push({ p: [c.p[0] + Math.cos(a) * c.s[0] * 0.36, c.p[1] - 0.35, c.p[2] + Math.sin(a) * c.s[0] * 0.36], s: [0.1, 0.1, 0.1], c: bc[(b + i) % 4] }); } });
+        grp.add(inst(CONE, white, crowns), inst(CONE, white, caps), inst(SPL, new THREE.MeshBasicMaterial({ color: 0xffffff }), bulbs));
+      } else if (!hwn) grp.add(inst(CONE, white, crowns));
       else {                                                // árboles secos: ramas desnudas
         const br = [];
         trees.forEach(t => { for (let k = 0; k < 5; k++) { const a = k * 1.26 + t.x, len = 1.6 + (k % 3) * 0.5; br.push({ p: [t.x + 0.5 + Math.cos(a) * 0.5, SURF + t.th - 1.2 + k * 0.45, t.z + 0.5 + Math.sin(a) * 0.5], s: [0.07, len, 0.07], r: [Math.sin(a) * 0.9, 0, -Math.cos(a) * 0.9] }); } });
@@ -16465,7 +16555,23 @@ const HuertoPlugin = {
         stems.push({ p: [fx, SURF + 0.13, fz], s: [0.02, 0.26, 0.02] });
         flowers.push({ p: [fx, SURF + 0.29, fz], s: [0.08, 0.06, 0.08], c: petals[i % 4] });
       }
-      if (!hwn) grp.add(inst(CNL, MAT(0x3c8c28), stems), inst(SPL, white, flowers));
+      if (nvn) {
+        for (let i = 0; i < 16; i++) {                       // muñecos de nieve por la pradera
+          const x = 1 + Math.floor(Math.random() * (WX - 2)), z = 1 + Math.floor(Math.random() * (WZ - 2));
+          if (x >= F0 - 2 && x <= F1 + 2 && z >= F0 - 2 && z <= F1 + 2) continue;
+          if (getB(x, SURF, z) !== AIR) continue;
+          const sg = new THREE.Group(), sc = 0.8 + Math.random() * 0.5;
+          sg.add(put(SPH, white, 0, 0.32, 0, 0.36, 0.33, 0.36), put(SPH, white, 0, 0.78, 0, 0.27, 0.25, 0.27), put(SPH, white, 0, 1.12, 0, 0.2, 0.19, 0.2));
+          const nose = put(CONE, MAT(0xff8a1f), 0, 1.12, 0.22, 0.04, 0.2, 0.04); nose.rotation.x = Math.PI / 2; sg.add(nose, put(CYL, MAT(0xd6322a), 0, 0.96, 0, 0.23, 0.06, 0.23));
+          sg.position.set(x + 0.5, SURF, z + 0.5); sg.scale.setScalar(sc); sg.rotation.y = Math.random() * 6; grp.add(sg);
+        }
+        const flk = 520, fp = new Float32Array(flk * 3);       // nieve cayendo
+        for (let i = 0; i < flk; i++) { fp[i * 3] = Math.random() * WX; fp[i * 3 + 1] = SURF + Math.random() * 16; fp[i * 3 + 2] = Math.random() * WZ; }
+        const fg = new THREE.BufferGeometry(); fg.setAttribute("position", new THREE.BufferAttribute(fp, 3));
+        const flakes = new THREE.Points(fg, new THREE.PointsMaterial({ color: 0xffffff, size: 0.16, fog: false })); flakes.frustumCulled = false; grp.add(flakes);
+        let lt = 0;
+        hwFxH.push(t => { const dt = Math.min(0.05, Math.max(0, t - lt)); lt = t; for (let i = 0; i < flk; i++) { fp[i * 3 + 1] -= (0.9 + (i % 5) * 0.25) * dt; fp[i * 3] += Math.sin(t * 0.7 + i) * dt * 0.35; if (fp[i * 3 + 1] < SURF) fp[i * 3 + 1] = SURF + 16; } fg.attributes.position.needsUpdate = true; });
+      } else if (!hwn) grp.add(inst(CNL, MAT(0x3c8c28), stems), inst(SPL, white, flowers));
       else {
         const pk = [], pks = [], tomb = [], cap = [];
         for (let i = 0; i < 70; i++) {
@@ -16513,7 +16619,7 @@ const HuertoPlugin = {
         eyes = [boxMesh(black, -0.13, 0.77, 0.26, 0.07, 0.07, 0.03), boxMesh(black, 0.13, 0.77, 0.26, 0.07, 0.07, 0.03)];
         dizzy = [boxMesh(black, -0.13, 0.77, 0.26, 0.12, 0.025, 0.03), boxMesh(black, 0.13, 0.77, 0.26, 0.12, 0.025, 0.03)];
       } else {
-        const zm = ST === "halloween", body = m(zm ? 0x7fa070 : 0x8b5e3c), light = m(zm ? 0xb7c9a0 : 0xd9b896), pink = m(zm ? 0x8a3a4a : 0xe46a8a), white = m(0xffffff);
+        const zm = ST === "halloween", sn = ST === "navidad", body = m(zm ? 0x7fa070 : 0x8b5e3c), light = m(zm ? 0xb7c9a0 : 0xd9b896), pink = m(zm ? 0x8a3a4a : 0xe46a8a), white = m(0xffffff);
         const main = put(SPH, body, 0, 0.47, 0, 0.42, 0.5, 0.4);
         inner.add(main, put(SPH, light, 0, 0.36, 0.33, 0.17, 0.13, 0.17), put(SPH, pink, 0, 0.42, 0.48, 0.07, 0.06, 0.06),
           put(SPH, light, -0.38, 0.27, 0.24, 0.12, 0.1, 0.11), put(SPH, light, 0.38, 0.27, 0.24, 0.12, 0.1, 0.11));
@@ -16523,6 +16629,10 @@ const HuertoPlugin = {
         eyes = [put(SPH, black, -0.15, 0.65, 0.34, 0.06, 0.07, 0.04), put(SPH, black, 0.15, 0.65, 0.34, 0.06, 0.07, 0.04)];
         inner.add(put(SPH, white, -0.135, 0.675, 0.375, 0.02, 0.02, 0.012), put(SPH, white, 0.165, 0.675, 0.375, 0.02, 0.02, 0.012));
         dizzy = [boxMesh(black, -0.15, 0.65, 0.36, 0.13, 0.025, 0.03), boxMesh(black, 0.15, 0.65, 0.36, 0.13, 0.025, 0.03)];
+        if (sn) {                                                   // gorro de Papá Noel
+          const cone = put(CONE, m(0xd6322a), 0.05, 1.18, 0, 0.23, 0.42, 0.21); cone.rotation.z = -0.4;
+          inner.add(cone, put(CYL, white, 0, 0.94, 0, 0.27, 0.08, 0.25), put(SPH, white, 0.16, 1.37, 0, 0.06, 0.06, 0.06));
+        }
         if (zm) {                                                   // zombi: ojo saltón, ojo en X, puntadas y cerebro al aire
           const bone = m(0xf4f0d0), red = m(0xc42020), brain = m(0xe58aa0);
           eyes[0].visible = false; eyes[1].visible = false;
@@ -16563,7 +16673,7 @@ const HuertoPlugin = {
 
     const buildClouds = () => {
       clouds.forEach(c => scene.remove(c)); clouds = [];
-      const cm = new THREE.MeshBasicMaterial({ color: ST === "halloween" ? 0x5a4a7a : 0xffffff, transparent: true, opacity: ST === "halloween" ? 0.85 : 0.92, fog: false });
+      const cm = new THREE.MeshBasicMaterial({ color: ST === "halloween" ? 0x5a4a7a : ST === "navidad" ? 0xdfe8f5 : 0xffffff, transparent: true, opacity: ST === "halloween" ? 0.85 : 0.92, fog: false });
       if (ST === "halloween") {                                   // luna llena con halo, siempre al fondo del huerto
         const moon = put(SPH, new THREE.MeshBasicMaterial({ color: 0xfff3c4, fog: false }), WX / 2 + 14, 34, WZ + 70, 9, 9, 9);
         const halo = put(SPH, new THREE.MeshBasicMaterial({ color: 0xffe9a8, transparent: true, opacity: 0.18, fog: false, depthWrite: false }), WX / 2 + 14, 34, WZ + 69, 14, 14, 14);
@@ -16587,10 +16697,10 @@ const HuertoPlugin = {
       if (ST === builtST) return;
       builtST = ST;
       scene.background = new THREE.Color(SKIES[ST]); scene.fog.color.setHex(SKIES[ST]);
-      const hwS = ST === "halloween";
-      hemiL.color.setHex(hwS ? 0xcdbcff : 0xffffff); hemiL.groundColor.setHex(hwS ? 0x3d2a5c : 0x557744); hemiL.intensity = hwS ? 1.0 : 0.9;
+      const hwS = ST === "halloween", nvS = ST === "navidad";
+      hemiL.color.setHex(hwS ? 0xcdbcff : 0xffffff); hemiL.groundColor.setHex(hwS ? 0x3d2a5c : nvS ? 0xb8c8e0 : 0x557744); hemiL.intensity = hwS ? 1.0 : nvS ? 1.05 : 0.9;
       sunL.color.setHex(hwS ? 0xffb070 : 0xffffff); sunL.intensity = hwS ? 0.7 : 0.55;
-      scene.fog.near = hwS ? 16 : 28; scene.fog.far = hwS ? 56 : 72;
+      scene.fog.near = hwS ? 16 : nvS ? 22 : 28; scene.fog.far = hwS ? 56 : nvS ? 64 : 72;
       if (moleRig) scene.remove(moleRig.g);
       moleRig = buildMole(); scene.add(moleRig.g);
       if (hammer) cam.remove(hammer);
