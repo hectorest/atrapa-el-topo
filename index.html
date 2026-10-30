@@ -14873,13 +14873,20 @@ const MusicPlugin = {
       for (let b = 0; b < 8; b++) { const bar = []; for (let k = 0; k < 16; k++) bar.push(k % 2 === 0 && r() < dens ? base + scale[Math.floor(r() * 5)] + (r() < 0.25 ? 12 : 0) : null); out.push(bar); }
       return out;
     };
-    const MAJ = [0, 2, 4, 7, 9], MIN = [0, 3, 5, 7, 10];
+    const MAJ = [0, 2, 4, 7, 9], MIN = [0, 3, 5, 7, 10], SPK = [0, 1, 4, 7, 8];   // SPK: escala fantasmal (frigia)
     const TR = {
       menu: { bpm: 92, prog: [[48, 0], [45, 1], [41, 0], [43, 0]], mel: mkMel(7, 72, MAJ, 0.38), lead: "triangle", lv: 0.2, arp: true,
         bass: [1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0], bt: "sine", bv: 0.3, kick: [], hat: [], snare: [] },
       game: { bpm: 124, prog: [[48, 0], [43, 0], [45, 1], [41, 0]], mel: mkMel(21, 72, MAJ, 0.55), lead: "square", lv: 0.085, arp: false,
         bass: [1, 0, 3, 0, 1, 0, 3, 0, 2, 0, 3, 0, 1, 0, 3, 0], bt: "triangle", bv: 0.34, kick: [0, 8], hat: [2, 6, 10, 14], snare: [] },
       boss: { bpm: 150, prog: [[45, 1], [41, 0], [48, 0], [40, 0]], mel: mkMel(5, 69, MIN, 0.7), lead: "sawtooth", lv: 0.075, arp: false,
+        bass: [1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3], bt: "sawtooth", bv: 0.2, kick: [0, 4, 8, 12], hat: [2, 6, 10, 14], snare: [4, 12] },
+      // Halloween: menor, campanas de cripta y semitonos de sobresalto
+      menu_h: { bpm: 78, prog: [[45, 1], [41, 0], [40, 0], [45, 1]], mel: mkMel(31, 69, SPK, 0.3), lead: "triangle", lv: 0.17, arp: true, bell: true,
+        bass: [1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0], bt: "sine", bv: 0.32, kick: [], hat: [], snare: [] },
+      game_h: { bpm: 112, prog: [[45, 1], [41, 0], [40, 0], [45, 1]], mel: mkMel(66, 69, SPK, 0.5), lead: "square", lv: 0.07, arp: false, bell: true,
+        bass: [1, 0, 3, 0, 1, 0, 3, 0, 2, 0, 3, 0, 1, 0, 3, 0], bt: "sawtooth", bv: 0.2, kick: [0, 8], hat: [4, 12], snare: [] },
+      boss_h: { bpm: 144, prog: [[45, 1], [46, 0], [45, 1], [44, 0]], mel: mkMel(13, 69, SPK, 0.72), lead: "sawtooth", lv: 0.07, arp: false, bell: true,
         bass: [1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3], bt: "sawtooth", bv: 0.2, kick: [0, 4, 8, 12], hat: [2, 6, 10, 14], snare: [4, 12] }
     };
     const env = (g, t, a, d, v) => { g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + a + d); };
@@ -14899,6 +14906,7 @@ const MusicPlugin = {
       if (cur.arp && k % 4 === 0) note(hz(root + 12 + [0, third, 7, 12][(k / 4) % 4]), t, 0.5, "triangle", 0.1);
       const m = cur.mel[bar % 8][k];
       if (m != null) note(hz(m), t, 0.22, cur.lead, cur.lv);
+      if (cur.bell && k % 8 === 0) note(hz(root + 24 + (bar % 2 ? 7 : 0)), t, 1.3, "sine", 0.07);
       if (cur.kick.includes(k)) kick(t);
       if (cur.hat.includes(k)) hit(t, 7000, 0.05, 0.12);
       if (cur.snare.includes(k)) hit(t, 1500, 0.12, 0.25);
@@ -14918,10 +14926,10 @@ const MusicPlugin = {
       if (!ac || !started) return;
       const vol = Math.max(0, Math.min(1, (CONFIG.musicVol == null ? 50 : CONFIG.musicVol) / 100)) * 0.4;
       mg.gain.setTargetAtTime(CONFIG.music ? vol * (game.state.running && game.state.paused && !game.counting ? 0.3 : 1) : 0, ac.currentTime, 0.15);
-      const mul = curKey === "game" ? 1 + Math.min(0.25, ((game.state.wave || 1) - 1) * 0.04) : 1;
+      const mul = curKey && curKey.indexOf("game") === 0 ? 1 + Math.min(0.25, ((game.state.wave || 1) - 1) * 0.04) : 1;
       while (nextT < ac.currentTime + 0.3) {
         if (step === 0) {
-          const w = want();
+          const w0 = want(), w = w0 && CONFIG.view === "halloween" ? w0 + "_h" : w0;
           if (w !== curKey) { curKey = w; cur = w ? TR[w] : null; bar = 0; }
         }
         if (cur) play(step, nextT, bar);
